@@ -22,7 +22,7 @@ struct Index {
       RelativeContainer() {
         // 新增用户登录区域
         Image("")
-          .backgroundColor(Color.White)
+          .backgroundColor(Color.Red)
           .width('100%')
           .height('100%')
           .position({x:0,y:-50})
