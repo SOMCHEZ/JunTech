@@ -103,17 +103,65 @@ struct Index {
 async function LoginCheck(username: string, password: string): Promise<boolean> {
   let httpRequest = http.createHttp();
 
-  interface Data {
-    username: string;
-    password: string;
-  }
- interface LoginResponse {
-    success: boolean;
-    message: string;
-    code: number;
-    result: null;
-    timestamp: number;
-  }
+ interface UserInfo {
+  id: string;
+  username: string;
+  realname: string;
+  avatar: string|null; // 可能为 null 或字符串
+  birthday: string|null; // 可能为 null 或日期字符串
+  sex: number;
+  email: string|null; // 可能为 null 或字符串
+  phone: string|null; // 可能为 null 或字符串
+  orgCode: string|null; // 可能为 null 或字符串
+  orgCodeTxt: string|null; // 可能为 null 或字符串
+  status: number;
+  delFlag: number;
+  workNo: string|null; // 可能为 null 或字符串
+  post: string|null; // 可能为 null 或字符串
+  telephone: string;
+  izContractor: string;
+  createBy: string|null; // 可能为 null 或字符串
+  createTime: string; // 日期时间格式字符串
+  updateBy: string;
+  updateTime: string; // 日期时间格式字符串
+  activitiSync: string|null; // 可能为 null 或其他类型
+  userIdentity: string|null; // 可能为 null 或字符串
+  departIds: string|null; // 可能为 null 或字符串
+  relTenantIds: string;
+  clientId: string|null; // 可能为 null 或字符串
+  homePath: string|null; // 可能为 null 或字符串
+  clientType: string;
+  schoolId: string;
+  izPassword: string;
+  organizationId: string;
+  organizationName: string;
+  wxopenId: string;
+  roleId: string|null; // 可能为 null 或字符串
+  roleName: string|null; // 可能为 null 或字符串
+  loginType: string;
+  izCitySportsBureau: string|null; // 可能为 null 或字符串
+  unitIds: string;
+  gysUserSchoolIds: string|null; // 可能为 null 或字符串
+  izManyUnit: string|null; // 可能为 null 或字符串
+}
+
+interface LoginResult {
+  userInfo: UserInfo;
+  token: string;
+}
+
+interface LoginResponse {
+  success: boolean;
+  message: string;
+  code: number;
+  result: LoginResult;
+  timestamp: number;
+}
+
+interface Data {
+  username: string;
+  password: string;
+}
 
   let url = 'https://api.suoeryun.com/ifood/jeecg-system/sys/login';
   let data: Data = {
@@ -134,8 +182,9 @@ async function LoginCheck(username: string, password: string): Promise<boolean> 
     // 确保请求成功（HTTP 状态码为200）
     if (response.responseCode === 200) {
       const jsonResponse = JSON.parse(response.result as string) as LoginResponse;
+
 // 将结果解析为JSON对象
-      console.log('响应 code:', jsonResponse.result); // 获取code字段
+      console.log(jsonResponse.result.userInfo.id)
       return jsonResponse.code === 200; // 返回code值
     } else {
       console.log('请求失败，状态码:', response.responseCode);
