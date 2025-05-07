@@ -2,8 +2,6 @@
 @Component
 struct Index {
   // 新增登录相关状态变量
-  @State adminUsername: string = '';
-  @State adminPassword: string = '';
   @State userUsername: string = '';
   @State userPassword: string = '';
 
