@@ -2,5 +2,6 @@
   "src": [
     "pages/Index"
     ,"pages/shouye"
+    ,"pages/Today_VEG"
   ]
 }

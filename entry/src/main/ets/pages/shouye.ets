@@ -8,7 +8,11 @@ struct Index {
   @State userPassword: string = '';
 build() {
   Stack() {
- Text("caonima")
+    Button('heek')
+      .position({ x: 60, y: 60 })
+      .onClick(() => {
+        router.pushUrl({ url: 'pages/Today_VEG' });
+      })
 
   }
 }
