@@ -3,5 +3,7 @@
     "pages/Index"
     ,"pages/shouye"
     ,"pages/Today_VEG"
+    ,"pages/addStaff"
+    ,"pages/kitchenStaff"
   ]
 }

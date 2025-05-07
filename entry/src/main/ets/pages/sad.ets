@@ -24,55 +24,99 @@ struct Page1 {
 
   build() {
     Column() {
+
       Text('陪餐记录')
         .fontSize(24)
         .margin(20)
 
-      // 提交单位选择
-      Select(this.unitOptions.map<SelectOption>((item: string) => ({ value: item })))
-        .selected(0)
-        .onSelect((index: number) => {
-          this.selectedUnit = this.unitOptions[index]
-        })
-        .margin(10)
-        .width('90%')
 
-      // 新增：餐别选择
-      Select(this.mealOptions.map<SelectOption>((item: string) => ({ value: item })))
-        .selected(0)
-        .onSelect((index: number) => {
-          this.selectedMeal = this.mealOptions[index]
-        })
-        .margin(10)
-        .width('90%')
+      Row(){
+        Text("提交单位")
+          .fontColor(Color.Black)
+          .fontSize(16)
 
-      // 陪餐人职务选择
-      Select([
-        { value: '教师' },
-        { value: '家长' },
-        { value: '中层领导' },
-        { value: '校领导' },
-      ] as SelectOption[])
-        .selected(0)
-        .onSelect((index: number) => {
-          this.selectedPosition = index.toString()
-        })
-        .margin(10)
-        .width('90%')
+        Select(this.unitOptions.map<SelectOption>((item: string) => ({ value: item })))
+          .selected(0)
+          .onSelect((index: number) => {
+            this.selectedUnit = this.unitOptions[index]
+          })
+          .margin(10)
+          .width('70%')
+          .margin({left:20,right:0,bottom:10})
+      }
 
-      // 其余保持不变的UI组件...
+      Row(){
+        Text("餐别选择")
+          .fontColor(Color.Black)
+          .fontSize(16)
+
+        Select(this.mealOptions.map<SelectOption>((item: string) => ({ value: item })))
+          .selected(0)
+          .onSelect((index: number) => {
+            this.selectedMeal = this.mealOptions[index]
+          })
+          .margin(10)
+          .width('70%')
+          .margin({left:20,right:0,bottom:10})
+
+      }
+
+      Row(){
+        Text("配餐人身份")
+          .fontColor(Color.Black)
+          .fontSize(16)
+
+        Select([
+          { value: '教师' },
+          { value: '家长' },
+          { value: '中层领导' },
+          { value: '校领导' },
+        ] as SelectOption[])
+          .selected(0)
+          .onSelect((index: number) => {
+            this.selectedPosition = index.toString()
+          })
+          .margin(10)
+          .width('70%')
+          .margin({left:8,right:0,bottom:10})
+      }
+
       TextInput({ placeholder: '陪餐人姓名 *', text: this.name })
-      // ...保持原有实现
-
-      Button('上传陪餐图片 *')
-      // ...保持原有实现
+        .margin({bottom:10})
 
       TextInput({ placeholder: '请输入评价', text: this.evaluation })
-      // ...保持原有实现
 
-      Text(`${this.charCount}/10`)
-      // ...保持原有实现
+      Text("陪餐图片上传")
+        .fontColor(Color.Black)
+        .fontSize(16)
+        .margin({left:-250,top:10})
+
+      Button({type:ButtonType.Normal})
+        .width(75)
+        .height(75)
+        .backgroundColor(Color.White)
+        .backgroundImage($r('app.media.evidence_add'))
+        .backgroundImageSize(1)
+        .margin({left:-225})
+
+      Button({type: ButtonType.Normal})
+      {
+        Text("提交")
+          .margin({top: 1,bottom: 1})
+          .fontColor(Color.White)
+          .width('90%')
+          .height(40)
+          .textAlign(TextAlign.Center)
+      }
+      .width('90%')
+      .height(40)
+      .margin({top: 250})
+      .borderRadius(5)
+      .backgroundColor(Color.Green)
+
+
     }
     .width('100%')
+    .height('100%')
   }
 }

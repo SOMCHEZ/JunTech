@@ -1,3 +1,6 @@
+import router from '@ohos.router';
+
+
 @Entry
 @Component
 struct KitchenStaffList {
@@ -48,7 +51,9 @@ struct KitchenStaffList {
             .padding({ left: 16, right: 16, top: 8, bottom: 8 })
             .borderRadius(8)
             .onClick(() => {
-              console.log('New kitchen staff button clicked');
+              router.pushUrl({          // 使用push入栈一个新页面
+                url: "pages/addStaff"  // 通过url指定新打开的页面
+              })
             })
         }
         .width('80%')
