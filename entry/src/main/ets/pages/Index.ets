@@ -1,4 +1,5 @@
 import { PrintExtensionAbility } from '@kit.BasicServicesKit';
+import router from '@ohos.router';
 import http from '@ohos.net.http';
 import { promptAction } from '@kit.ArkUI';
 
@@ -74,7 +75,7 @@ struct Index {
                 bottom:670
               })
 
-              // router.pushUrl({ url: 'pages/HomePage' }); // 示例：跳转到主页
+               router.pushUrl({ url: 'pages/shouye' }); // 示例：跳转到主页
             } else {
               // 登录失败逻辑，提示用户
               promptAction.showToast({
