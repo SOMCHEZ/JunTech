@@ -1,4 +1,5 @@
 import { PrintExtensionAbility } from '@kit.BasicServicesKit';
+import router from '@ohos.router';
 import http from '@ohos.net.http';
 import { promptAction } from '@kit.ArkUI';
 
@@ -6,8 +7,8 @@ import { promptAction } from '@kit.ArkUI';
 @Component
 struct Index {
   // 新增登录相关状态变量
-  @State userUsername: string = '';
-  @State userPassword: string = '';
+  @State userUsername: string = '18991274261';
+  @State userPassword: string = 'lwjy123456';
 
 
   build() {
@@ -74,7 +75,7 @@ struct Index {
                 bottom:670
               })
 
-              // router.pushUrl({ url: 'pages/HomePage' }); // 示例：跳转到主页
+               // router.pushUrl({ url: 'pages/shouye' }); // 示例：跳转到主页
             } else {
               // 登录失败逻辑，提示用户
               promptAction.showToast({
@@ -134,7 +135,7 @@ async function LoginCheck(username: string, password: string): Promise<boolean> 
     if (response.responseCode === 200) {
       const jsonResponse = JSON.parse(response.result as string) as LoginResponse;
 // 将结果解析为JSON对象
-      console.log('响应 code:', jsonResponse.code); // 获取code字段
+      console.log('响应 code:', jsonResponse.result); // 获取code字段
       return jsonResponse.code === 200; // 返回code值
     } else {
       console.log('请求失败，状态码:', response.responseCode);
