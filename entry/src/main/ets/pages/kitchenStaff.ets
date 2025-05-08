@@ -58,7 +58,7 @@ struct KitchenStaffList {
         }
         .width('80%')
         .height(45)
-        .backgroundColor(Color.Green)
+        .backgroundColor("#4CAF50")
         .fontColor(Color.White)
         .borderRadius(8)
         .onClick(() => {
