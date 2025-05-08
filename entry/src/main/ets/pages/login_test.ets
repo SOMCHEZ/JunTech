@@ -179,7 +179,7 @@ struct Index {
   private handleUserRedirection(clientType?: string) {
     switch(clientType) {
       case "2"://跳学校的首页，夹带token等私货
-        router.pushUrl({ url: 'pages/kitchenStaff_test',
+        router.pushUrl({ url: 'pages/shouye_test',
           params:{
           token:this.authToken,
             relTenantIds:this.currentUser?.relTenantIds

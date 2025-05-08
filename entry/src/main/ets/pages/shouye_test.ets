@@ -1,3 +1,15 @@
+//这里是接口参数传递以及，路由界面
+import router from '@ohos.router';
+import http from '@ohos.net.http';
+import { promptAction } from '@kit.ArkUI';
+import { PrintExtensionAbility } from '@kit.BasicServicesKit';
+
+interface RouteParams {
+  token?: string;
+  relTenantIds?: number;
+}
+
+
 interface ImageCount{
   url:string
   count:number
@@ -27,6 +39,30 @@ struct Index1 {
     {url1:'app.media.home_6',count1:0,text1:'供应出库'},
     {url1:'app.media.home_12',count1:0,text1:'实时库存'},
   ]
+
+
+
+
+  @State receivedToken: string = '';//参数传递
+  @State tenantId: number = 0;//同上
+
+  onPageShow() {//这是一个接收传递参数的方法
+    // 使用接口类型断言
+    const params = router.getParams() as RouteParams;
+    console.log('eee', params?.token);// 打印接收到的参数
+    console.log('gggg', params?.relTenantIds);//  打印接收到的参数
+
+    // 安全取值
+    if (params?.token) {
+      this.receivedToken = params.token;
+    }
+
+    if (params?.relTenantIds) {
+      this.tenantId = params.relTenantIds;
+    }
+  }
+
+
   build() {
     Tabs() {
       TabContent() {
