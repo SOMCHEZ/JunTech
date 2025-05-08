@@ -1,6 +1,6 @@
 {
   "src": [
-    "pages/Index"
+    "pages/login"
     ,"pages/shouye"
     ,"pages/Today_VEG"
     ,"pages/addStaff"
