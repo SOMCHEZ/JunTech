@@ -147,11 +147,8 @@ struct AddStaff {
           end: new Date('2100-1-1'),
           selected: this.expiryDate ? new Date(this.expiryDate) : new Date()
         })
-          .onChange((value: DatePickerResult) => {
-            const year = value.year;
-            const month = (value.month !== undefined ? value.month : 1).toString().padStart(2, '0');
-            const day = (value.day !== undefined ? value.day : 1).toString().padStart(2, '0');
-            this.expiryDate = `${year}-${month}-${day}`;
+          .onChange((date) => {          // 设置事件回调
+            console.log(`selected time：${date.year}年${date.year}月${date.day}日`)
           })
           .width('70%')
           .height(50)
@@ -172,10 +169,8 @@ struct AddStaff {
           end: new Date('2100-1-1'),
           selected: new Date(this.expiryDate || new Date())
         })
-          .onChange((value: DatePickerResult) => {
-            const month = (value.month ?? 1).toString().padStart(2, '0');
-            const day = (value.day ?? 1).toString().padStart(2, '0');
-            this.expiryDate = `${value.year}-${month}-${day}`;
+          .onChange((date) => {          // 设置事件回调
+            console.log(`selected time：${date.year}年${date.year}月${date.day}日`)
           })
           .width('70%')
           .height(50)
