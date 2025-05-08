@@ -47,8 +47,6 @@ struct AddStaff {
           })
           .width('70%')
           .height(50)
-          .borderWidth(1)
-          .borderColor('#ccc')
           .padding({ left: 10 })
       }
       .margin({ bottom: 10 })
@@ -64,8 +62,6 @@ struct AddStaff {
           })
           .width('70%')
           .height(50)
-          .borderWidth(1)
-          .borderColor('#ccc')
           .padding({ left: 10 })
       }
       .margin({ bottom: 10 })
@@ -81,8 +77,6 @@ struct AddStaff {
           })
           .width('70%')
           .height(50)
-          .borderWidth(1)
-          .borderColor('#ccc')
           .padding({ left: 10 })
       }
       .margin({ bottom: 10 })
@@ -98,8 +92,6 @@ struct AddStaff {
           })
           .width('70%')
           .height(50)
-          .borderWidth(1)
-          .borderColor('#ccc')
           .padding({ left: 10 })
       }
       .margin({ bottom: 10 })
@@ -116,8 +108,6 @@ struct AddStaff {
           })
           .width('70%')
           .height(50)
-          .borderWidth(1)
-          .borderColor('#ccc')
           .padding({ left: 10 })
       }
       .margin({ bottom: 10 })
@@ -138,13 +128,12 @@ struct AddStaff {
             const day = (value.day !== undefined ? value.day : 1).toString().padStart(2, '0');
             this.expiryDate = `${year}-${month}-${day}`;
           })
-
-
           .width('70%')
-        .height(50)
-        .borderWidth(1)
-        .borderColor('#ccc')
-        .padding({ left: 10 })
+          .height(50)
+          .borderWidth(1)
+          .borderColor('#ccc')
+          .padding({ left: 10 })
+          .borderRadius(10)
       }
       .margin({ bottom: 10 })
 
@@ -167,7 +156,9 @@ struct AddStaff {
         .height(50)
         .borderWidth(1)
         .borderColor('#ccc')
+          .borderRadius(10)
         .padding({ left: 10 })
+          .borderRadius(10)
       }
       .margin({ bottom: 10 })
 
@@ -199,15 +190,13 @@ struct AddStaff {
           .fontColor(Color.White)
           .fontSize(20)
       }
-      .onClick(() => {
-        router.back(); // 返回上一页，当前页面会销毁
-      })
         .width('90%')
         .height(50)
         .backgroundColor('#4CAF50')
         .borderRadius(10)
         .onClick(() => {
-          console.log("提交员工信息");
+          router.pushUrl({
+            url: 'pages/kitchenStaff' })
         })
         .margin({ top: 100 })
     }
