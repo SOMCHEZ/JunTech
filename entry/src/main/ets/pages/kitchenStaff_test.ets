@@ -1,4 +1,9 @@
 import router from '@ohos.router';
+import http from '@ohos.net.http';
+import { promptAction } from '@kit.ArkUI';
+import { PrintExtensionAbility } from '@kit.BasicServicesKit';
+
+//add定义申明
 
 interface RouteParams {
   token?: string;
@@ -77,7 +82,13 @@ struct KitchenStaffList {
             .borderRadius(8)
             .onClick(() => {
               router.pushUrl({          // 使用push入栈一个新页面
-                url: "pages/addStaff"  // 通过url指定新打开的页面
+                url: "pages/addStaff_test"  // 通过url指定新打开的页面
+                ,
+                params:{
+                  token:this.receivedToken,
+                  relTenantIds:this.tenantId
+
+                }
               })
             })
         }
@@ -95,7 +106,7 @@ struct KitchenStaffList {
       .height('100%')
       .backgroundColor(Color.White);
     }.backgroundColor("#ff969696")
-    }
+  }
 }
 
 @Component

@@ -6,5 +6,7 @@
     ,"pages/addStaff"
     ,"pages/kitchenStaff"
     ,"pages/login_test"
+  ,"pages/kitchenStaff_test"
+    ,"pages/addStaff_test"
   ]
 }

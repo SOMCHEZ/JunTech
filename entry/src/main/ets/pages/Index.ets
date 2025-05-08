@@ -178,8 +178,8 @@ struct Index {
   // 私有方法：处理用户跳转
   private handleUserRedirection(clientType?: string) {
     switch(clientType) {
-      case "2"://跳学校的首页
-        router.pushUrl({ url: 'pages/shouye',
+      case "2"://跳学校的首页，夹带token等私货
+        router.pushUrl({ url: 'pages/kitchenStaff',
           params:{
             token:this.authToken,
             relTenantIds:this.currentUser?.relTenantIds
@@ -192,7 +192,7 @@ struct Index {
         break;
 
 
-      case "3"://跳供应商的首页页面
+      case "3"://跳供应商的首页页面夹带token等私货
         router.pushUrl({ url: 'pages/Today_VEG',
           params:{
             token:this.authToken,
