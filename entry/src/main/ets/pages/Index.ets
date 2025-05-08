@@ -1,71 +1,137 @@
+/*
+interface ImageCount {
+  url: string
+  count: number
+}
+
 @Entry
 @Component
 struct Index {
-  // 新增登录相关状态变量
-  @State adminUsername: string = '';
-  @State adminPassword: string = '';
-  @State userUsername: string = '';
-  @State userPassword: string = '';
-
+  @State image: ImageCount[] = [
+    { url: 'app.media.education_3', count: 0 },
+    { url: 'app.media.home_1', count: 1 },
+    { url: 'app.media.home_2', count: 2 },
+    { url: 'app.media.home_4', count: 3 },
+    { url: 'app.media.home_recipe_reporting', count: 4 },
+    { url: 'app.media.education_6', count: 5 }
+  ]
 
   build() {
-    Stack() {
-      Row(){
-        Image($r("app.media.login_bg")) // 确保图片放在src/main/resources/base/media目录
+    Tabs() {
+      // 首页 Tab
+      TabContent() {
+        Column() {
+          // 轮播图 Swiper
+          Swiper() {
+            Image($r('app.media.banner1'))
+            Image($r('app.media.banner2'))
+            Image($r('app.media.banner3'))
+          }
           .width('100%')
-          .height('30%')
-          .objectFit(ImageFit.Cover)
-      }
-      .position({x:0,y:0})
+          .height(180)
+          .padding({ bottom: 20, left: 10, right: 10 })
+          .borderRadius(20)
 
+          // 公告背景条
+          Text()
+            .width('100%')
+            .height(40)
+            .backgroundColor('#ebf6f3f3')
+            .padding({ left: 10, right: 10 })
 
-      RelativeContainer() {
-        // 新增用户登录区域
-        Image("")
-          .backgroundColor(Color.White)
+          // 公告文字
+         Image($r('app.media.notice'))
+            .width(60)
+            .height(30)
+            .borderRadius({ bottomRight: 40 })
+            .backgroundColor('#a3ee9510')
+            .position({ x: 20, y: -40 }) // 相对定位在背景条内
+
+          // 需求计划标题
+          Text('需求计划')
+            .fontSize(20)
+            .fontWeight(FontWeight.Bold)
+            .margin({ top: 20, left: 20 })
+
+          // 图标网格
+          Grid() {
+            ForEach(this.image, (item: ImageCount, index: number) => {
+              GridItem() {
+                Badge({
+                  count: item.count,
+                  position: BadgePosition.RightTop,
+                  style: {
+                    fontSize: 14,
+                    badgeSize: 20,
+                    badgeColor: '#fa2a2d'
+                  }
+                }) {
+                  Image($r(item.url))
+                    .width(80)
+                    .onClick(() => {
+                      console.info(`Clicked on icon: ${item.url}`)
+                      // 可在此处添加跳转逻辑
+                    })
+                }
+              }
+            })
+          }
+          .columnsTemplate('1fr 1fr 1fr 1fr')
           .width('100%')
-          .height('100%')
-          .position({x:0,y:-50})
-          .borderRadius({topLeft: 20,topRight: 20})
-        TextInput({ text: this.userUsername, placeholder: '用户账号' })
-          .id('userUser')
-
-          .height(40)
-          .width('80%')
-          .margin({ top: 40 })
-          .alignRules({
-            top: { anchor: 'adminBtn', align: VerticalAlign.Bottom },
-            middle: { anchor: '__container__', align: HorizontalAlign.Center }
-          })
-
-        TextInput({ text: this.userPassword, placeholder: '用户密码' })
-          .id('userPwd')
-
-          .type(InputType.Password)
-          .height(40)
-          .width('80%')
+          .height(300)
           .margin({ top: 10 })
-          .alignRules({
-            top: { anchor: 'userUser', align: VerticalAlign.Bottom },
-            middle: { anchor: '__container__', align: HorizontalAlign.Center }
-          })
-
-        Button('登录')
-          .id('userBtn')
-          .width('80%')
-          .margin({ top: 20 })
-          .backgroundColor(Color.Green)
-          .onClick(() => {
-            console.log('User login attempted');
-          })
-          .alignRules({
-            top: { anchor: 'userPwd', align: VerticalAlign.Bottom },
-            middle: { anchor: '__container__', align: HorizontalAlign.Center }
-          })
+        }
+        .width('100%')
       }
-      .height('100%')
-      .width('100%')
-      .margin({ top: 500})
-    }.backgroundColor(Color.Gray)
+      .tabBar('首页')
+
+      // 我的 Tab
+      TabContent() {
+        Column() {
+          Text('个人中心')
+            .fontSize(25)
+            .fontWeight(FontWeight.Bold)
+            .margin({ top: 20 })
+
+          Divider()
+            .strokeWidth(1)
+            .color('#e0e0e0')
+
+          List() {
+            ListItem() {
+              Row() {
+               */
+/* Image($r('app.media.user_icon'))
+                  .width(40)
+                  .height(40)
+                Text('个人信息')
+                  .fontSize(18)
+                  .marginLeft(10)*//*
+
+              }
+            }
+
+            ListItem() {
+              Row() {
+               */
+/* Image($r('app.media.setting'))
+                  .width(40)
+                  .height(40)
+                Text('设置')
+                  .fontSize(18)
+                  .marginLeft(10)*//*
+
+              }
+            }
+          }
+          .width('100%')
+          .layoutWeight(1)
+        }
+        .width('100%')
+      }
+      .tabBar('我的')
+    }
+    .barPosition(BarPosition.End) // 设置 tab bar 在底部
   }
 }
+*/
