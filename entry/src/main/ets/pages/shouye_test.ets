@@ -14,30 +14,32 @@ interface ImageCount{
   url:string
   count:number
   text:string
+  route:string
 }
 interface cuku{
   url1:string
   count1:number
   text1:string
+  route1:string
 }
 @Entry
 @Component
 struct Index1 {
   @State image: ImageCount[] = [
-    { url: 'app.media.education_3', count: 0, text: '每日工作' },
-    { url: 'app.media.home_1', count: 0, text: '上报计划' },
-    { url: 'app.media.home_2', count: 0, text: '需求审批' },
-    { url: 'app.media.home_4', count: 0, text: '新品审批' },
-    { url: 'app.media.home_recipe_reporting', count: 0, text: '今日菜品' },
-    { url: 'app.media.education_6', count: 0, text: '后厨人员' },
-    { url: 'app.media.education_4', count: 0, text: '每日留样' },
-    { url: 'app.media.home_9', count: 0, text: '晨检记录' },
-    { url: 'app.media.home_3', count: 0, text: '陪餐记录' },
-    { url: 'app.media.home_13', count: 0, text: '陪餐评价' },
+    { url: 'app.media.education_3', count: 0, text: '每日工作' ,route:'pages/addStaff_test'},
+    { url: 'app.media.home_1', count: 0, text: '上报计划' ,route:'pages/addStaff_test'},
+    { url: 'app.media.home_2', count: 0, text: '需求审批' ,route:'pages/addStaff_test'},
+    { url: 'app.media.home_4', count: 0, text: '新品审批' ,route:'pages/addStaff_test'},
+    { url: 'app.media.home_recipe_reporting', count: 0, text: '今日菜品' ,route:'pages/addStaff_test'},
+    { url: 'app.media.education_6', count: 0, text: '后厨人员',route:'pages/addStaff_test' },
+    { url: 'app.media.education_4', count: 0, text: '每日留样' ,route:'pages/addStaff_test'},
+    { url: 'app.media.home_9', count: 0, text: '晨检记录' ,route:'pages/addStaff_test'},
+    { url: 'app.media.home_3', count: 0, text: '陪餐记录' ,route:'pages/addStaff_test'},
+    { url: 'app.media.home_13', count: 0, text: '陪餐评价' ,route:'pages/addStaff_test'},
   ];
   @State image1:cuku[]=[
-    {url1:'app.media.home_6',count1:0,text1:'供应出库'},
-    {url1:'app.media.home_12',count1:0,text1:'实时库存'},
+    {url1:'app.media.home_6',count1:0,text1:'供应出库',route1:'pages/addStaff_test' },
+    {url1:'app.media.home_12',count1:0,text1:'实时库存',route1:'pages/addStaff_test'},
   ]
 
 
@@ -118,7 +120,15 @@ struct Index1 {
                         .width(50)
                         .height(50)
                         .onClick(() => {
-                          console.info(`Clicked on icon: ${item.url}`)
+                          router.pushUrl({          // 使用push入栈一个新页面
+                            url: item.route // 通过url指定新打开的页面
+                          ,
+                            params:{
+                              token:this.receivedToken,
+                              relTenantIds:this.tenantId
+
+                            }
+                          })
                         })
                     }
                     Text(item.text)
@@ -158,7 +168,15 @@ struct Index1 {
                         .width(50)
                         .height(50)
                         .onClick(() => {
-                          console.info(`Clicked on icon: ${item1.url1}`)
+                          router.pushUrl({          // 使用push入栈一个新页面
+                            url: item1.route1 // 通过url指定新打开的页面
+                          ,
+                            params:{
+                              token:this.receivedToken,
+                              relTenantIds:this.tenantId
+
+                            }
+                          })
                         })
                     }
                     Text(item1.text1)
