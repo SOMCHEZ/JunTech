@@ -155,13 +155,23 @@ struct Index1 {
             Image($r('app.media.avatar'))
               .width(100)
               .height(100)
+              .layoutWeight(1)
               .borderRadius(50)
+            Column(){
+              Text('实训第二学校')
+              .fontSize(20)
+
+              Text('人15502933673')
+            }
+            .layoutWeight(2.4)
+          }
           }
           .width('100%')
-          .height(100)
+          .height('100%')
+          .padding({
+            left: 20,
+          })
           .justifyContent(FlexAlign.Start)
-          //.alignItems(FlexAlign.Start)
-        }
       }
       .tabBar('我的')
     }
