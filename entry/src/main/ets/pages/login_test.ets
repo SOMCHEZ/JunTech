@@ -157,7 +157,7 @@ struct Index {
       }
 
       const jsonData = JSON.parse(response.result as string) as LoginResponse;
-      // console.log('',jsonData.result.userInfo.relTenantIds);
+     // console.log('',jsonData.result.userInfo.relTenantIds);
       return {
         success: jsonData.code === 200,
         code: jsonData.code,
@@ -181,7 +181,7 @@ struct Index {
       case "2"://跳学校的首页
         router.pushUrl({ url: 'pages/shouye',
           params:{
-            token:this.authToken,
+          token:this.authToken,
             relTenantIds:this.currentUser?.relTenantIds
 
           }

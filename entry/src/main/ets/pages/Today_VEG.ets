@@ -32,7 +32,7 @@ async function Tv(): Promise<boolean> {
     "startTime": "2025-04-30",
     "endTime": "2025-04-30",
     "mealCategory": "0",
-    "dishName": "鱼香周哥",
+    "dishName": "鱼香哥",
     "sampleType": "0",
     "demandUnit": "1651892693627330561",
     "demandUnitName": "浐灞二小餐厅",
@@ -53,7 +53,7 @@ let data: Data = {
   "startTime": "2025-04-30",//开始时间
   "endTime": "2025-04-30",//结束时间
   "mealCategory": "0",//类别
-  "dishName": "鱼香周哥",//菜名
+  "dishName": "鱼香哥",//菜名
   "sampleType": "0",//样本类型
   "demandUnit": "1651892693627330561",
   "demandUnitName": "浐灞二小餐厅",//餐厅名
@@ -68,8 +68,7 @@ let data: Data = {
         method: http.RequestMethod.POST,
         header: { 'Content-Type': 'application/json',
                   'Tenant-Id':'10021011',
-                  'X-Access-Token':'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJwd2QiOiI5NzJiNzBjMWQwNGQ3YTY0ZGFjYzUwYTY3MzkyOWRlZSIsImV4cCI6MTc0NzIwNjk5NywidXNlcm5hbWUiOiIxODk5MTI3NDI2MSJ9.EYOitkMTmOLRA6aegogPBwC7m2nd20O_uCJUDxsM1ak'
-        },
+                  'X-Access-Token':'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJwd2QiOiIyZjg5NWM4NDI2MWFlNzJiYmUyMjVkMjllOWJhZjVjZCIsImV4cCI6MTc0NzIxNzU3MiwidXNlcm5hbWUiOiIxNTUwMjkzMzY3MyJ9.y0nh3Ftk5PsNq1zTj8o06VkBsc43Qk014Fnrh0EhMPE'  },
         extraData: JSON.stringify(data)
       }
     );
