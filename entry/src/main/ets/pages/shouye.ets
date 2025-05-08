@@ -150,7 +150,18 @@ struct Index1 {
       }
       .tabBar('首页')
       TabContent() {
-        // 可以在这里添加其他 TabContent
+        Column() {
+          Row(){
+            Image($r('app.media.avatar'))
+              .width(100)
+              .height(100)
+              .borderRadius(50)
+          }
+          .width('100%')
+          .height(100)
+          .justifyContent(FlexAlign.Start)
+          //.alignItems(FlexAlign.Start)
+        }
       }
       .tabBar('我的')
     }
