@@ -149,6 +149,53 @@ struct KitchenStaffList {
       .backgroundColor(Color.White);
     }.backgroundColor("#ff969696")
   }
+
+
+  //调取查询的接口
+  private async Houchuchaxun(): Promise<HouchuHandlerResult> {
+    try {
+      const httpRequest = http.createHttp();
+      const response = await httpRequest.request(
+        'https://api.suoeryun.com/ifood/jeecg-system/sys/login',
+        {
+          method: http.RequestMethod.POST,
+          header: { 'Content-Type': 'application/json',
+            'Tenant-Id':this.tenantId,
+            'X-Access-Token':this.receivedToken
+
+          },
+          extraData: JSON.stringify({
+            //username: this.userUsername,
+            // password: this.userPassword
+          })
+        }
+      );
+
+      if (response.responseCode !== 200) {
+        return {
+          success: false,
+          message: `HTTP Error: ${response.responseCode}`
+          // 添加其他错误处理逻辑
+        };
+      }
+
+      const jsonData = JSON.parse(response.result as string) as HouchuResponse;
+      // console.log('',jsonData.result.userInfo.relTenantIds);
+      return {
+        success: jsonData.code === 200,
+        code: jsonData.code,
+        userInfo: jsonData.result.userInfo,
+        message: jsonData.message,
+        relTenantIds:jsonData.result.userInfo.relTenantIds
+      };
+    } catch (error) {
+      console.error('Login Error:', JSON.stringify(error));
+      return {
+        success: false,
+        message: '服务器繁忙'
+      };
+    }
+  }
 }
 
 @Component
@@ -215,44 +262,5 @@ struct DropdownSelector {
 
 
 
-  private async Houchuchaxun(): Promise<HouchuHandlerResult> {
-    try {
-      const httpRequest = http.createHttp();
-      const response = await httpRequest.request(
-        'https://api.suoeryun.com/ifood/jeecg-system/sys/login',
-        {
-          method: http.RequestMethod.POST,
-          header: { 'Content-Type': 'application/json' },
-          extraData: JSON.stringify({
-            //username: this.userUsername,
-           // password: this.userPassword
-          })
-        }
-      );
 
-      if (response.responseCode !== 200) {
-        return {
-          success: false,
-          message: `HTTP Error: ${response.responseCode}`
-          // 添加其他错误处理逻辑
-        };
-      }
-
-      const jsonData = JSON.parse(response.result as string) as HouchuResponse;
-      // console.log('',jsonData.result.userInfo.relTenantIds);
-      return {
-        success: jsonData.code === 200,
-        code: jsonData.code,
-        userInfo: jsonData.result.userInfo,
-        message: jsonData.message,
-        relTenantIds:jsonData.result.userInfo.relTenantIds
-      };
-    } catch (error) {
-      console.error('Login Error:', JSON.stringify(error));
-      return {
-        success: false,
-        message: '服务器繁忙'
-      };
-    }
-  }
 }
