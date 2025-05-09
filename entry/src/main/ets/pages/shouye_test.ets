@@ -31,10 +31,10 @@ struct Index1 {
     { url: 'app.media.home_2', count: 0, text: '需求审批' ,route:'pages/addStaff_test'},
     { url: 'app.media.home_4', count: 0, text: '新品审批' ,route:'pages/addStaff_test'},
     { url: 'app.media.home_recipe_reporting', count: 0, text: '今日菜品' ,route:'pages/addStaff_test'},
-    { url: 'app.media.education_6', count: 0, text: '后厨人员',route:'pages/addStaff_test' },
+    { url: 'app.media.education_6', count: 0, text: '后厨人员',route:'pages/kitchenStaff_test' },
     { url: 'app.media.education_4', count: 0, text: '每日留样' ,route:'pages/addStaff_test'},
     { url: 'app.media.home_9', count: 0, text: '晨检记录' ,route:'pages/addStaff_test'},
-    { url: 'app.media.home_3', count: 0, text: '陪餐记录' ,route:'pages/addStaff_test'},
+    { url: 'app.media.home_3', count: 0, text: '陪餐记录' ,route:'pages/sad'},
     { url: 'app.media.home_13', count: 0, text: '陪餐评价' ,route:'pages/addStaff_test'},
   ];
   @State image1:cuku[]=[
