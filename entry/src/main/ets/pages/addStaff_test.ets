@@ -12,14 +12,6 @@ interface SelectOption {
   label: string;
 }
 
-// 可以尝试引入官方定义，如果没有则手动定义
-interface DatePickerResult {
-  year: number;
-  month?: number; // 可选属性
-  day?: number;   // 可选属性
-}
-
-
 @Entry
 @Component
 struct AddStaff {
@@ -61,8 +53,7 @@ struct AddStaff {
   ];
   build() {
     Column({ space: 0 }) {
-      // 所属单位
-      Row({ space: 10 }) {
+      Row({ space: 10}) {
         Text("所属单位 *")
           .fontSize(16)
           .width('30%')
@@ -71,6 +62,7 @@ struct AddStaff {
           .onSelect((index: number) => {
             this.selectedUnitIndex = index;
           })
+          .backgroundColor(Color.White)
           .width('70%')
           .height(50)
           .padding({ left: 10 })
@@ -86,6 +78,7 @@ struct AddStaff {
           .onChange((value: string) => {
             this.name = value
           })
+          .backgroundColor(Color.White)
           .width('70%')
           .height(50)
           .padding({ left: 10 })
@@ -101,6 +94,7 @@ struct AddStaff {
           .onChange((value: string) => {
             this.jobPosition = value
           })
+          .backgroundColor(Color.White)
           .width('70%')
           .height(50)
           .padding({ left: 10 })
@@ -116,6 +110,7 @@ struct AddStaff {
           .onChange((value: string) => {
             this.phone = value
           })
+          .backgroundColor(Color.White)
           .width('70%')
           .height(50)
           .padding({ left: 10 })
@@ -132,6 +127,7 @@ struct AddStaff {
           .onSelect((index: number) => {
             this.status = this.statuses[index].value;
           })
+          .backgroundColor(Color.White)
           .width('70%')
           .height(50)
           .padding({ left: 10 })
@@ -143,102 +139,119 @@ struct AddStaff {
         Text("发证日期 *")
           .fontSize(16)
           .width('30%')
-        Button()
+        Text(this.issueDate)
+        Button(){
+          if (this.issueDate == ""){
+            Text("请选择")
+          }
+        }
           .onClick(() => {
-            this.showActionSheet()
+            this.showIssueDateDialog()
           })
+        .margin({left:175})
+        .backgroundColor(Color.White)
       }
-      .margin({ bottom: 10 })
+      .width("100%")
+      .margin({left:0, top: 20, bottom: 20 })
+
 
       // 到期日期
       Row({ space: 10 }) {
         Text("到期日期 *")
           .fontSize(16)
           .width('30%')
-        DatePicker({
-          start: new Date('1970-1-1'),
-          end: new Date('2100-1-1'),
-          selected: new Date(this.expiryDate || new Date())
+        Text(this.expiryDate)
+        Button(){
+          if (this.expiryDate == ""){
+            Text("请选择")
+          }
+        }
+        .onClick(() => {
+          this.showExpireDateDialog()
         })
-          .onChange((date) => {          // 设置事件回调
-            console.log(`selected time：${date.year}年${date.year}月${date.day}日`)
-          })
-          .width('70%')
-          .height(50)
-          .borderWidth(1)
-          .borderColor('#ccc')
-          .borderRadius(10)
-          .padding({ left: 10 })
-          .borderRadius(10)
+        .margin({left:175})
+        .backgroundColor(Color.White)
       }
-      .margin({ bottom: 10 })
+      .width("100%")
+      .margin({left:0, top: 20, bottom: 20 })
+
 
       // 健康证照片
       Row({ space: 10 }) {
-        Text(this.issueDate || '请选择发证日期')
+        Text('健康证照片')
           .fontSize(16)
-          .width('70%')
-          .padding({ left: 10 })
-        Button("选择")
-          .width(80)
-          .height(40)
-          .onClick(() => {
-            this.showActionSheet();
-          })
+          .width('40%')
+        Button({type:ButtonType.Normal})
+          .margin({left: 125})
+          .backgroundColor(Color.White)
+          .backgroundImage($r("app.media.evidence_add"))
+          .backgroundImageSize(1)
+          .width(50)
+          .height(50)
       }
+      .margin({top: 10, bottom: 10})
       .height(50)
-      .width('70%')
-
-
+      .width('100%')
       // 人脸照片
       Row({ space: 10 }) {
         Text("人脸照片")
           .fontSize(16)
-          .width('30%')
-        Button("选择人脸照片")
-          .width('70%')
+          .width('40%')
+        Button({type:ButtonType.Normal})
+          .margin({left: 125})
+          .backgroundColor(Color.White)
+          .backgroundImage($r("app.media.evidence_add"))
+          .backgroundImageSize(1)
+          .width(50)
           .height(50)
       }
-      .margin({ bottom: 10 })
-
+      .margin({top:10, bottom: 10 })
+      .width('100%')
       // 提交按钮
       Button({type:ButtonType.Normal}){
         Text("提交")
           .fontColor(Color.White)
-          .fontSize(20)
+          .fontSize(18)
       }
       .width('90%')
-      .height(50)
+      .height(40)
       .backgroundColor('#4CAF50')
       .borderRadius(10)
       .onClick(() => {
         router.pushUrl({
           url: 'pages/kitchenStaff' })
       })
-      .margin({ top: 100 })
+      .margin({top:120})
     }
     .width('100%')
     .height('100%')
     .backgroundColor(Color.White)
-    .padding({ top: 20, left: 10, right: 10 })
+    .padding({ top: 0, left: 10, right: 10 })
   }
 
-  private showActionSheet() {
+  private showIssueDateDialog() {
     let dialog: DatePickerDialogOptions = {
-      selected: new Date(),
-      lunar: true,
-      lunarSwitch: true,
-      showTime: true,
-      shadow: {
-        radius: 10,
-        offsetX: 20,
-        offsetY: 20,
-        color: "#66333333"
-      },
-      onAccept: (date) => {
-        promptAction.showToast({message: "date: " + date.toString()})
+      selected: new Date(), // 默认当前日期
+      lunar: false,         // 不需要农历
+      onAccept: (value: DatePickerResult) => { // 使用系统内置类型
+        if (value.year && value.month && value.day) {
+          this.issueDate = `${value.year}-${value.month+1}-${value.day}`;
+        }
       }
-    }
-    DatePickerDialog.show(dialog)
+    };
+    DatePickerDialog.show(dialog);
+  }
+
+  private showExpireDateDialog() {
+    let dialog: DatePickerDialogOptions = {
+      selected: new Date(), // 默认当前日期
+      lunar: false,         // 不需要农历
+      onAccept: (value: DatePickerResult) => { // 使用系统内置类型
+        if (value.year && value.month && value.day) {
+          this.expiryDate = `${value.year}-${value.month+1}-${value.day}`;
+        }
+      }
+    };
+    DatePickerDialog.show(dialog);
   }
 }
