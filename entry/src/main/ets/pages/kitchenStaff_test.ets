@@ -99,6 +99,8 @@ struct KitchenStaffList {
         }
         .padding({ left: 16, right: 16 });
 
+        Stack()
+
         // 暂无相关数据提示（条件渲染）
         if (this.kitchenStaffs.length === 0) {
           Text('~ 暂无相关数据 ~')
@@ -254,13 +256,5 @@ struct DropdownSelector {
       }
     }
   }
-
-
-
-
-
-
-
-
-
 }
+
