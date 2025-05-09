@@ -7,7 +7,6 @@ import http from '@ohos.net.http';
 AppStorage.setOrCreate('token', '');
 AppStorage.setOrCreate('tenantId', 0);
 
-
 interface  records{//定义接口返回类型
   id: string;
   schoolId: string;
@@ -59,12 +58,10 @@ interface HouchuHandlerResult {
   message?: string;
 }
 
-
 interface RouteParams {
   token?: string;
   relTenantIds?: number;
 }
-
 
 interface kitchenStaffs{
   name: string;
@@ -83,10 +80,10 @@ struct KitchenStaffList {
   @State showDropdown: boolean = false;
   @State receivedToken: string = ''; // 参数传递
   @State tenantId: number = 0; // 同上
-  @State kitchenNumbers: number = 3; // 修改为大于2的值
+  @State kitchenNumbers: number = 3;
   @State kitchenStaffs: kitchenStaffs[] = [
     {
-      name: '王师傅',
+      name: '俊师傅',
       status: '休假',
       position: '帮厨',
       issueTime: '2023-08-01',
@@ -94,7 +91,7 @@ struct KitchenStaffList {
       workplace: '其他单位'
     },
     {
-      name: '李贵',
+      name: '李gue',
       status: '在职',
       position: '垃圾回收',
       issueTime: '2023-07-01',
@@ -102,22 +99,18 @@ struct KitchenStaffList {
       workplace: '实训第二学校餐厅'
     },
     {
-      name: '张三',
+      name: '牛气东升',
       status: '在职',
-      position: '厨师',
+      position: '吉祥物',
       issueTime: '2023-09-01',
       expireTime: '2024-09-01',
       workplace: '实训第二学校餐厅'
     }
   ];
 
-  onPageShow() {
-    // ...原有代码保持不变
-  }
-
   build() {
     Stack() {
-      Column({ space: 16 }) {
+      Column() {
         Row() {
           DropdownSelector({
             selected: this.selectedUnit,
@@ -164,7 +157,7 @@ struct KitchenStaffList {
         .backgroundColor("#4CAF50")
         .fontColor(Color.White)
         .borderRadius(8)
-        .margin({ top:'auto', left: 'auto', right: 'auto' })
+        .margin({ top:20, left: 'auto', right: 'auto' })
         .onClick(() => {
           router.pushUrl({
             url: "pages/addStaff_test",
@@ -191,6 +184,7 @@ struct KitchenStaffList {
         }, (staff: kitchenStaffs) => staff.name);
       }
     }
+    .zIndex(0)
     .scrollBarWidth(0)
     .height('85%');
   }
@@ -205,34 +199,39 @@ struct KitchenStaffList {
   @Builder
   renderStaffCard(staff: kitchenStaffs) {
     Stack() {
-      Column({ space: 8 }) {
+      Column({ space: 5}) {
         Text(staff.name)
           .fontSize(24)
           .fontWeight(FontWeight.Bold)
-          .margin({ top: 16, left: 16 });
+          .margin({ top: 10, left: 'auto' });
 
-        Row({ space: 16 }) {
-          Text(`人员状态 ${staff.status}`)
+        Row({space:20}) {
+          Text(`人员状态: ${staff.status}`)
             .fontSize(16)
-            .fontColor(Color.Gray);
-          Text(`人员岗位 ${staff.position}`)
+            .fontColor(Color.Gray)
+          Text(`人员岗位: ${staff.position}`)
             .fontSize(16)
             .fontColor(Color.Gray);
         }
         .margin({ left: 16 });
 
-        Text(`发证日期 ${staff.issueTime} 到期日期 ${staff.expireTime}`)
+        Text(`发证日期: ${staff.issueTime}`)
           .fontSize(16)
           .fontColor(Color.Gray)
           .margin({ left: 16 });
-
-        Text(`所属单位 ${staff.workplace}`)
+        Text(`到期日期: ${staff.expireTime}`)
+          .fontSize(16)
+          .fontColor(Color.Gray)
+          .margin({ left: 16 });
+        Text(`所属单位: ${staff.workplace}`)
           .fontSize(16)
           .fontColor(Color.Gray)
           .margin({ left: 16, bottom: 16 });
 
         Divider()
-          .width('90%')
+          .width('85%')
+          .height(2)
+          .color(Color.Gray)
           .margin({ left: 'auto', right: 'auto' });
 
         Row({ space: 16 }) {
@@ -260,12 +259,15 @@ struct KitchenStaffList {
       }
       .padding({ top: 16, bottom: 16 });
     }
-    .width('95%')
+    .width('90%')
+    .height("40%")
     .margin({ top: 16, left: 'auto', right: 'auto' })
     .backgroundColor(Color.White)
     .border({ width: 2, color: Color.Green, radius: 8})
+    .zIndex(0)
   }
 }
+
 @Component
 struct DropdownSelector {
   @Link selected: string;
@@ -277,11 +279,10 @@ struct DropdownSelector {
   onSelect?: (unit: string) => void;
 
   build() {
-    Column() {
+    Stack() {
       Row() {
         Text(this.selected)
           .fontSize(16);
-
         Image($r('app.media.down'))
           .width(16)
           .height(16)
@@ -292,8 +293,9 @@ struct DropdownSelector {
             }
           })
       }
-      .width('70%')
-      .padding({ left: 8, right: 8, top: 8, bottom: 8 })
+      .zIndex(100)
+      .width('90%')
+      .padding(10)
       .border({ width: 1, color: Color.Gray, radius: 8 })
 
       if (this.showDropdown) {
@@ -317,12 +319,13 @@ struct DropdownSelector {
         .width('100%')
         .backgroundColor(Color.White)
         .border({ width: 1, color: Color.Gray, radius: 8 })
-        .position({ x: 0, y: 48 })
-        .zIndex(100)
+        .position({ x: 0, y: 48 }) // 设置位置
+        .zIndex(200) // 设置 z-index
       }
     }
   }
 }
+
 
 
 
