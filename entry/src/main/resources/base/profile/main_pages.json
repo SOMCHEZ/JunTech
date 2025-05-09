@@ -8,6 +8,9 @@
     "pages/kitchenStaff_test",
     "pages/login",
     "pages/login_test",
-    "pages/Today_VEG"
+    "pages/Today_VEG",
+    "pages/gerenxinxi",
+    "pages/mima",
+    "pages/wentijieda"
   ]
 }
