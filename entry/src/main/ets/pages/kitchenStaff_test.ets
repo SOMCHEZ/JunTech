@@ -112,18 +112,16 @@ struct KitchenStaffList {
     Stack() {
       Column() {
         Row() {
-          DropdownSelector({
-            selected: this.selectedUnit,
-            options: this.units,
-            showDropdown: this.showDropdown,
-            onToggle: () => { this.showDropdown = !this.showDropdown; },
-            onSelect: (unit: string) => {
-              this.selectedUnit = unit;
-              this.showDropdown = false;
-            }
-          })
+          Select(this.units.map<SelectOption>((item: string) => ({ value: item })))
+            .value(this.units[0])
+            .onSelect((index: number) => {
+              this.selectedUnit = this.units[index]
+            })
         }
+        .align(Alignment.Center)
         .padding({ left: 16, right: 16 });
+
+
         if (this.kitchenNumbers == 0) {
           Text('~ 暂无相关数据 ~')
             .fontSize(16)
