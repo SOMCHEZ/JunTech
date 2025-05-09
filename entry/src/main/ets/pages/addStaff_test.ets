@@ -37,8 +37,8 @@ struct AddStaff {
   onPageShow() {//这是一个接收传递参数的方法
     // 使用接口类型断言
     const params = router.getParams() as RouteParams;
-    console.log('ccc', params?.token);// 打印接收到的参数
-    console.log('ddd', params?.relTenantIds);//  打印接收到的参数
+    console.log('houchuadd', params?.token);// 打印接收到的参数
+    console.log('houchuadd', params?.relTenantIds);//  打印接收到的参数
 
     // 安全取值
     if (params?.token) {

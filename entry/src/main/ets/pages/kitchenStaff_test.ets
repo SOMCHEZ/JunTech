@@ -4,6 +4,41 @@ import { promptAction } from '@kit.ArkUI';
 import { PrintExtensionAbility } from '@kit.BasicServicesKit';
 
 //add定义申明
+AppStorage.setOrCreate('token', '');
+AppStorage.setOrCreate('tenantId', 0);
+
+
+interface UserInfo {
+  id: string;
+  username: string;
+  clientType: string;
+  realname: string;
+  avatar: string | null;
+  relTenantIds:number;
+  // 其他字段根据实际API响应补充...
+}
+
+interface LoginResult {
+  userInfo: UserInfo;
+  token: string;
+}
+
+interface LoginResponse {
+  code: number;
+  message: string;
+  result: LoginResult;
+  timestamp: number;
+}
+
+interface HouchuResult {
+  success: boolean;
+  code?: number;
+  userInfo?: UserInfo;
+  token?: string;
+  message?: string;
+  relTenantIds?:number;
+}
+
 
 interface RouteParams {
   token?: string;
@@ -24,17 +59,24 @@ struct KitchenStaffList {
   onPageShow() {//这是一个接收传递参数的方法
     // 使用接口类型断言
     const params = router.getParams() as RouteParams;
-    console.log('aaa', params?.token);// 打印接收到的参数
-    console.log('bbb', params?.relTenantIds);//  打印接收到的参数
+    console.log('houchu', params?.token);// 打印接收到的参数
+    console.log('houchu', params?.relTenantIds);//  打印接收到的参数
 
     // 安全取值
-    if (params?.token) {
-      this.receivedToken = params.token;
+    if (!AppStorage.get('token') && params?.token) {
+      AppStorage.set('token', params.token);
     }
 
-    if (params?.relTenantIds) {
-      this.tenantId = params.relTenantIds;
+    if (!AppStorage.get('tenantId') && params?.relTenantIds) {
+      AppStorage.set('tenantId', params.relTenantIds);
     }
+
+    // 同步到组件状态
+    this.receivedToken = AppStorage.get('token')??'';
+    this.tenantId = AppStorage.get('tenantId')??0;
+
+    console.log('yee', params?.token);// 打印接收到的参数
+    console.log('yee', params?.relTenantIds);//  打印接收到的参数
   }
 
 
@@ -163,6 +205,54 @@ struct DropdownSelector {
         .position({ x: 0, y: 48 })
         .zIndex(100)
       }
+    }
+  }
+
+
+
+
+
+
+
+
+  private async Houchuchaxun(): Promise<HouchuResult> {
+    try {
+      const httpRequest = http.createHttp();
+      const response = await httpRequest.request(
+        'https://api.suoeryun.com/ifood/jeecg-system/sys/login',
+        {
+          method: http.RequestMethod.POST,
+          header: { 'Content-Type': 'application/json' },
+          extraData: JSON.stringify({
+            //username: this.userUsername,
+           // password: this.userPassword
+          })
+        }
+      );
+
+      if (response.responseCode !== 200) {
+        return {
+          success: false,
+          message: `HTTP Error: ${response.responseCode}`
+          // 添加其他错误处理逻辑
+        };
+      }
+
+      const jsonData = JSON.parse(response.result as string) as LoginResponse;
+      // console.log('',jsonData.result.userInfo.relTenantIds);
+      return {
+        success: jsonData.code === 200,
+        code: jsonData.code,
+        userInfo: jsonData.result.userInfo,
+        message: jsonData.message,
+        relTenantIds:jsonData.result.userInfo.relTenantIds
+      };
+    } catch (error) {
+      console.error('Login Error:', JSON.stringify(error));
+      return {
+        success: false,
+        message: '服务器繁忙'
+      };
     }
   }
 }
