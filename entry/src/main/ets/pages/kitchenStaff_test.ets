@@ -92,6 +92,7 @@ struct KitchenStaffList {
 
   @State receivedToken: string = '';//参数传递
   @State tenantId: number = 0;//同上
+  @State unitId: string ='';
 
   async onPageShow() {//这是一个接收传递参数的方法
     // 使用接口类型断言
@@ -114,7 +115,13 @@ struct KitchenStaffList {
     this.receivedToken = AppStorage.get('token')??'';
     this.tenantId = AppStorage.get('tenantId')??0;
     const result = await this.Houchuchaxun();// 调用Houchuchaxun方法这个函数是用来查数据的
-    //console.log('houchu1', result); // 打印返回结果
+    if (result.records && result.records.length > 0) {
+      this.unitId = result.records[0].unitId;
+    } else {
+      console.error('未获取到有效数据');
+      this.unitId = ''; // 设置默认值
+    }
+    console.log('UID', result.records); // 打印返回结果
   }
 
 
@@ -236,7 +243,7 @@ struct KitchenStaffList {
       };
 
     } catch (error) {
-      console.error('Login Error:', JSON.stringify(error));
+      console.error('Error:', JSON.stringify(error));
       return {
         success: false,
         message: '服务器繁忙'

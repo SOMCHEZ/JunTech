@@ -1,6 +1,48 @@
 import router from '@ohos.router';
-import { promptAction } from '@kit.ArkUI';
-import filePicker from '@ohos.file.picker';
+import http from '@ohos.net.http';
+//import { promptAction } from '@kit.ArkUI';
+//import filePicker from '@ohos.file.picker';
+
+
+//永久存储token和租户id
+AppStorage.setOrCreate('token', '');
+AppStorage.setOrCreate('tenantId', 0);
+
+// 明确定义所有接口类型
+interface UserInfo {
+  id: string;
+  username: string;
+  clientType: string;
+  realname: string;
+  avatar: string | null;
+  relTenantIds:number;
+  // 其他字段根据实际API响应补充...
+}
+
+interface addResult {
+  userInfo: UserInfo;
+  token: string;
+}
+
+interface addResponse {
+  code: number;
+  message: string;
+  result: addResult;
+  timestamp: number;
+}
+
+interface addHandlerResult {
+  success: boolean;
+  code?: number;
+  userInfo?: UserInfo;
+  token?: string;
+  message?: string;
+  relTenantIds?:number;
+}
+
+
+
+
 
 interface RouteParams {//接口传递参数定义
   token?: string;
@@ -26,22 +68,35 @@ struct AddStaff {
 
   @State receivedToken: string = '';//参数传递
   @State tenantId: number = 0;//同上
+  @State unitId: number = 0;
 
-  onPageShow() {//这是一个接收传递参数的方法
+
+
+  async onPageShow() {//这是一个接收传递参数的方法
     // 使用接口类型断言
     const params = router.getParams() as RouteParams;
-    console.log('houchuadd', params?.token);// 打印接收到的参数
-    console.log('houchuadd', params?.relTenantIds);//  打印接收到的参数
+    //console.log('houchu', params?.token);// 打印接收到的参数
+    //console.log('houchu', params?.relTenantIds);//  打印接收到的参数
 
-    // 安全取值
-    if (params?.token) {
-      this.receivedToken = params.token;
+    // 安全取值如果返回值空，则使用appsetcreat中所预保存的token和id
+    if (!AppStorage.get('token') && params?.token) {
+      AppStorage.set('token', params.token);
+      //this.receivedToken = params.token;
     }
 
-    if (params?.relTenantIds) {
-      this.tenantId = params.relTenantIds;
+    if (!AppStorage.get('tenantId') && params?.relTenantIds) {
+      AppStorage.set('tenantId', params.relTenantIds);
+      //this.tenantId = params.relTenantIds;
     }
+
+    // 同步到组件状态
+    this.receivedToken = AppStorage.get('token')??'';
+    this.tenantId = AppStorage.get('tenantId')??0;
+    //const result = await this.Houchuchaxun();// 调用Houchuchaxun方法这个函数是用来查数据的
+    //console.log('houchu1', result); // 打印返回结果
   }
+
+
 
   private units: Array<SelectOption> = [
     { value: '实训第二学校餐厅', label: '实训第二学校餐厅' },
@@ -212,14 +267,17 @@ struct AddStaff {
         Text("提交")
           .fontColor(Color.White)
           .fontSize(18)
+
       }
       .width('90%')
       .height(40)
       .backgroundColor('#4CAF50')
       .borderRadius(10)
-      .onClick(() => {
+      .onClick(async() => {
         router.pushUrl({
           url: 'pages/kitchenStaff' })
+        const result = await this.addStaff();
+       // this.unitId = result.token!;
       })
       .margin({top:120})
     }
@@ -253,5 +311,67 @@ struct AddStaff {
       }
     };
     DatePickerDialog.show(dialog);
+  }
+
+
+
+
+  private async addStaff(): Promise<addHandlerResult> {
+    try {
+      const httpRequest = http.createHttp();
+      const response = await httpRequest.request(
+        'https://api.suoeryun.com/ifood//jeecg-school/school/xxUnitUser/add',
+        {
+          method: http.RequestMethod.POST,
+          header: { 'Content-Type': 'application/json',
+            'Tenant-Id':this.tenantId.toString(),
+            'X-Access-Token':this.receivedToken
+
+          },
+          extraData: JSON.stringify({
+            //username: this.userUsername,
+            //password: this.userPassword
+            "unitName": "派博一中(库房)",
+            "unitId": "1650064161880203265",
+            "userName": "测试",
+            "position": "测试",
+            "tel": "18792353666",
+            "type": "1",
+            "healthStartTime": "2025-04-01",
+            "healthEndTime": "2025-05-31",
+            "healthUrl": "",
+            "portraitPhoto": "",
+            "remark": "123",
+            "version": 0
+          })
+        }
+      );
+
+      if (response.responseCode !== 200) {
+        return {
+          success: false,
+          message: `HTTP Error: ${response.responseCode}`
+          // 添加其他错误处理逻辑
+        };
+      }
+
+      const jsonData = JSON.parse(response.result as string) as addResponse;
+      console.log('', response.responseCode);
+      console.log('',jsonData.code);
+      return {
+        success: jsonData.code === 200,
+        code: jsonData.code,
+        //userInfo: jsonData.result.userInfo,
+        // token: jsonData.result.token,
+        message: jsonData.message,
+        relTenantIds:jsonData.result.userInfo.relTenantIds
+      };
+    } catch (error) {
+      console.error('Login Error:', JSON.stringify(error));
+      return {
+        success: false,
+        message: 'fuck u!'
+      };
+    }
   }
 }
