@@ -1,26 +1,48 @@
 import router from '@ohos.router';
 import http from '@ohos.net.http';
-import { promptAction } from '@kit.ArkUI';
-import { PrintExtensionAbility } from '@kit.BasicServicesKit';
+//import { promptAction } from '@kit.ArkUI';
+//import { PrintExtensionAbility } from '@kit.BasicServicesKit';
 
 //永久存储token和租户id
 AppStorage.setOrCreate('token', '');
 AppStorage.setOrCreate('tenantId', 0);
 
 
-interface UserInfo {
+interface  records{//定义接口返回类型
   id: string;
-  username: string;
-  clientType: string;
+  schoolId: string;
+  schoolName:  string;
+  unitId: string;
+  unitName: string;
+  userName: string;// 后端返回的姓名
   realname: string;
-  avatar: string | null;
-  relTenantIds:number;
+  idCard?: string;
+  portraitPhoto?:string;
+  position:  string;//  后端返回的职位
+  tel: string;// 后端返回的电话
+  type: string;//  后端返回的职位类型
+  type_dictText:string;// 后端返回的职位类型
+  licenceIssuing: string;//  后端返回的营业执照有效期
+  healthNumber: string;//  后端返回的健康证号
+  healthUrl?: string;  // 后端返回的健康证图片
+  healthStartTime: string;// 后端返回的营业执照有效期
+  healthEndTime:  string;// 后端返回的营业执照有效期
+  photoQualification: string;//  后端返回的营业执照图片
+  remark: string;//  后端返回的备注
+  inspectionType?:number//  后端返回的职位类型
+  version: number;//  后端返回的版本
+  canteenId:  string;// 后端返回的食堂id
+  wxopenId: string;// 后端返回的微信openid
+  tenantId:  number;//  后端返回的租户id
+  demandUnitIds:string;// 后端返回的食堂id
+  code?: number;// 后端返回的code
+
   // 其他字段根据实际API响应补充...
 }
 
 interface HouchuResult {
-  userInfo: UserInfo;
-  token: string;
+  records: records[];
+  //token: string;
 }
 
 interface HouchuResponse {
@@ -33,10 +55,8 @@ interface HouchuResponse {
 interface HouchuHandlerResult {
   success: boolean;
   code?: number;
-  userInfo?: UserInfo;
-  token?: string;
+  records?: records[];
   message?: string;
-  relTenantIds?:number;
 }
 
 
@@ -44,38 +64,57 @@ interface RouteParams {
   token?: string;
   relTenantIds?: number;
 }
+
+
+
+
 @Entry
 @Component
 struct KitchenStaffList {
+
+  async aboutToAppear() {
+    // 在这里执行初始化操作
+    // this.Houchuchaxun()
+    console.log('houchu')
+    //const result = await this.Houchuchaxun()
+    //console.log('houchu1', result);
+    // if (result.records != undefined) {
+    //  console.log(result.records[0].id);
+    // }
+
+  }
+
   @State selectedUnit: string = '所属单位';
   @State units: string[] = ['所属单位', '实训第二学校餐厅', '其他单位'];
   @State showDropdown: boolean = false;
-  @State kitchenStaffs: string[] = []; // 后厨人员数据
+  @State kitchenStaffs: records[] = []; // 后厨人员数据
 
 
   @State receivedToken: string = '';//参数传递
   @State tenantId: number = 0;//同上
 
-  onPageShow() {//这是一个接收传递参数的方法
+  async onPageShow() {//这是一个接收传递参数的方法
     // 使用接口类型断言
     const params = router.getParams() as RouteParams;
-    console.log('houchu', params?.token);// 打印接收到的参数
-    console.log('houchu', params?.relTenantIds);//  打印接收到的参数
+    //console.log('houchu', params?.token);// 打印接收到的参数
+    //console.log('houchu', params?.relTenantIds);//  打印接收到的参数
 
     // 安全取值如果返回值空，则使用appsetcreat中所预保存的token和id
     if (!AppStorage.get('token') && params?.token) {
       AppStorage.set('token', params.token);
+      //this.receivedToken = params.token;
     }
 
     if (!AppStorage.get('tenantId') && params?.relTenantIds) {
       AppStorage.set('tenantId', params.relTenantIds);
+      //this.tenantId = params.relTenantIds;
     }
 
     // 同步到组件状态
     this.receivedToken = AppStorage.get('token')??'';
     this.tenantId = AppStorage.get('tenantId')??0;
-
-    console.log('yee', params?.relTenantIds);//  打印接收到的参数
+    const result = await this.Houchuchaxun();// 调用Houchuchaxun方法这个函数是用来查数据的
+    //console.log('houchu1', result); // 打印返回结果
   }
 
 
@@ -105,6 +144,10 @@ struct KitchenStaffList {
             .fontSize(16)
             .fontColor(Color.Gray)
             .padding({ top: 200 })
+            .onClick(async() => {//这里藏了一个接口，点击后调取接口是查询的哦,但是我不用
+             // const result = await this.Houchuchaxun();
+             // console.log('houchu1', result);
+            })
             .textAlign(TextAlign.Center); // 居中显示
         }
 
@@ -155,39 +198,43 @@ struct KitchenStaffList {
   private async Houchuchaxun(): Promise<HouchuHandlerResult> {
     try {
       const httpRequest = http.createHttp();
-      const response = await httpRequest.request(
-        'https://api.suoeryun.com/ifood/jeecg-system/sys/login',
-        {
-          method: http.RequestMethod.POST,
-          header: { 'Content-Type': 'application/json',
-            'Tenant-Id':this.tenantId,
-            'X-Access-Token':this.receivedToken
 
+      const response = await httpRequest.request(
+        'https://api.suoeryun.com/ifood/jeecg-school/school/xxUnitUser/list',
+        {
+          method: http.RequestMethod.GET,
+          header: { //'Content-Type': 'application/json',
+            'Tenant-Id':this.tenantId.toString(),
+            'X-Access-Token':this.receivedToken
           },
-          extraData: JSON.stringify({
+          //extraData: JSON.stringify({//这里写body但是咱暂时不需要
             //username: this.userUsername,
             // password: this.userPassword
-          })
+         // })
+
         }
+
       );
 
       if (response.responseCode !== 200) {
+        console.error('Login Error:'+response.responseCode);
         return {
           success: false,
           message: `HTTP Error: ${response.responseCode}`
           // 添加其他错误处理逻辑
         };
       }
-
+      console.log('slfj'+response.result.toString())
       const jsonData = JSON.parse(response.result as string) as HouchuResponse;
-      // console.log('',jsonData.result.userInfo.relTenantIds);
+       console.log('11',jsonData.result.records[1]);
       return {
         success: jsonData.code === 200,
         code: jsonData.code,
-        userInfo: jsonData.result.userInfo,
+        records: jsonData.result.records,
         message: jsonData.message,
-        relTenantIds:jsonData.result.userInfo.relTenantIds
+        //relTenantIds:jsonData.result.userInfo.relTenantIds
       };
+
     } catch (error) {
       console.error('Login Error:', JSON.stringify(error));
       return {
@@ -264,3 +311,6 @@ struct DropdownSelector {
 
 
 }
+
+
+
