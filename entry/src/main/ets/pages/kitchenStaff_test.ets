@@ -80,7 +80,7 @@ struct KitchenStaffList {
   @State showDropdown: boolean = false;
   @State receivedToken: string = ''; // 参数传递
   @State tenantId: number = 0; // 同上
-  @State kitchenNumbers: number = 3;
+  @State kitchenNumbers: number = 2;
   @State kitchenStaffs: kitchenStaffs[] = [
     {
       name: '俊师傅',
@@ -124,21 +124,20 @@ struct KitchenStaffList {
           })
         }
         .padding({ left: 16, right: 16 });
-
-        if (this.kitchenNumbers > 2) {
-          this.renderMultipleStaffCards();
-        } else {
-          this.renderSingleStaffCard();
-        }
-
-        // 暂无相关数据提示（条件渲染）
-        if (this.kitchenStaffs.length === 0) {
+        if (this.kitchenNumbers == 0) {
           Text('~ 暂无相关数据 ~')
             .fontSize(16)
             .fontColor(Color.Gray)
             .padding({ top: 200 })
             .textAlign(TextAlign.Center); // 居中显示
         }
+        else if(this.kitchenNumbers > 1) {
+          this.renderMultipleStaffCards();
+        } else {
+          this.renderSingleStaffCard();
+        }
+
+        // 暂无相关数据提示（条件渲染）
 
         // 返回按钮
         Image($r('app.media.left_icon'))
@@ -157,7 +156,7 @@ struct KitchenStaffList {
         .backgroundColor("#4CAF50")
         .fontColor(Color.White)
         .borderRadius(8)
-        .margin({ top:20, left: 'auto', right: 'auto' })
+        .position({x:35, y:'95%'})
         .onClick(() => {
           router.pushUrl({
             url: "pages/addStaff_test",
@@ -192,9 +191,10 @@ struct KitchenStaffList {
   @Builder
   renderSingleStaffCard() {
     if (this.kitchenStaffs.length > 0) {
-      this.renderStaffCard(this.kitchenStaffs[0]);
+      this.renderStaffCard(this.kitchenStaffs[0])
     }
   }
+
 
   @Builder
   renderStaffCard(staff: kitchenStaffs) {
