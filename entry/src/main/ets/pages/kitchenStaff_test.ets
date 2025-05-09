@@ -3,7 +3,7 @@ import http from '@ohos.net.http';
 import { promptAction } from '@kit.ArkUI';
 import { PrintExtensionAbility } from '@kit.BasicServicesKit';
 
-//add定义申明
+//永久存储token和租户id
 AppStorage.setOrCreate('token', '');
 AppStorage.setOrCreate('tenantId', 0);
 
@@ -18,19 +18,19 @@ interface UserInfo {
   // 其他字段根据实际API响应补充...
 }
 
-interface LoginResult {
+interface HouchuResult {
   userInfo: UserInfo;
   token: string;
 }
 
-interface LoginResponse {
+interface HouchuResponse {
   code: number;
   message: string;
-  result: LoginResult;
+  result: HouchuResult;
   timestamp: number;
 }
 
-interface HouchuResult {
+interface HouchuHandlerResult {
   success: boolean;
   code?: number;
   userInfo?: UserInfo;
@@ -62,7 +62,7 @@ struct KitchenStaffList {
     console.log('houchu', params?.token);// 打印接收到的参数
     console.log('houchu', params?.relTenantIds);//  打印接收到的参数
 
-    // 安全取值
+    // 安全取值如果返回值空，则使用appsetcreat中所预保存的token和id
     if (!AppStorage.get('token') && params?.token) {
       AppStorage.set('token', params.token);
     }
@@ -75,7 +75,6 @@ struct KitchenStaffList {
     this.receivedToken = AppStorage.get('token')??'';
     this.tenantId = AppStorage.get('tenantId')??0;
 
-    console.log('yee', params?.token);// 打印接收到的参数
     console.log('yee', params?.relTenantIds);//  打印接收到的参数
   }
 
@@ -114,8 +113,9 @@ struct KitchenStaffList {
           .width(32)
           .height(32)
           .position({ bottom: 16, right: 16 });
-
         // 新建后厨人员按钮
+
+
         Button({type: ButtonType.Normal}){
           Text('新建后厨人员')
             .fontSize(16)
@@ -215,7 +215,7 @@ struct DropdownSelector {
 
 
 
-  private async Houchuchaxun(): Promise<HouchuResult> {
+  private async Houchuchaxun(): Promise<HouchuHandlerResult> {
     try {
       const httpRequest = http.createHttp();
       const response = await httpRequest.request(
@@ -238,7 +238,7 @@ struct DropdownSelector {
         };
       }
 
-      const jsonData = JSON.parse(response.result as string) as LoginResponse;
+      const jsonData = JSON.parse(response.result as string) as HouchuResponse;
       // console.log('',jsonData.result.userInfo.relTenantIds);
       return {
         success: jsonData.code === 200,
