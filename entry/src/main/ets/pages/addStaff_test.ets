@@ -1,4 +1,5 @@
 import router from '@ohos.router';
+import { promptAction } from '@kit.ArkUI';
 import filePicker from '@ohos.file.picker';
 
 interface RouteParams {//接口传递参数定义
@@ -37,8 +38,8 @@ struct AddStaff {
   onPageShow() {//这是一个接收传递参数的方法
     // 使用接口类型断言
     const params = router.getParams() as RouteParams;
-    console.log('ccc', params?.token);// 打印接收到的参数
-    console.log('ddd', params?.relTenantIds);//  打印接收到的参数
+    console.log('houchuadd', params?.token);// 打印接收到的参数
+    console.log('houchuadd', params?.relTenantIds);//  打印接收到的参数
 
     // 安全取值
     if (params?.token) {
@@ -142,23 +143,10 @@ struct AddStaff {
         Text("发证日期 *")
           .fontSize(16)
           .width('30%')
-        DatePicker({
-          start: new Date('1970-1-1'),
-          end: new Date('2100-1-1'),
-          selected: this.expiryDate ? new Date(this.expiryDate) : new Date()
-        })
-          .onChange((value: DatePickerResult) => {
-            const year = value.year;
-            const month = (value.month !== undefined ? value.month : 1).toString().padStart(2, '0');
-            const day = (value.day !== undefined ? value.day : 1).toString().padStart(2, '0');
-            this.expiryDate = `${year}-${month}-${day}`;
+        Button()
+          .onClick(() => {
+            this.showActionSheet()
           })
-          .width('70%')
-          .height(50)
-          .borderWidth(1)
-          .borderColor('#ccc')
-          .padding({ left: 10 })
-          .borderRadius(10)
       }
       .margin({ bottom: 10 })
 
@@ -172,10 +160,8 @@ struct AddStaff {
           end: new Date('2100-1-1'),
           selected: new Date(this.expiryDate || new Date())
         })
-          .onChange((value: DatePickerResult) => {
-            const month = (value.month ?? 1).toString().padStart(2, '0');
-            const day = (value.day ?? 1).toString().padStart(2, '0');
-            this.expiryDate = `${value.year}-${month}-${day}`;
+          .onChange((date) => {          // 设置事件回调
+            console.log(`selected time：${date.year}年${date.year}月${date.day}日`)
           })
           .width('70%')
           .height(50)
@@ -189,14 +175,20 @@ struct AddStaff {
 
       // 健康证照片
       Row({ space: 10 }) {
-        Text("健康证照片")
+        Text(this.issueDate || '请选择发证日期')
           .fontSize(16)
-          .width('30%')
-        Button("选择健康证照片")
           .width('70%')
-          .height(50)
+          .padding({ left: 10 })
+        Button("选择")
+          .width(80)
+          .height(40)
+          .onClick(() => {
+            this.showActionSheet();
+          })
       }
-      .margin({ bottom: 10 })
+      .height(50)
+      .width('70%')
+
 
       // 人脸照片
       Row({ space: 10 }) {
@@ -229,5 +221,24 @@ struct AddStaff {
     .height('100%')
     .backgroundColor(Color.White)
     .padding({ top: 20, left: 10, right: 10 })
+  }
+
+  private showActionSheet() {
+    let dialog: DatePickerDialogOptions = {
+      selected: new Date(),
+      lunar: true,
+      lunarSwitch: true,
+      showTime: true,
+      shadow: {
+        radius: 10,
+        offsetX: 20,
+        offsetY: 20,
+        color: "#66333333"
+      },
+      onAccept: (date) => {
+        promptAction.showToast({message: "date: " + date.toString()})
+      }
+    }
+    DatePickerDialog.show(dialog)
   }
 }

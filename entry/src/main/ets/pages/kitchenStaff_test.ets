@@ -3,7 +3,42 @@ import http from '@ohos.net.http';
 import { promptAction } from '@kit.ArkUI';
 import { PrintExtensionAbility } from '@kit.BasicServicesKit';
 
-//add定义申明
+//永久存储token和租户id
+AppStorage.setOrCreate('token', '');
+AppStorage.setOrCreate('tenantId', 0);
+
+
+interface UserInfo {
+  id: string;
+  username: string;
+  clientType: string;
+  realname: string;
+  avatar: string | null;
+  relTenantIds:number;
+  // 其他字段根据实际API响应补充...
+}
+
+interface HouchuResult {
+  userInfo: UserInfo;
+  token: string;
+}
+
+interface HouchuResponse {
+  code: number;
+  message: string;
+  result: HouchuResult;
+  timestamp: number;
+}
+
+interface HouchuHandlerResult {
+  success: boolean;
+  code?: number;
+  userInfo?: UserInfo;
+  token?: string;
+  message?: string;
+  relTenantIds?:number;
+}
+
 
 interface RouteParams {
   token?: string;
@@ -24,17 +59,23 @@ struct KitchenStaffList {
   onPageShow() {//这是一个接收传递参数的方法
     // 使用接口类型断言
     const params = router.getParams() as RouteParams;
-    console.log('aaa', params?.token);// 打印接收到的参数
-    console.log('bbb', params?.relTenantIds);//  打印接收到的参数
+    console.log('houchu', params?.token);// 打印接收到的参数
+    console.log('houchu', params?.relTenantIds);//  打印接收到的参数
 
-    // 安全取值
-    if (params?.token) {
-      this.receivedToken = params.token;
+    // 安全取值如果返回值空，则使用appsetcreat中所预保存的token和id
+    if (!AppStorage.get('token') && params?.token) {
+      AppStorage.set('token', params.token);
     }
 
-    if (params?.relTenantIds) {
-      this.tenantId = params.relTenantIds;
+    if (!AppStorage.get('tenantId') && params?.relTenantIds) {
+      AppStorage.set('tenantId', params.relTenantIds);
     }
+
+    // 同步到组件状态
+    this.receivedToken = AppStorage.get('token')??'';
+    this.tenantId = AppStorage.get('tenantId')??0;
+
+    console.log('yee', params?.relTenantIds);//  打印接收到的参数
   }
 
 
@@ -72,8 +113,9 @@ struct KitchenStaffList {
           .width(32)
           .height(32)
           .position({ bottom: 16, right: 16 });
-
         // 新建后厨人员按钮
+
+
         Button({type: ButtonType.Normal}){
           Text('新建后厨人员')
             .fontSize(16)
@@ -106,6 +148,53 @@ struct KitchenStaffList {
       .height('100%')
       .backgroundColor(Color.White);
     }.backgroundColor("#ff969696")
+  }
+
+
+  //调取查询的接口
+  private async Houchuchaxun(): Promise<HouchuHandlerResult> {
+    try {
+      const httpRequest = http.createHttp();
+      const response = await httpRequest.request(
+        'https://api.suoeryun.com/ifood/jeecg-system/sys/login',
+        {
+          method: http.RequestMethod.POST,
+          header: { 'Content-Type': 'application/json',
+            'Tenant-Id':this.tenantId,
+            'X-Access-Token':this.receivedToken
+
+          },
+          extraData: JSON.stringify({
+            //username: this.userUsername,
+            // password: this.userPassword
+          })
+        }
+      );
+
+      if (response.responseCode !== 200) {
+        return {
+          success: false,
+          message: `HTTP Error: ${response.responseCode}`
+          // 添加其他错误处理逻辑
+        };
+      }
+
+      const jsonData = JSON.parse(response.result as string) as HouchuResponse;
+      // console.log('',jsonData.result.userInfo.relTenantIds);
+      return {
+        success: jsonData.code === 200,
+        code: jsonData.code,
+        userInfo: jsonData.result.userInfo,
+        message: jsonData.message,
+        relTenantIds:jsonData.result.userInfo.relTenantIds
+      };
+    } catch (error) {
+      console.error('Login Error:', JSON.stringify(error));
+      return {
+        success: false,
+        message: '服务器繁忙'
+      };
+    }
   }
 }
 
@@ -165,4 +254,13 @@ struct DropdownSelector {
       }
     }
   }
+
+
+
+
+
+
+
+
+
 }

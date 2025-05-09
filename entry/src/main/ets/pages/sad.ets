@@ -1,3 +1,6 @@
+import router from '@ohos.router';
+
+
 // Page1.ets
 @Entry
 @Component
