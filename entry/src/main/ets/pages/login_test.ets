@@ -157,7 +157,7 @@ struct Index {
       }
 
       const jsonData = JSON.parse(response.result as string) as LoginResponse;
-     // console.log('',jsonData.result.userInfo.relTenantIds);
+      //console.log('',jsonData.result.userInfo.relTenantIds);
       return {
         success: jsonData.code === 200,
         code: jsonData.code,
