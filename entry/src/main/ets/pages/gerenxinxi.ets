@@ -13,7 +13,7 @@ struct gerenxinxi {
           .padding(10)
         TextInput({ placeholder: '请输入姓名', text: this.name })
           .onChange((value: string) => {
-            this.email = value
+            this.name = value
           })
           .width(240)
           .padding(10)
