@@ -1,3 +1,4 @@
+import router from '@ohos.router';
 @Entry
 @Component
 struct ReportPlanPage {
@@ -97,9 +98,13 @@ struct ReportPlanPage {
         Button('新建上报计划', { type: ButtonType.Capsule })
           .width('100%')
           .height(50)
-          .backgroundColor('#07C160')
+          .backgroundColor('#02BC65')
           .fontColor('#FFFFFF')
           .margin({ top: 20 })
+          .onClick(() => {
+            router.pushUrl({
+              url: 'pages/addpan' })
+          })
       }
 
       .width('100%')
