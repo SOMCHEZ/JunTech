@@ -1,3 +1,5 @@
+//最终版本
+
 import router from '@ohos.router';
 import http from '@ohos.net.http';
 //import { promptAction } from '@kit.ArkUI';
@@ -280,24 +282,24 @@ struct AddStaff {
         Text("提交")
           .fontColor(Color.White)
           .fontSize(18)
-
       }
       .width('90%')
-      .height(40)
+      .height(45)
       .backgroundColor('#4CAF50')
       .borderRadius(10)
+      .position({x:18, y:'95%'})
       .onClick(async() => {
         router.pushUrl({
           url: 'pages/kitchenStaff_test' })
         const result = await this.addStaff();
        // this.unitId = result.token!;
       })
-      .margin({top:120})
     }
     .width('100%')
     .height('100%')
     .backgroundColor(Color.White)
     .padding({ top: 0, left: 10, right: 10 })
+
   }
 
   private showIssueDateDialog() {

@@ -65,19 +65,24 @@ struct food_day {
               ListItem() {
                 Column() {
                   Text(`食谱日期：${formData.date}`)
+                    .width('50%')
                     .fontSize(20)
                     .margin({ top: 10, bottom: 10 })
                   Text(`食谱名称：${formData.recipeName}`)
                     .fontSize(20)
+                    .width('50%')
                     .margin({ bottom: 10 })
                   Text(`餐    别：${formData.mealType}`)
                     .fontSize(20)
+                    .width('50%')
                     .margin({ bottom: 10 })
                   Text(`用餐类型：${formData.diningType}`)
                     .fontSize(20)
+                    .width('50%')
                     .margin({ bottom: 10 })
                   Text(`餐    厅：${formData.place}`)
                     .fontSize(20)
+                    .width('50%')
                     .margin({ bottom: 10 })
                   if (formData.photoUri) {
                     Image(formData.photoUri)
@@ -93,6 +98,7 @@ struct food_day {
                       .borderWidth(2)
                       .borderColor('#07C160')
                       .backgroundColor('#fff')
+                      .margin({left:'40%'})
                       .onClick(() => {
                         router.pushUrl({
                           url: 'pages/food_day_new',

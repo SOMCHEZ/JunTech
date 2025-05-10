@@ -69,6 +69,8 @@ interface kitchenStaffs extends records {
   status: string;    // 需确认来源字段
   issueTime: string; // 对应healthStartTime
   expireTime: string;// 对应healthEndTime
+  type_dictText:string;//对应在职状态
+  position: string;// 对应原接口的position
 }
 
 @Entry
@@ -76,14 +78,6 @@ interface kitchenStaffs extends records {
 struct KitchenStaffList {
 
   async aboutToAppear() {
-    // 在这里执行初始化操作
-    // this.Houchuchaxun()
-    //console.log('houchu')
-    //const result = await this.Houchuchaxun()
-    //console.log('houchu1', result);
-    // if (result.records != undefined) {
-    //  console.log(result.records[0].id);
-    // }
 
   }
 
@@ -98,35 +92,51 @@ struct KitchenStaffList {
   @State receivedToken: string = '';//参数传递
   @State tenantId: number = 0;//同上
   @State unitId: string ='';
+  //@State ddd:  string[] = [];
 
   async onPageShow() {//这是一个接收传递参数的方法
     // 使用接口类型断言
     const params = router.getParams() as RouteParams;
     //console.log('houchu', params?.token);// 打印接收到的参数
-    //console.log('houchu', params?.relTenantIds);//  打印接收到的参数
-
     // 安全取值如果返回值空，则使用appsetcreat中所预保存的token和id
     if (!AppStorage.get('token') && params?.token) {
       AppStorage.set('token', params.token);
       //this.receivedToken = params.token;
     }
-
     if (!AppStorage.get('tenantId') && params?.relTenantIds) {
       AppStorage.set('tenantId', params.relTenantIds);
       //this.tenantId = params.relTenantIds;
     }
-
     // 同步到组件状态
     this.receivedToken = AppStorage.get('token')??'';
     this.tenantId = AppStorage.get('tenantId')??0;
 
-
-
     const result = await this.Houchuchaxun();// 调用Houchuchaxun方法这个函数是用来查数据的
+
+    if (result.success && result.records) {
+      this.kitchenStaffs = result.records.map(item => ({
+        //...item,
+        name: item.userName || '',          // 映射姓名
+        workplace: item.unitName || '',     // 映射工作单位
+        status: item.type_dictText || '未知状态',
+        issueTime: item.healthStartTime || '未设置',
+        expireTime: item.healthEndTime || '未设置',
+        position: item.position || '未设置职位'
+      } as kitchenStaffs));
+
+      this.kitchenNumbers = this.kitchenStaffs.length; // 更新数量状态
+    } else {
+      this.kitchenNumbers = 0;
+      console.error('数据加载失败:', result.message);
+    }
+
+
     if (result.records && result.records.length > 0) {
+
       this.unitId = result.records?.find(item =>//存放uid
-      item?.unitId && item.unitId.trim() !== ''
+      item?.unitId && item.unitId.trim() !== '',
       )?.unitId ?? 'default_unit_id'
+
     } else {
       //console.error('未获取到有效数据');
       this.unitId = ''; // 设置默认值
@@ -135,6 +145,7 @@ struct KitchenStaffList {
     console.debug('所有unitIds:',//打印所有uid
       result.records?.map(item => item.unitId).filter(Boolean)
     )
+
   }
 
 
@@ -328,6 +339,21 @@ struct KitchenStaffList {
           .height(40)
           .borderRadius(20)
           .backgroundColor(Color.White)
+          .onClick(() => {
+            AlertDialog.show({                   // 点击按钮，弹出一个对话框
+              title: "这里是标题",                 // 设置标题
+              message: "这里是弹窗的内容",          // 设置内容
+              alignment: DialogAlignment.Center, // 设置弹窗的对齐方式
+              confirm: {                         // 单个按钮的配置文本
+                value: "text",
+                fontColor: Color.Red,
+                backgroundColor: "#aabbcc",
+                action: () => {
+                  console.log("点击了")
+                }
+              }
+            })
+          })
 
           Button({ type: ButtonType.Normal }) {
             Text('删除人员')

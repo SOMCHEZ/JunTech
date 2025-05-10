@@ -1,3 +1,5 @@
+//最终版本,封装，请勿修改
+
 import router from '@ohos.router';
 import http from '@ohos.net.http';
 //import { promptAction } from '@kit.ArkUI';
@@ -59,7 +61,7 @@ interface SelectOption {
 @Entry
 @Component
 struct AddStaff {
-  @State private selectedUnitIndex: number = 0; // 默认选中第一个单位
+  @State private selectedUnitIndex:string = '实训第二学校餐厅'; // 默认选中第一个单位
   @State private name: string = '';
   @State private jobPosition: string = '';
   @State private phone: string = '';
@@ -123,9 +125,12 @@ struct AddStaff {
           .fontSize(16)
           .width('30%')
         Select(this.units)
-          .selected(this.selectedUnitIndex)
+          .selected(this.units.findIndex(item => item.value === this.selectedUnitIndex))
           .onSelect((index: number) => {
-            this.selectedUnitIndex = index;
+            //this.selectedUnitIndex = index;
+            this.selectedUnitIndex = this.units[index].value;
+
+
           })
           .backgroundColor(Color.White)
           .width('70%')
@@ -182,7 +187,7 @@ struct AddStaff {
       }
       .margin({ bottom: 10 })
 
-      // 人员状态
+      // 人员状态F
       Row({ space: 10 }) {
         Text("人员状态 *")
           .fontSize(16)
@@ -277,24 +282,24 @@ struct AddStaff {
         Text("提交")
           .fontColor(Color.White)
           .fontSize(18)
-
       }
       .width('90%')
-      .height(40)
+      .height(45)
       .backgroundColor('#4CAF50')
       .borderRadius(10)
+      .position({x:18, y:'95%'})
       .onClick(async() => {
         router.pushUrl({
-          url: 'pages/kitchenStaff' })
+          url: 'pages/kitchenStaff_test' })
         const result = await this.addStaff();
         // this.unitId = result.token!;
       })
-      .margin({top:120})
     }
     .width('100%')
     .height('100%')
     .backgroundColor(Color.White)
     .padding({ top: 0, left: 10, right: 10 })
+
   }
 
   private showIssueDateDialog() {
