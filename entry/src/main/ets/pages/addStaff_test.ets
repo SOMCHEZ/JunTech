@@ -182,7 +182,7 @@ struct AddStaff {
       }
       .margin({ bottom: 10 })
 
-      // 人员状态
+      // 人员状态F
       Row({ space: 10 }) {
         Text("人员状态 *")
           .fontSize(16)
@@ -285,7 +285,7 @@ struct AddStaff {
       .borderRadius(10)
       .onClick(async() => {
         router.pushUrl({
-          url: 'pages/kitchenStaff' })
+          url: 'pages/kitchenStaff_test' })
         const result = await this.addStaff();
        // this.unitId = result.token!;
       })
