@@ -9,7 +9,6 @@
     "pages/login",
     "pages/login_test",
     "pages/Today_VEG",
-    "pages/addPlan",
     "pages/uploadPlan",
     "pages/sad",
     "pages/gerenxinxi",
@@ -17,8 +16,9 @@
     "pages/mima",
     "pages/food_day",
     "pages/food_day_new",
-    "pages/shishikucun",
+    "pages/kucun",
     "pages/chukudan",
-    "pages/chuku"
+    "pages/remain_day",
+    "pages/remain"
   ]
 }
