@@ -59,7 +59,7 @@ interface SelectOption {
 @Entry
 @Component
 struct AddStaff {
-  @State private selectedUnitIndex: number = 0; // 默认选中第一个单位
+  @State private selectedUnitIndex:string = '实训第二学校餐厅'; // 默认选中第一个单位
   @State private name: string = '';
   @State private jobPosition: string = '';
   @State private phone: string = '';
@@ -123,9 +123,12 @@ struct AddStaff {
           .fontSize(16)
           .width('30%')
         Select(this.units)
-          .selected(this.selectedUnitIndex)
+          .selected(this.units.findIndex(item => item.value === this.selectedUnitIndex))
           .onSelect((index: number) => {
-            this.selectedUnitIndex = index;
+            //this.selectedUnitIndex = index;
+            this.selectedUnitIndex = this.units[index].value;
+
+
           })
           .backgroundColor(Color.White)
           .width('70%')

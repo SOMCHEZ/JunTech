@@ -78,7 +78,7 @@ struct KitchenStaffList {
   async aboutToAppear() {
     // 在这里执行初始化操作
     // this.Houchuchaxun()
-    console.log('houchu')
+    //console.log('houchu')
     //const result = await this.Houchuchaxun()
     //console.log('houchu1', result);
     // if (result.records != undefined) {
@@ -128,7 +128,7 @@ struct KitchenStaffList {
       item?.unitId && item.unitId.trim() !== ''
       )?.unitId ?? 'default_unit_id'
     } else {
-      console.error('未获取到有效数据');
+      //console.error('未获取到有效数据');
       this.unitId = ''; // 设置默认值
     }
     console.log('当前unitId:', this.unitId)//打印uid
@@ -230,7 +230,7 @@ struct KitchenStaffList {
       );
 
       if (response.responseCode !== 200) {
-        console.error('Login Error:'+response.responseCode);
+        //console.error('Login Error:'+response.responseCode);
         return {
           success: false,
           message: `HTTP Error: ${response.responseCode}`
