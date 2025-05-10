@@ -30,7 +30,7 @@ struct Index1 {
     { url: 'app.media.home_1', count: 0, text: '上报计划' ,route:'pages/addStaff_test'},
     { url: 'app.media.home_2', count: 0, text: '需求审批' ,route:'pages/addStaff_test'},
     { url: 'app.media.home_4', count: 0, text: '新品审批' ,route:'pages/addStaff_test'},
-    { url: 'app.media.home_recipe_reporting', count: 0, text: '今日菜品' ,route:'pages/addStaff_test'},
+    { url: 'app.media.home_recipe_reporting', count: 0, text: '今日菜品' ,route:'pages/food_day'},
     { url: 'app.media.education_6', count: 0, text: '后厨人员',route:'pages/kitchenStaff_test' },
     { url: 'app.media.education_4', count: 0, text: '每日留样' ,route:'pages/addStaff_test'},
     { url: 'app.media.home_9', count: 0, text: '晨检记录' ,route:'pages/addStaff_test'},
@@ -205,27 +205,134 @@ struct Index1 {
       .tabBar('首页')
       TabContent() {
         Column() {
-          Row(){
+          // 头部信息
+          Row() {
             Image($r('app.media.avatar'))
               .width(100)
               .height(100)
               .layoutWeight(1)
-              .borderRadius(50)
-            Column(){
+              .borderRadius(50);
+            Column() {
               Text('实训第二学校')
-                .fontSize(20)
-
+                .fontSize(20);
               Text('人15502933673')
+                .fontSize(16);
             }
-            .layoutWeight(2.4)
+            .layoutWeight(2);
           }
+          .padding({ top: 20, left: 20, right: 20 });
+
+          // 功能列表
+          List() {
+            // 修改个人信息
+            ListItem() {
+              Row() {
+                Text('修改个人信息')
+                  .fontColor('#60000000')
+                  .layoutWeight(5);
+                Image($r('app.media.right_icon'))
+                  .height(17)
+                  .layoutWeight(1);
+              }
+              .width('100%')
+              .height(50)
+              .padding({ top: 20 });
+            }
+            .onClick(() => {
+              router.pushUrl({          // 使用push入栈一个新页面
+                url: 'pages/gerenxinxi' // 通过url指定新打开的页面
+              ,
+                params:{
+                  token:this.receivedToken,
+                  relTenantIds:this.tenantId
+
+                }
+              })
+            })
+
+            // 修改密码
+            ListItem() {
+              Row() {
+                Text('修改密码')
+                  .fontColor('#60000000')
+                  .layoutWeight(5);
+                Image($r('app.media.right_icon'))
+                  .height(17)
+                  .layoutWeight(1);
+              }
+              .width('100%')
+              .height(50)
+              .padding({ top: 20 });
+            }
+            .onClick(() => {
+              router.pushUrl({          // 使用push入栈一个新页面
+                url: 'pages/mima' // 通过url指定新打开的页面
+              ,
+                params:{
+                  token:this.receivedToken,
+                  relTenantIds:this.tenantId
+
+                }
+              })
+            })
+
+            // 常见问题解答
+            ListItem() {
+              Row() {
+                Text('常见问题解答')
+                  .fontColor('#60000000')
+                  .layoutWeight(5);
+                Image($r('app.media.right_icon'))
+                  .height(17)
+                  .layoutWeight(1);
+              }
+              .width('100%')
+              .height(50)
+              .padding({ top: 20 });
+            }
+            .onClick(() => {
+              router.pushUrl({          // 使用push入栈一个新页面
+                url: 'pages/wentijieda' // 通过url指定新打开的页面
+              ,
+                params:{
+                  token:this.receivedToken,
+                  relTenantIds:this.tenantId
+
+                }
+              })
+            })
+
+            // 退出登录
+            ListItem() {
+              Row() {
+                Text('退出登录')
+                  .fontColor('#60000000')
+                  .layoutWeight(5);
+                Image($r('app.media.right_icon'))
+                  .height(17)
+                  .layoutWeight(1);
+              }
+              .width('100%')
+              .height(50)
+              .padding({ top: 20 });
+            }
+            .onClick(() => {
+              console.info('Clicked on 退出登录');
+            });
+          }
+          .margin({ top: 20 })
+          .width('100%')
+          .backgroundColor('#fff')
+          .borderRadius(10);
         }
         .width('100%')
         .height('100%')
         .padding({
           left: 20,
+          right: 20,
+          bottom: 20
         })
-        .justifyContent(FlexAlign.Start)
+        .justifyContent(FlexAlign.Start);
       }
       .tabBar('我的')
     }
