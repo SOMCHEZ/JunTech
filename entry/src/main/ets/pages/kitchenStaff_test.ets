@@ -69,6 +69,8 @@ interface kitchenStaffs extends records {
   status: string;    // 需确认来源字段
   issueTime: string; // 对应healthStartTime
   expireTime: string;// 对应healthEndTime
+  type_dictText:string;//对应在职状态
+  position: string;// 对应原接口的position
 }
 
 @Entry
@@ -76,14 +78,6 @@ interface kitchenStaffs extends records {
 struct KitchenStaffList {
 
   async aboutToAppear() {
-    // 在这里执行初始化操作
-    // this.Houchuchaxun()
-    //console.log('houchu')
-    //const result = await this.Houchuchaxun()
-    //console.log('houchu1', result);
-    // if (result.records != undefined) {
-    //  console.log(result.records[0].id);
-    // }
 
   }
 
@@ -119,20 +113,39 @@ struct KitchenStaffList {
 
     const result = await this.Houchuchaxun();// 调用Houchuchaxun方法这个函数是用来查数据的
 
+    if (result.success && result.records) {
+      this.kitchenStaffs = result.records.map(item => ({
+        //...item,
+        name: item.userName || '',          // 映射姓名
+        workplace: item.unitName || '',     // 映射工作单位
+        status: item.type_dictText || '未知状态',
+        issueTime: item.healthStartTime || '未设置',
+        expireTime: item.healthEndTime || '未设置',
+        position: item.position || '未设置职位'
+      } as kitchenStaffs));
+
+      this.kitchenNumbers = this.kitchenStaffs.length; // 更新数量状态
+    } else {
+      this.kitchenNumbers = 0;
+      console.error('数据加载失败:', result.message);
+    }
+
 
     if (result.records && result.records.length > 0) {
+
       this.unitId = result.records?.find(item =>//存放uid
       item?.unitId && item.unitId.trim() !== '',
       )?.unitId ?? 'default_unit_id'
+
     } else {
       //console.error('未获取到有效数据');
       this.unitId = ''; // 设置默认值
     }
     console.log('当前unitId:', this.unitId)//打印uid
     console.debug('所有unitIds:',//打印所有uid
-
       result.records?.map(item => item.unitId).filter(Boolean)
     )
+
   }
 
 
