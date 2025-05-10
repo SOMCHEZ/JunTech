@@ -77,22 +77,19 @@ interface kitchenStaffs extends records {
 @Component
 struct KitchenStaffList {
 
-  async aboutToAppear() {
-
-  }
-
   @State selectedUnit: string = '所属单位';
   @State units: string[] = ['所属单位', '实训第二学校餐厅', '其他单位'];
   @State showDropdown: boolean = false;
   @State kitchenStaffs: kitchenStaffs[] = []; // 后厨人员数据
-
   @State kitchenNumbers: number = 0;
-
-
   @State receivedToken: string = '';//参数传递
   @State tenantId: number = 0;//同上
   @State unitId: string ='';
   //@State ddd:  string[] = [];
+
+
+
+
 
   async onPageShow() {//这是一个接收传递参数的方法
     // 使用接口类型断言
@@ -339,21 +336,6 @@ struct KitchenStaffList {
           .height(40)
           .borderRadius(20)
           .backgroundColor(Color.White)
-          .onClick(() => {
-            AlertDialog.show({                   // 点击按钮，弹出一个对话框
-              title: "这里是标题",                 // 设置标题
-              message: "这里是弹窗的内容",          // 设置内容
-              alignment: DialogAlignment.Center, // 设置弹窗的对齐方式
-              confirm: {                         // 单个按钮的配置文本
-                value: "text",
-                fontColor: Color.Red,
-                backgroundColor: "#aabbcc",
-                action: () => {
-                  console.log("点击了")
-                }
-              }
-            })
-          })
 
           Button({ type: ButtonType.Normal }) {
             Text('删除人员')
@@ -364,6 +346,21 @@ struct KitchenStaffList {
           .height(40)
           .borderRadius(20)
           .backgroundColor(Color.White)
+          .onClick(() => {
+            AlertDialog.show({                   // 点击按钮，弹出一个对话框
+              title: "删除人员",                 // 设置标题
+              message: "确定要删除吗？",          // 设置内容
+              alignment: DialogAlignment.Center, // 设置弹窗的对齐方式
+              confirm: {                         // 单个按钮的配置文本
+                value: "确定",
+                fontColor: Color.Red,
+                backgroundColor: "#aabbcc",
+                action: () => {
+                  console.log("点击了")
+                }
+              }
+            })
+          })
         }
         .margin({ left: 'auto', right: 'auto', bottom: 16 });
       }
