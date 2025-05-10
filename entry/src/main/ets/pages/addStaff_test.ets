@@ -1,10 +1,54 @@
 import router from '@ohos.router';
-import { promptAction } from '@kit.ArkUI';
-import filePicker from '@ohos.file.picker';
+import http from '@ohos.net.http';
+//import { promptAction } from '@kit.ArkUI';
+//import filePicker from '@ohos.file.picker';
+
+
+//永久存储token和租户id
+AppStorage.setOrCreate('token', '');
+AppStorage.setOrCreate('tenantId', 0);
+AppStorage.setOrCreate('unitId', '');
+
+// 明确定义所有接口类型
+interface UserInfo {
+  id: string;
+  username: string;
+  clientType: string;
+  realname: string;
+  avatar: string | null;
+  relTenantIds:number;
+  // 其他字段根据实际API响应补充...
+}
+
+interface addResult {
+  userInfo: UserInfo;
+  token: string;
+}
+
+interface addResponse {
+  code: number;
+  message: string;
+  result: addResult;
+  timestamp: number;
+}
+
+interface addHandlerResult {
+  success: boolean;
+  code?: number;
+  userInfo?: UserInfo;
+  token?: string;
+  message?: string;
+  relTenantIds?:number;
+}
+
+
+
+
 
 interface RouteParams {//接口传递参数定义
   token?: string;
   relTenantIds?: number;
+  unitId?: string;
 }
 
 interface SelectOption {
@@ -15,7 +59,7 @@ interface SelectOption {
 @Entry
 @Component
 struct AddStaff {
-  @State private selectedUnitIndex: number = 0; // 默认选中第一个单位
+  @State private selectedUnitIndex:string = '实训第二学校餐厅'; // 默认选中第一个单位
   @State private name: string = '';
   @State private jobPosition: string = '';
   @State private phone: string = '';
@@ -26,22 +70,43 @@ struct AddStaff {
 
   @State receivedToken: string = '';//参数传递
   @State tenantId: number = 0;//同上
+  @State UnitId: string  ="";
 
-  onPageShow() {//这是一个接收传递参数的方法
+
+
+  async onPageShow() {//这是一个接收传递参数的方法
     // 使用接口类型断言
     const params = router.getParams() as RouteParams;
-    console.log('houchuadd', params?.token);// 打印接收到的参数
-    console.log('houchuadd', params?.relTenantIds);//  打印接收到的参数
+    //console.log('houchu', params?.token);// 打印接收到的参数
+    //console.log('houchu', params?.relTenantIds);//  打印接收到的参数
 
-    // 安全取值
-    if (params?.token) {
-      this.receivedToken = params.token;
+    // 安全取值如果返回值空，则使用appsetcreat中所预保存的token和id
+    if (!AppStorage.get('token') && params?.token) {
+      AppStorage.set('token', params.token);
+      //this.receivedToken = params.token;
     }
 
-    if (params?.relTenantIds) {
-      this.tenantId = params.relTenantIds;
+    if (!AppStorage.get('tenantId') && params?.relTenantIds) {
+      AppStorage.set('tenantId', params.relTenantIds);
+      //this.tenantId = params.relTenantIds;
     }
+
+    if (!AppStorage.get('unitId') && params?.unitId) {
+      AppStorage.set('unitId', params.unitId);
+      //this.UnitId = params.unitId;
+    }
+
+    // 同步到组件状态
+    this.receivedToken = AppStorage.get('token')??'';
+    this.tenantId = AppStorage.get('tenantId')??0;
+    this.UnitId = AppStorage.get('unitId') ?? '';
+    console.log('rel',this.UnitId);
+    console.log('UID', params?.unitId);
+    //const result = await this.Houchuchaxun();// 调用Houchuchaxun方法这个函数是用来查数据的
+    //console.log('houchu1', result); // 打印返回结果
   }
+
+
 
   private units: Array<SelectOption> = [
     { value: '实训第二学校餐厅', label: '实训第二学校餐厅' },
@@ -58,9 +123,12 @@ struct AddStaff {
           .fontSize(16)
           .width('30%')
         Select(this.units)
-          .selected(this.selectedUnitIndex)
+          .selected(this.units.findIndex(item => item.value === this.selectedUnitIndex))
           .onSelect((index: number) => {
-            this.selectedUnitIndex = index;
+            //this.selectedUnitIndex = index;
+            this.selectedUnitIndex = this.units[index].value;
+
+
           })
           .backgroundColor(Color.White)
           .width('70%')
@@ -74,7 +142,7 @@ struct AddStaff {
         Text("人员姓名 *")
           .fontSize(16)
           .width('30%')
-        TextInput({ placeholder: '请输入人员姓名' })
+        TextInput({ text:this.name,placeholder: '请输入人员姓名' })
           .onChange((value: string) => {
             this.name = value
           })
@@ -90,7 +158,7 @@ struct AddStaff {
         Text("人员岗位 *")
           .fontSize(16)
           .width('30%')
-        TextInput({ placeholder: '请输入人员岗位' })
+        TextInput({ text:this.jobPosition,placeholder: '请输入人员岗位' })
           .onChange((value: string) => {
             this.jobPosition = value
           })
@@ -106,7 +174,7 @@ struct AddStaff {
         Text("联系电话 *")
           .fontSize(16)
           .width('30%')
-        TextInput({ placeholder: '请输入员联系电话' })
+        TextInput({ text:this.phone,placeholder: '请输入员联系电话' })
           .onChange((value: string) => {
             this.phone = value
           })
@@ -117,7 +185,7 @@ struct AddStaff {
       }
       .margin({ bottom: 10 })
 
-      // 人员状态
+      // 人员状态F
       Row({ space: 10 }) {
         Text("人员状态 *")
           .fontSize(16)
@@ -212,14 +280,17 @@ struct AddStaff {
         Text("提交")
           .fontColor(Color.White)
           .fontSize(18)
+
       }
       .width('90%')
       .height(40)
       .backgroundColor('#4CAF50')
       .borderRadius(10)
-      .onClick(() => {
+      .onClick(async() => {
         router.pushUrl({
-          url: 'pages/kitchenStaff' })
+          url: 'pages/kitchenStaff_test' })
+        const result = await this.addStaff();
+       // this.unitId = result.token!;
       })
       .margin({top:120})
     }
@@ -253,5 +324,76 @@ struct AddStaff {
       }
     };
     DatePickerDialog.show(dialog);
+  }
+
+
+
+
+  private async addStaff(): Promise<addHandlerResult> {
+    try {
+      const httpRequest = http.createHttp();
+      const response = await httpRequest.request(
+        'https://api.suoeryun.com/ifood//jeecg-school/school/xxUnitUser/add',
+        {
+          method: http.RequestMethod.POST,
+          header: { 'Content-Type': 'application/json',
+            'Tenant-Id':this.tenantId.toString(),
+            'X-Access-Token':this.receivedToken
+
+          },
+          extraData: JSON.stringify({
+            //username: this.userUsername,
+            //password: this.userPassword
+            "unitId":this.UnitId,
+            "unitName":this.selectedUnitIndex,
+            "userName":this.name,
+            "idCard":null,
+            "portraitPhoto":"",
+            "position":this.jobPosition,
+            "tel":this.phone,
+            "type":"1",
+            "type_dictText":this.status,
+            "licenceIssuing":"",
+            "healthNumber":"",
+            "healthUrl":"",
+            "healthStartTime":this.issueDate,
+            "healthEndTime":this.expiryDate,
+            "photoQualification":null,
+            "remark":"",
+            "inspectionType":0,
+            "version":0,"canteenId":null,
+            "wxopenId":null,
+            "tenantId":"10021011",
+            "demandUnitIds":null
+          })
+        }
+      );
+
+      if (response.responseCode !== 200) {
+        return {
+          success: false,
+          message: `HTTP Error: ${response.responseCode}`
+          // 添加其他错误处理逻辑
+        };
+      }
+
+      const jsonData = JSON.parse(response.result as string) as addResponse;
+      //console.log('', response.responseCode);
+      //console.log('',jsonData.code);
+      return {
+        success: jsonData.code === 200,
+        code: jsonData.code,
+        //userInfo: jsonData.result.userInfo,
+        // token: jsonData.result.token,
+        message: jsonData.message,
+        relTenantIds:jsonData.result.userInfo.relTenantIds
+      };
+    } catch (error) {
+     // console.error('Login Error:', JSON.stringify(error));
+      return {
+        success: false,
+        message: 'fuck u!'
+      };
+    }
   }
 }
