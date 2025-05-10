@@ -16,12 +16,15 @@
     "pages/mima",
     "pages/food_day",
     "pages/food_day_new",
-    "pages/kucun",
     "pages/stock2",
     "pages/remain_day",
     "pages/remain",
     "pages/ApprovalPage",
-    "pages/renew",
-    "pages/addPlan"
+    "pages/addPlan",
+    "pages/chukudan",
+    "pages/kucun",
+    "pages/yishenpi",
+    "pages/signature"
+
   ]
 }
