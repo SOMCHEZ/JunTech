@@ -9,11 +9,13 @@
     "pages/login",
     "pages/login_test",
     "pages/Today_VEG",
+    "pages/addpan",
+    "pages/uploadPlan",
     "pages/sad",
     "pages/gerenxinxi",
     "pages/wentijieda",
     "pages/mima",
-    "pages/chuku",
-    "pages/chukudan"
+    "pages/food_day",
+    "pages/food_day_new"
   ]
 }
