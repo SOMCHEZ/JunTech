@@ -12,8 +12,10 @@
     "pages/addpan",
     "pages/uploadPlan",
     "pages/sad",
-    "pages/gerenxinxi",
-    "pages/wentijieda",
-    "pages/mima"
+    "pages/chukudan",
+    "pages/kucun",
+    "pages/yishenpi",
+    "pages/signature"
+
   ]
 }
