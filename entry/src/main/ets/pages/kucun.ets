@@ -3,23 +3,21 @@ import router from '@ohos.router';
 @Entry
 @Component
 struct PurchaseInventory {
-  @State activeTab: number = 0; // 用于跟踪当前激活的选项卡索引
-  @State message: string = '~暂无相关数据~'; // 显示的消息
-  @State showSupplierPopup: boolean = false; // 控制供应商选择框显示
-  @State showDatePopup: boolean = false; // 控制日期选择框显示
+  @State activeTab: number = 0;
+  @State message: string = '~暂无相关数据~';
+  @State showSupplierPopup: boolean = false;
+  @State showDatePopup: boolean = false;
   private options: SelectOption[] = [
     { value: '领用单位' },
     { value: '实训第一学校餐厅' }
   ]
-  @State selectedValue: string = '领用单位'; // 存储选中值
-
-  @State currentTabContent: string = '待审批'; // 新增状态变量，用于控制显示的内容
-
+  @State selectedValue: string = '领用单位';
+  @State currentTabContent: string = '待审批';
   @State isPressed: boolean = false;
 
   build() {
     Column() {
-      // 第一块：标题，使其居中
+      // 标题
       Row(){
         Text('<')
           .fontWeight(FontWeight.Bold)
@@ -35,8 +33,7 @@ struct PurchaseInventory {
           .margin({ top: 0, bottom: 10 });
       }
 
-
-      // 第二块：选项卡
+      // 选项卡
       Row() {
         Text('待审批')
           .fontSize(16)
@@ -65,7 +62,7 @@ struct PurchaseInventory {
       .width('100%')
       .margin({ left: 10, right: 10, bottom: 10 });
 
-      // 第三块：选择框
+      // 选择框
       Row() {
         Select(this.options)
           .selected(0)
@@ -82,7 +79,7 @@ struct PurchaseInventory {
       }
       .margin({ bottom: 10 });
 
-      // 第四块：内容展示区（已支持滚动）
+      // 内容展示区
       if (this.currentTabContent === '待审批') {
         Scroll() {
           Column() {
@@ -101,21 +98,41 @@ struct PurchaseInventory {
       } else if (this.currentTabContent === '已审批') {
         Scroll() {
           Column() {
-            Text('~暂无相关数据~')
-              .fontSize(16)
-              .fontWeight(FontWeight.Normal)
-              .alignSelf(ItemAlign.Center);
+            // 卡片内容
+            Column() {
+              Text('实训第一学校餐厅')
+                .fontSize(20)
+                .fontWeight(FontWeight.Bold)
+                .margin({ bottom: 8 });
+              Text('单据号：CK20250506001').fontSize(16).margin({ bottom: 2 });
+              Text('出库日期：2025-05-06').fontSize(16).margin({ bottom: 2 });
+              Text('出库类型：学生餐').fontSize(16).margin({ bottom: 2 });
+              Text('用餐类型：营养餐').fontSize(16).margin({ bottom: 2 });
+              Text('餐    别：午餐').fontSize(16).margin({ bottom: 2 });
+              Text('制单时间：2025-05-06 17:22:18').fontSize(16).margin({ bottom: 2 });
+            }
+            .padding(16)
+            .backgroundColor('#fff')
+            .borderRadius(16)
+            .border({ width: 2, color: '#07C160' })
+            .width('95%')
+            .margin({ top: 20, bottom: 20 })
+            .shadow({ radius: 8, color: '#07C160', offsetX: 0, offsetY: 4 })
+            .onClick(() => {
+              // 跳转到详情页面
+              router.pushUrl({
+                url: 'pages/yishenpi' // 这里填写你的详情页面路径
+              });
+            });
           }
-          .backgroundColor(0xCCCCCC)
           .width('100%')
           .height('80%')
           .justifyContent(FlexAlign.Center)
-          .alignItems(HorizontalAlign.Center)
-          .borderRadius(8);
+          .alignItems(HorizontalAlign.Center);
         }
       }
 
-      // 第五块：底部按钮
+      // 底部按钮
       Text('新建出库单')
         .fontSize(16)
         .fontWeight(FontWeight.Bold)
@@ -129,13 +146,12 @@ struct PurchaseInventory {
         .borderRadius(8)
         .onTouch((event: TouchEvent) => {
           if (event.type === TouchType.Down) {
-            this.isPressed = true; // 按下时变深色
+            this.isPressed = true;
           } else if (event.type === TouchType.Up || event.type === TouchType.Cancel) {
-            this.isPressed = false; // 抬起或取消恢复原色
+            this.isPressed = false;
           }
         })
         .onClick(() => {
-          // 跳转到 chuku 页面
           router.pushUrl({
             url: 'pages/chukudan'
           });

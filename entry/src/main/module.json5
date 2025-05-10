@@ -21,6 +21,8 @@
       "tablet",
       "2in1"
     ],
+
+
     "deliveryWithInstall": true,
     "installationFree": false,
     "pages": "$profile:main_pages",
@@ -46,6 +48,7 @@
         ]
       }
     ],
+
     "extensionAbilities": [
       {
         "name": "EntryBackupAbility",
