@@ -63,13 +63,12 @@ interface RouteParams {
   relTenantIds?: number;
 }
 
-interface kitchenStaffs{
-  name: string;
-  status: string;
-  position: string;
-  issueTime: string;
-  expireTime: string;
-  workplace: string;
+interface kitchenStaffs extends records {
+  name: string;      // 对应原接口的realname
+  workplace: string; // 对应原接口的unitName
+  status: string;    // 需确认来源字段
+  issueTime: string; // 对应healthStartTime
+  expireTime: string;// 对应healthEndTime
 }
 
 @Entry
@@ -91,7 +90,9 @@ struct KitchenStaffList {
   @State selectedUnit: string = '所属单位';
   @State units: string[] = ['所属单位', '实训第二学校餐厅', '其他单位'];
   @State showDropdown: boolean = false;
-  @State kitchenStaffs: records[] = []; // 后厨人员数据
+  @State kitchenStaffs: kitchenStaffs[] = []; // 后厨人员数据
+
+  @State kitchenNumbers: number = 0;
 
 
   @State receivedToken: string = '';//参数传递
@@ -195,7 +196,7 @@ struct KitchenStaffList {
             params: {
               token: this.receivedToken,
               relTenantIds: this.tenantId,
-              unitId:this.unitid
+              unitId:this.unitId
             }
           });
         });
