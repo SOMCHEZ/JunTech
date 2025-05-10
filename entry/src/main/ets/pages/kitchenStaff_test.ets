@@ -339,6 +339,21 @@ struct KitchenStaffList {
           .height(40)
           .borderRadius(20)
           .backgroundColor(Color.White)
+          .onClick(() => {
+            AlertDialog.show({                   // 点击按钮，弹出一个对话框
+              title: "这里是标题",                 // 设置标题
+              message: "这里是弹窗的内容",          // 设置内容
+              alignment: DialogAlignment.Center, // 设置弹窗的对齐方式
+              confirm: {                         // 单个按钮的配置文本
+                value: "text",
+                fontColor: Color.Red,
+                backgroundColor: "#aabbcc",
+                action: () => {
+                  console.log("点击了")
+                }
+              }
+            })
+          })
 
           Button({ type: ButtonType.Normal }) {
             Text('删除人员')

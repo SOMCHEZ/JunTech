@@ -9,11 +9,19 @@
     "pages/login",
     "pages/login_test",
     "pages/Today_VEG",
+    "pages/uploadPlan",
     "pages/sad",
     "pages/gerenxinxi",
     "pages/wentijieda",
     "pages/mima",
     "pages/food_day",
-    "pages/food_day_new"
+    "pages/food_day_new",
+    "pages/kucun",
+    "pages/stock2",
+    "pages/remain_day",
+    "pages/remain",
+    "pages/ApprovalPage",
+    "pages/renew",
+    "pages/addPlan"
   ]
 }
