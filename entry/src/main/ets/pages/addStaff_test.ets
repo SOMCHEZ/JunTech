@@ -7,6 +7,7 @@ import http from '@ohos.net.http';
 //永久存储token和租户id
 AppStorage.setOrCreate('token', '');
 AppStorage.setOrCreate('tenantId', 0);
+AppStorage.setOrCreate('unitId', '');
 
 // 明确定义所有接口类型
 interface UserInfo {
@@ -47,6 +48,7 @@ interface addHandlerResult {
 interface RouteParams {//接口传递参数定义
   token?: string;
   relTenantIds?: number;
+  unitId?: string;
 }
 
 interface SelectOption {
@@ -68,7 +70,7 @@ struct AddStaff {
 
   @State receivedToken: string = '';//参数传递
   @State tenantId: number = 0;//同上
-  @State unitId: number = 0;
+  @State UnitId: string  ="";
 
 
 
@@ -89,9 +91,17 @@ struct AddStaff {
       //this.tenantId = params.relTenantIds;
     }
 
+    if (!AppStorage.get('unitId') && params?.unitId) {
+      AppStorage.set('unitId', params.unitId);
+      //this.UnitId = params.unitId;
+    }
+
     // 同步到组件状态
     this.receivedToken = AppStorage.get('token')??'';
     this.tenantId = AppStorage.get('tenantId')??0;
+    this.UnitId = AppStorage.get('unitId') ?? '';
+    console.log('rel',this.UnitId);
+    console.log('UID', params?.unitId);
     //const result = await this.Houchuchaxun();// 调用Houchuchaxun方法这个函数是用来查数据的
     //console.log('houchu1', result); // 打印返回结果
   }
@@ -331,18 +341,27 @@ struct AddStaff {
           extraData: JSON.stringify({
             //username: this.userUsername,
             //password: this.userPassword
-            "unitName": "派博一中(库房)",
-            "unitId": "1650064161880203265",
-            "userName": "测试",
-            "position": "测试",
-            "tel": "18792353666",
-            "type": "1",
-            "healthStartTime": "2025-04-01",
-            "healthEndTime": "2025-05-31",
-            "healthUrl": "",
-            "portraitPhoto": "",
-            "remark": "123",
-            "version": 0
+            "unitId":this.UnitId,
+            "unitName":"实训第二学校餐厅",
+            "userName":"lei gu ya",
+            "idCard":null,
+            "portraitPhoto":"",
+            "position":"略略略",
+            "tel":"13468633899",
+            "type":"1",
+            "type_dictText":"在职",
+            "licenceIssuing":"",
+            "healthNumber":"",
+            "healthUrl":"",
+            "healthStartTime":"2025-05-09",
+            "healthEndTime":"2025-05-09",
+            "photoQualification":null,
+            "remark":"",
+            "inspectionType":0,
+            "version":0,"canteenId":null,
+            "wxopenId":null,
+            "tenantId":"10021011",
+            "demandUnitIds":null
           })
         }
       );
@@ -356,8 +375,8 @@ struct AddStaff {
       }
 
       const jsonData = JSON.parse(response.result as string) as addResponse;
-      console.log('', response.responseCode);
-      console.log('',jsonData.code);
+      //console.log('', response.responseCode);
+      //console.log('',jsonData.code);
       return {
         success: jsonData.code === 200,
         code: jsonData.code,
