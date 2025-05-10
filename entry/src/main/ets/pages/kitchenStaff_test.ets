@@ -159,8 +159,8 @@ struct KitchenStaffList {
             .fontColor(Color.Gray)
             .padding({ top: 200 })
             .onClick(async() => {//这里藏了一个接口，点击后调取接口是查询的哦,但是我不用
-             // const result = await this.Houchuchaxun();
-             // console.log('houchu1', result);
+              // const result = await this.Houchuchaxun();
+              // console.log('houchu1', result);
             })
             .textAlign(TextAlign.Center); // 居中显示
         }
@@ -409,7 +409,3 @@ struct DropdownSelector {
     }
   }
 }
-
-
-
-

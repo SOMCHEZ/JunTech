@@ -139,7 +139,7 @@ struct AddStaff {
         Text("人员姓名 *")
           .fontSize(16)
           .width('30%')
-        TextInput({ placeholder: '请输入人员姓名' })
+        TextInput({ text:this.name,placeholder: '请输入人员姓名' })
           .onChange((value: string) => {
             this.name = value
           })
@@ -155,7 +155,7 @@ struct AddStaff {
         Text("人员岗位 *")
           .fontSize(16)
           .width('30%')
-        TextInput({ placeholder: '请输入人员岗位' })
+        TextInput({ text:this.jobPosition,placeholder: '请输入人员岗位' })
           .onChange((value: string) => {
             this.jobPosition = value
           })
@@ -171,7 +171,7 @@ struct AddStaff {
         Text("联系电话 *")
           .fontSize(16)
           .width('30%')
-        TextInput({ placeholder: '请输入员联系电话' })
+        TextInput({ text:this.phone,placeholder: '请输入员联系电话' })
           .onChange((value: string) => {
             this.phone = value
           })
@@ -182,7 +182,7 @@ struct AddStaff {
       }
       .margin({ bottom: 10 })
 
-      // 人员状态
+      // 人员状态F
       Row({ space: 10 }) {
         Text("人员状态 *")
           .fontSize(16)
@@ -285,7 +285,7 @@ struct AddStaff {
       .borderRadius(10)
       .onClick(async() => {
         router.pushUrl({
-          url: 'pages/kitchenStaff' })
+          url: 'pages/kitchenStaff_test' })
         const result = await this.addStaff();
        // this.unitId = result.token!;
       })
@@ -342,19 +342,19 @@ struct AddStaff {
             //username: this.userUsername,
             //password: this.userPassword
             "unitId":this.UnitId,
-            "unitName":"实训第二学校餐厅",
-            "userName":"lei gu ya",
+            "unitName":this.selectedUnitIndex,
+            "userName":this.name,
             "idCard":null,
             "portraitPhoto":"",
-            "position":"略略略",
-            "tel":"13468633899",
+            "position":this.jobPosition,
+            "tel":this.phone,
             "type":"1",
-            "type_dictText":"在职",
+            "type_dictText":this.status,
             "licenceIssuing":"",
             "healthNumber":"",
             "healthUrl":"",
-            "healthStartTime":"2025-05-09",
-            "healthEndTime":"2025-05-09",
+            "healthStartTime":this.issueDate,
+            "healthEndTime":this.expiryDate,
             "photoQualification":null,
             "remark":"",
             "inspectionType":0,
@@ -386,7 +386,7 @@ struct AddStaff {
         relTenantIds:jsonData.result.userInfo.relTenantIds
       };
     } catch (error) {
-      console.error('Login Error:', JSON.stringify(error));
+     // console.error('Login Error:', JSON.stringify(error));
       return {
         success: false,
         message: 'fuck u!'
