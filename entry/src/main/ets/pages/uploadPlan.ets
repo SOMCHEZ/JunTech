@@ -84,13 +84,150 @@ struct ReportPlanPage {
 
         Column() {
           Column() {
-            Text('- 暂无相关数据 -')
-              .position({
-                x: 110,
-                y: 180
-              })
+            Column() {
+              // 标题部分
+              Text('实训第二学校（库房）')
+                .width('100%')
+                .height(30)
+                .padding({ left: 10 })
+                .backgroundColor('#E8F5E9') // 背景色区分标题
+                .fontColor('#2E7D32') // 深绿色字体
+                .fontSize(14)
+                .fontWeight(FontWeight.Bold)
+
+              // 表单内容部分
+              Column({ space: 10 }) {
+                Row() {
+                  Text('供应时间：')
+                    .width('30%')
+                    .fontSize(12)
+                    .fontColor('#333333')
+                  Text('2024-04-01')
+                    .width('70%')
+                    .fontSize(12)
+                    .fontColor('#666666')
+                }
+
+                Row() {
+                  Text('需求单号：')
+                    .width('30%')
+                    .fontSize(12)
+                    .fontColor('#333333')
+                  Text('DH20240401001')
+                    .width('70%')
+                    .fontSize(12)
+                    .fontColor('#666666')
+                }
+
+                Row() {
+                  Text('需求类型：')
+                    .width('30%')
+                    .fontSize(12)
+                    .fontColor('#333333')
+                  Text('食材采购')
+                    .width('70%')
+                    .fontSize(12)
+                    .fontColor('#666666')
+                }
+                Row() {
+                  Text('用餐类型：')
+                    .width('30%')
+                    .fontSize(12)
+                    .fontColor('#333333')
+                  Text('其他')
+                    .width('70%')
+                    .fontSize(12)
+                    .fontColor('#666666')
+                }
+                Row() {
+                  Text('餐别：')
+                    .width('30%')
+                    .fontSize(12)
+                    .fontColor('#333333')
+                  Text('其他')
+                    .width('70%')
+                    .fontSize(12)
+                    .fontColor('#666666')
+                }
+                Row() {
+                  Text('制单人：')
+                    .width('30%')
+                    .fontSize(12)
+                    .fontColor('#333333')
+                  Text('人')
+                    .width('70%')
+                    .fontSize(12)
+                    .fontColor('#666666')
+                }
+                Row() {
+                  Text('制单时间：')
+                    .width('30%')
+                    .fontSize(12)
+                    .fontColor('#333333')
+                  Text('2025')
+                    .width('70%')
+                    .fontSize(12)
+                    .fontColor('#666666')
+                }
+                Row() {
+                  Text('摘要：')
+                    .width('30%')
+                    .fontSize(12)
+                    .fontColor('#333333')
+                  Text('无')
+                    .width('70%')
+                    .fontSize(12)
+                    .fontColor('#666666')
+                }
+                // 操作按钮
+                Row({ space: 7 }) {
+                  Button('重新编辑')
+                    .backgroundColor('#ffffffff')
+                    .fontColor('#4CAF50')
+                    .fontSize(10)
+                    .borderRadius(12)
+                    .border({
+                      color: '#4CAF50',
+                      width: 1
+                    })
+
+                  Button('单据日志')
+                    .backgroundColor('#ffffffff')
+                    .fontColor('#4CAF50')
+                    .fontSize(10)
+                    .borderRadius(12)
+                    .border({
+                      color: '#4CAF50',
+                      width: 1
+                    })
+
+                  Button('删除单据')
+                    .backgroundColor('#ffffffff')
+                    .fontColor('#4CAF50')
+                    .fontSize(10)
+                    .borderRadius(12)
+                    .border({
+                      color: '#4CAF50',
+                      width: 1
+                    })
+                }
+                .width('100%')
+                .justifyContent(FlexAlign.SpaceEvenly)
+              }
+              .padding({ left: 10, right: 10, top: 5, bottom: 10 })
+            }
+            .width('100%')
+            .borderRadius(8)
           }
+          .backgroundColor(Color.White)
+          .width('80%')
+          .border({
+            width: 2,
+            color: '#4CAF50',
+            radius: 8
+          })
         }
+
         .width('100%')
         .backgroundColor('#f2dbdada')
         .layoutWeight(1)
