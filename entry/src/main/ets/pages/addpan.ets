@@ -145,7 +145,6 @@ struct DatePickerExample {
           })
           .zIndex(2)
         }
-
         // 底部按钮部分
         Column() {
           Row() {
@@ -175,7 +174,6 @@ struct DatePickerExample {
               router.pushUrl({
                 url: 'pages/uploadPlan' })
             })
-
             .height(35)
             .backgroundColor('#02BC65')
             .fontColor(Color.White)
@@ -223,14 +221,24 @@ struct DatePickerExample {
         Row() {
           // 使用固定宽度容器包裹 Text 组件
 
-          Text(this.selectedText[index])
-            .fontSize(14)
-            .fontColor('#000000')
-            .maxLines(1) // 限制为一行
-            .textOverflow({ overflow: TextOverflow.Ellipsis }) // 超出显示省略号
-            .width('210px') // 设置限制宽度
+          if (label === "摘要") {
+            Column() {
+              Text(this.selectedText[index] === '请输入摘要' ? '请输入摘要' :
+                `${this.selectedText[index].substring(0, 10)}${this.selectedText[index].length > 10 ? '...' : ''}`)
+                .fontSize(14)
+                .fontColor(this.selectedText[index] === '请输入摘要' ? '#000000' : '#000000')
+                .maxLines(1)
+                .textOverflow({ overflow: TextOverflow.Ellipsis })
+                .width('250px')
 
-          //.alignItems(HorizontalAlign.End) // 右对齐
+            }
+            .alignItems(HorizontalAlign.End)
+          } else {
+            Text(this.selectedText[index])
+              .fontSize(14)
+              .fontColor('#000000')
+          }
+
 
           Image($r("app.media.ic_arrow_right"))
             .width(20)
@@ -262,6 +270,7 @@ struct DatePickerExample {
               this.showTextDialog(this.mealOptions,5)
               break;
             case "摘要":
+              this.summary = this.selectedText[6] === '请输入摘要' ? '' : this.selectedText[6]
               this.showDialog = true
               this.opacityValue = 1
               this.scaleValue = 1
