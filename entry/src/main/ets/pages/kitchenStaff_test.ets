@@ -98,34 +98,31 @@ struct KitchenStaffList {
   @State receivedToken: string = '';//参数传递
   @State tenantId: number = 0;//同上
   @State unitId: string ='';
+  //@State ddd:  string[] = [];
 
   async onPageShow() {//这是一个接收传递参数的方法
     // 使用接口类型断言
     const params = router.getParams() as RouteParams;
     //console.log('houchu', params?.token);// 打印接收到的参数
-    //console.log('houchu', params?.relTenantIds);//  打印接收到的参数
-
     // 安全取值如果返回值空，则使用appsetcreat中所预保存的token和id
     if (!AppStorage.get('token') && params?.token) {
       AppStorage.set('token', params.token);
       //this.receivedToken = params.token;
     }
-
     if (!AppStorage.get('tenantId') && params?.relTenantIds) {
       AppStorage.set('tenantId', params.relTenantIds);
       //this.tenantId = params.relTenantIds;
     }
-
     // 同步到组件状态
     this.receivedToken = AppStorage.get('token')??'';
     this.tenantId = AppStorage.get('tenantId')??0;
 
-
-
     const result = await this.Houchuchaxun();// 调用Houchuchaxun方法这个函数是用来查数据的
+
+
     if (result.records && result.records.length > 0) {
       this.unitId = result.records?.find(item =>//存放uid
-      item?.unitId && item.unitId.trim() !== ''
+      item?.unitId && item.unitId.trim() !== '',
       )?.unitId ?? 'default_unit_id'
     } else {
       //console.error('未获取到有效数据');
@@ -133,6 +130,7 @@ struct KitchenStaffList {
     }
     console.log('当前unitId:', this.unitId)//打印uid
     console.debug('所有unitIds:',//打印所有uid
+
       result.records?.map(item => item.unitId).filter(Boolean)
     )
   }
