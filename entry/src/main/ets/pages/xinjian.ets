@@ -9,6 +9,7 @@ struct shicai {
   @State selectedcategory: string = '全部分类'
   @State selectedUnit: string = '请选择供应商'
   @State searchText: string = ''
+  @State activeTab: number = 0; // 用于跟踪当前激活的选项卡索引
   private categoryOptions = [
     '全部分类',
     '谷薯类',
@@ -53,10 +54,11 @@ struct shicai {
             .height(30)
             .backgroundColor(Color.White)
             .fontSize(25)
-            .fontWeight(40)
+            .fontWeight(this.activeTab === 0 ? FontWeight.Bold : FontWeight.Normal)
             .fontColor(Color.Black)
             .stateEffect(true)
             .onClick(() => {
+              this.activeTab = 0
               this.x = 0
             })
             .margin({ right: 65 })
@@ -67,13 +69,15 @@ struct shicai {
           {
             Text('常用商品')
               .fontSize(25)
+              .fontWeight(this.activeTab === 1 ? FontWeight.Bold : FontWeight.Normal)
           }
             .height(30)
             .backgroundColor(Color.White)
-            .fontWeight(60)
+
             .fontColor(Color.Black)
             .onClick(() => {
               this.x = 1
+              this.activeTab = 1
             })
 
 
