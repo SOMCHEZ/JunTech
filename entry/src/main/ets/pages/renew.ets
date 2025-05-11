@@ -12,9 +12,8 @@ struct shicai {
   @State selectedUnit: string = '请选择供应商'
   @State searchText: string = ''
   @State activeTab: number = 0; // 用于跟踪当前激活的选项卡索引
-  @State isRefreshing: boolean = false
-  @State refreshY: number = 0
   @State refreshTrigger: number = 80 // 触发刷新的下拉距离(像素)
+  //分类种类
   private categoryOptions = [
     '全部分类',
     '谷薯类',
@@ -28,6 +27,7 @@ struct shicai {
     '其他'
 
   ]
+  //供应商种类
   private unitOptions = [
     '请选择供应商',
     '小杨肉食店',
@@ -44,11 +44,6 @@ struct shicai {
     }
   }
 
-  // aboutToAppear() {
-  //   if (this.categoryOptions.length > 0) {
-  //     this.selectedcategory= this.categoryOptions[0]
-  //   }
-  // }
 
 
   build() {
@@ -95,6 +90,7 @@ struct shicai {
 
 
         Row() {
+          //选择分类
           Select(this.categoryOptions.map<SelectOption>((item: string) => ({ value: item })))
             .value(this.selectedcategory)// 绑定到状态变量
             .onSelect((index) => {
@@ -104,7 +100,7 @@ struct shicai {
 
             .width('40%')
             .margin({ top: 10 })
-
+          //选择供应商
           Select(this.unitOptions.map<SelectOption>((item: string) => ({ value: item })))
             .value(this.selectedUnit)
             .width(190)
@@ -227,6 +223,7 @@ struct shicai {
                   router.pushUrl({
                     url: 'pages/addPlan'
                   });
+
                 });
             }
             .height(38)
