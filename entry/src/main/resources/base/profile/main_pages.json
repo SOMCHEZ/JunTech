@@ -31,7 +31,8 @@
     "pages/chenjianjilu",
     "pages/shishikucun",
     "pages/renew",
-    "pages/gonggao"
+    "pages/gonggao",
+    "pages/EditStaff"
 
   ]
 }
