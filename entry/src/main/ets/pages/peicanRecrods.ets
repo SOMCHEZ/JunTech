@@ -1,13 +1,35 @@
 import { router } from '@kit.ArkUI'
 
+interface RecordType {
+  unit: string;
+  meal: string;
+  position: string;
+  name: string;
+  evaluation: string;
+  date: string;
+}
+
+interface GeneratedTypeLiteralInterface_1 {
+  record?: string;
+}
+
 @Entry
 @Component
 struct CalendarPage {
   @State private currentDate: Date = new Date()
   @State private selectedDate: Date = new Date()
+  @State records: RecordType[] = []
   private weekDays: string[] = ['日', '一', '二', '三', '四', '五', '六']
 
-  // 获取当前周的日期数组
+  aboutToAppear() {
+    const params = router.getParams() as GeneratedTypeLiteralInterface_1;
+    if (params?.record) {
+      this.records.unshift(JSON.parse(params.record));
+      router.getParams(); // 确保清除参数
+    }
+  }
+
+
   private getDatesForWeek(): number[] {
     const firstDayOfMonth = new Date(this.currentDate.getFullYear(), this.currentDate.getMonth(), 1)
     const lastDayOfMonth = new Date(this.currentDate.getFullYear(), this.currentDate.getMonth() + 1, 0)
@@ -24,7 +46,6 @@ struct CalendarPage {
     return dates
   }
 
-  // 周切换功能
   private changeWeek(increment: number) {
     const newDate = new Date(this.selectedDate)
     newDate.setDate(this.selectedDate.getDate() + (increment * 7))
@@ -32,11 +53,9 @@ struct CalendarPage {
     this.selectedDate = newDate
   }
 
-  // 日历头部
   @Builder
   private CalendarHeaderBuilder() {
     Column() {
-      // 新增配餐记录标题
       Text('陪餐记录')
         .fontSize(24)
         .fontColor('#FFFFFF')
@@ -67,7 +86,6 @@ struct CalendarPage {
     .backgroundColor('#00C853')
   }
 
-  // 星期标题行
   @Builder
   private WeekDaysBuilder() {
     Row() {
@@ -78,19 +96,47 @@ struct CalendarPage {
           .fontColor('#FFFFFF')
       })
     }
-    //.padding({ vertical: 8 })
   }
+
+  // ... (其他代码保持不变)
+
+  @Builder
+  private RecordCardBuilder(record: RecordType) {
+    Column() {
+      Row() {
+        Text(record.date).fontColor('#666').fontSize(14)
+        Text(record.unit).fontColor('#333').fontSize(16).margin({ left: 10 })
+      }
+      .justifyContent(FlexAlign.Start)
+
+      Row() {
+        Text(`餐别：${record.meal}`).fontSize(14)
+        Text(`身份：${record.position}`).margin({ left: 15 }) // 确保这里显示的是字符串值
+      }
+      .margin({ top: 8 })
+
+      Text(`姓名：${record.name}`).fontSize(14).margin({ top: 4 })
+      Text(`评价：${record.evaluation}`).fontSize(14).margin({ top: 4 })
+    }
+    .padding(10)
+    .backgroundColor(Color.White)
+    .borderRadius(8)
+    .margin({ top: 10 })
+    .width('90%')
+    .shadow({ radius: 4, color: '#30000000', offsetX: 1, offsetY: 1 })
+  }
+
+  // ... (其他代码保持不变)
+
+
 
   build() {
     Column() {
-      // 头部区域
       this.CalendarHeaderBuilder()
 
-      // 日历主体
       Column() {
         this.WeekDaysBuilder()
 
-        // 日期行
         Row() {
           ForEach(this.getDatesForWeek(), (date: number) => {
             Column() {
@@ -104,7 +150,7 @@ struct CalendarPage {
                   .fontColor(date === this.selectedDate.getDate() ? '#00C853' : '#FFFFFF')
               }
             }
-            .width('14.28%')
+            .width('14.282039094572344908579867648657%')
             .height(50)
             .onClick(() => {
               const newDate = new Date(this.selectedDate)
@@ -116,7 +162,6 @@ struct CalendarPage {
       }
       .backgroundColor('#00C853')
 
-      // 底部上传按钮
       Button('上传陪餐记录', { type: ButtonType.Capsule })
         .width('90%')
         .height(40)
@@ -124,16 +169,27 @@ struct CalendarPage {
         .fontColor('#FFFFFF')
         .position({x:20 , y: '90%'})
         .onClick(() => {
-                  router.pushUrl({
-                     url: 'pages/sad',
-                  });
+          router.pushUrl({
+            url: 'pages/reportRecords',
+          });
         })
 
-      // 暂无数据提示
-      Text('~ 暂无相关数据 ~')
-        .fontSize(15)
-        .fontColor('#BBBBBB')
-        .margin({ top: 30 })
+      if (this.records.length === 0) {
+        Text('~ 暂无相关数据 ~')
+          .fontSize(15)
+          .fontColor('#BBBBBB')
+          .margin({ top: 30 })
+      } else {
+        Scroll() {
+          Column() {
+            ForEach(this.records, (record: RecordType) => {
+              this.RecordCardBuilder(record)
+            })
+          }
+        }
+        .height('30%')
+        .margin({ top: 20 })
+      }
     }
     .width('100%')
     .height('100%')

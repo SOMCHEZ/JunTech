@@ -1,7 +1,15 @@
 import router from '@ohos.router';
 
-
 // Page1.ets
+interface GeneratedObjectLiteralInterface_1 {
+  unit: string;
+  meal: string;
+  position: string;
+  name: string;
+  evaluation: string;
+  date: string;
+}
+
 @Entry
 @Component
 struct Page1 {
@@ -15,6 +23,8 @@ struct Page1 {
   @State selectedDate: string = '请选择供应日期'
   @State selectDate: Date = new Date()
   @State dates: string = '请选择'
+  @State unit:string=''
+  @State meal: string=''
   private unitOptions = [
 
     '实训第一中学',
@@ -117,9 +127,16 @@ Row(){
       }
 
       TextInput({ placeholder: '陪餐人姓名 *', text: this.name })
+        .onChange((value: string) => {
+          this.name = value; // 更新状态变量
+        })
         .margin({bottom:10})
 
       TextInput({ placeholder: '请输入评价', text: this.evaluation })
+        .onChange((value: string) => {
+          this.evaluation = value; // 更新状态变量
+        })
+
 
       Text("陪餐图片上传")
         .fontColor(Color.Black)
@@ -148,6 +165,23 @@ Row(){
       .margin({top: 250})
       .borderRadius(5)
       .backgroundColor(Color.Green)
+      // 修改提交按钮的 onClick 事件
+
+      .onClick(() => {
+        const positionOptions = ['教师', '家长', '中层领导', '校领导'];
+        const record: GeneratedObjectLiteralInterface_1 = {
+          unit: this.selectedUnit,
+          meal: this.selectedMeal,
+          position: positionOptions[parseInt(this.selectedPosition)], // 转换为实际的字符串值
+          name: this.name,
+          evaluation: this.evaluation,
+          date: this.dates
+        };
+        router.pushUrl({
+          url: 'pages/peicanRecrods',
+          params: { record: JSON.stringify(record) }
+        });
+      })
 
 
     }
@@ -161,12 +195,12 @@ Row(){
       selected: this.selectDate,
       onAccept: (value: DatePickerResult) => {
         // 使用可选链和默认值保证安全性
-        const year = value.year ?? new Date().getFullYear()
-        const month = value.month ?? new Date().getMonth() + 1
-        const day = value.day ?? new Date().getDate()
+        const year = value.year ?? new Date().getFullYear();
+        const month = value.month ?? new Date().getMonth() + 1; // 这里不需要减1
+        const day = value.day ?? new Date().getDate();
 
-        this.selectDate = new Date(year, month - 1, day)
-        this.dates = `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`
+        this.selectDate = new Date(year, month - 1, day); // 这里需要减1
+        this.dates = `${year}-${(month+1).toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
       }
     })
   }
