@@ -193,13 +193,13 @@ struct shicai {
               Text('- 暂无相关数据 -')
                 .fontSize(16)
                 .fontColor('#666666')
-                .margin({ top: 20, bottom: 20 }) // 改用margin而不是position
+                .margin({ top: 20, bottom: 20 })
             }
             .width('100%')
             .height('100%')
             .justifyContent(FlexAlign.Center) // 垂直居中
             .alignItems(HorizontalAlign.Center) // 水平居中
-            .backgroundColor('#f2dbdada') // 使用更明显的背景色
+            .backgroundColor('#f2dbdada')
 
           }
           .edgeEffect(EdgeEffect.Spring)
@@ -219,10 +219,9 @@ struct shicai {
               Text("确定")
                 .margin({ bottom: 10,top:10 })
                 .onClick(() => {
+                  console.log('11')
                   // 跳转到 chuku 页面
-                  router.pushUrl({
-                    url: 'pages/addPlan'
-                  });
+                  router.back();
 
                 });
             }
