@@ -1,4 +1,4 @@
-//最终版本
+//最终版本,封装，请勿修改
 
 import router from '@ohos.router';
 import http from '@ohos.net.http';
@@ -10,6 +10,7 @@ import http from '@ohos.net.http';
 AppStorage.setOrCreate('token', '');
 AppStorage.setOrCreate('tenantId', 0);
 AppStorage.setOrCreate('unitId', '');
+AppStorage.setOrCreate('editId', '');
 
 // 明确定义所有接口类型
 interface UserInfo {
@@ -44,10 +45,14 @@ interface addHandlerResult {
 }
 
 
+
+
+
 interface RouteParams {//接口传递参数定义
   token?: string;
   relTenantIds?: number;
   unitId?: string;
+  editId:string;
 }
 
 interface SelectOption {
@@ -70,6 +75,7 @@ struct AddStaff {
   @State receivedToken: string = '';//参数传递
   @State tenantId: number = 0;//同上
   @State UnitId: string  ="";
+  @State Edit_id:string = '';
 
 
 
@@ -94,11 +100,16 @@ struct AddStaff {
       AppStorage.set('unitId', params.unitId);
       //this.UnitId = params.unitId;
     }
+    if (!AppStorage.get('editId') && params?.editId){
+      AppStorage.set('editId', params.editId);
+    }
 
     // 同步到组件状态
     this.receivedToken = AppStorage.get('token')??'';
     this.tenantId = AppStorage.get('tenantId')??0;
     this.UnitId = AppStorage.get('unitId') ?? '';
+    this.Edit_id = AppStorage.get('editId')??'';
+    console.log('editId',this.Edit_id);
     console.log('rel',this.UnitId);
     console.log('UID', params?.unitId);
     //const result = await this.Houchuchaxun();// 调用Houchuchaxun方法这个函数是用来查数据的
@@ -212,9 +223,9 @@ struct AddStaff {
             Text("请选择")
           }
         }
-          .onClick(() => {
-            this.showIssueDateDialog()
-          })
+        .onClick(() => {
+          this.showIssueDateDialog()
+        })
         .margin({left:175})
         .backgroundColor(Color.White)
       }
@@ -287,12 +298,9 @@ struct AddStaff {
       .position({x:18, y:'95%'})
       .onClick(async() => {
         router.pushUrl({
-          url: 'pages/peicanRecords',  params: {
-            token: this.receivedToken,
-            tenantId: this.tenantId
-          } })
+          url: 'pages/kitchenStaff_test' })
         const result = await this.addStaff();
-       // this.unitId = result.token!;
+        // this.unitId = result.token!;
       })
     }
     .width('100%')
@@ -327,6 +335,10 @@ struct AddStaff {
     };
     DatePickerDialog.show(dialog);
   }
+
+
+
+
 
 
 
@@ -391,7 +403,7 @@ struct AddStaff {
         relTenantIds:jsonData.result.userInfo.relTenantIds
       };
     } catch (error) {
-     //console.error('Login Error:', JSON.stringify(error));
+      // console.error('Login Error:', JSON.stringify(error));
       return {
         success: false,
         message: 'fuck u!'

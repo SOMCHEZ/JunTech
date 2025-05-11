@@ -47,6 +47,8 @@ struct Index {
   @State private authToken: string = '';
   @State private currentUser: UserInfo | null = null;
 
+
+
   build() {
     Stack() {
       Row(){
@@ -54,8 +56,19 @@ struct Index {
           .width('100%')
           .height('30%')
           .objectFit(ImageFit.Cover)
+          .zIndex(1)
       }
       .position({x:0,y:0})
+      Text('您好！')
+        .fontColor(Color.White)
+        .fontSize(50)
+        .zIndex(100)
+        .position({x:20,y:50})
+      Text('欢迎使用')
+        .fontSize(30)
+        .zIndex(100)
+        .fontColor(Color.White)
+        .position({x:150,y:70})
 
       RelativeContainer() {
         Image("")
@@ -183,11 +196,7 @@ struct Index {
           params:{
           token:this.authToken,
             relTenantIds:this.currentUser?.relTenantIds
-
           }
-
-
-
         });
         break;
 
@@ -197,7 +206,6 @@ struct Index {
           params:{
             token:this.authToken,
             relTenantIds:this.currentUser?.relTenantIds
-
           }
         });
 

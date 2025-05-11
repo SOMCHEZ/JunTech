@@ -1,15 +1,48 @@
 import router from '@ohos.router';
+import http from '@ohos.net.http';
 
-// Page1.ets
-interface GeneratedObjectLiteralInterface_1 {
-  unit: string;
-  meal: string;
-  position: string;
-  name: string;
-  evaluation: string;
-  date: string;
+
+AppStorage.setOrCreate('token', '');
+AppStorage.setOrCreate('tenantId', 0);
+
+interface UserInfo {
+  id: string;
+  username: string;
+  clientType: string;
+  realname: string;
+  avatar: string | null;
+  relTenantIds:number;
+  // 其他字段根据实际API响应补充...
 }
 
+interface reportResponse {
+  code: number;
+  message: string;
+  result: reportResult;
+  timestamp: number;
+}
+
+interface reportResult {
+  userInfo: UserInfo;
+  token: string;
+}
+
+interface reportHandlerResult{
+  success: boolean;
+  code?: number;
+  userInfo?: UserInfo;
+  token?: string;
+  message?: string;
+  relTenantIds?:number;
+}
+
+interface RouteParams {//接口传递参数定义
+  token?: string;
+  relTenantIds?: number;
+  unitId?: string;
+}
+
+// Page1.ets
 @Entry
 @Component
 struct Page1 {
@@ -23,10 +56,12 @@ struct Page1 {
   @State selectedDate: string = '请选择供应日期'
   @State selectDate: Date = new Date()
   @State dates: string = '请选择'
-  @State unit:string=''
-  @State meal: string=''
-  private unitOptions = [
 
+  @State receivedToken: string = '';//参数传递
+  @State tenantId: number = 0;//同上
+  @State UnitId: string  ="";
+
+  private unitOptions = [
     '实训第一中学',
     '实训第二中学',
     '实训第三中学'
@@ -38,6 +73,37 @@ struct Page1 {
     '午餐',
     '晚餐'
   ]
+  async onPageShow() {//这是一个接收传递参数的方法
+    // 使用接口类型断言
+    const params = router.getParams() as RouteParams;
+    console.log('report', params?.token);// 打印接收到的参数
+    console.log('report', params?.relTenantIds);//  打印接收到的参数
+
+    // 安全取值如果返回值空，则使用appsetcreat中所预保存的token和id
+    if (!AppStorage.get('token') && params?.token) {
+      AppStorage.set('token', params.token);
+      //this.receivedToken = params.token;
+    }
+
+    if (!AppStorage.get('tenantId') && params?.relTenantIds) {
+      AppStorage.set('tenantId', params.relTenantIds);
+      //this.tenantId = params.relTenantIds;
+    }
+
+    if (!AppStorage.get('unitId') && params?.unitId) {
+      AppStorage.set('unitId', params.unitId);
+      //this.UnitId = params.unitId;
+    }
+
+    // 同步到组件状态
+    this.receivedToken = AppStorage.get('token')??'';
+    this.tenantId = AppStorage.get('tenantId')??0;
+    this.UnitId = AppStorage.get('unitId') ?? '';
+    console.log('rel',this.UnitId);
+    console.log('UID', params?.unitId);
+    //const result = await this.Houchuchaxun();// 调用Houchuchaxun方法这个函数是用来查数据的
+    //console.log('houchu1', result); // 打印返回结果
+  }
 
   build() {
     Column() {
@@ -45,30 +111,19 @@ struct Page1 {
       Text('陪餐记录')
         .fontSize(24)
         .margin(20)
-Row(){
-
-
-    Text("选择日期")
+      Row(){
+        Text("选择日期")
    //   .fontColor(Color.Black)
    //   .fontSize(16)
    //   Text(this.dates)
-  Select([])
-
-    .onClick(() => {
-      this.showDateDialog()
-
-    })
-    .value(this.dates)
-    .margin(10)
-    .width('70%')
-    .margin({left:20,right:0,bottom:10})
-  // DatePicker()
-  //   .lunar(false)
-  //   .onDateChange(value=>{
-  //     this.date=value.toDateString()
-  //   })
-  //   .width("80%")
-  //   .height(50)
+          Select([])
+            .onClick(() => {
+              this.showDateDialog()
+            })
+            .value(this.dates)
+            .margin(10)
+            .width('70%')
+            .margin({left:20,right:0,bottom:10})
 }
 
       Row(){
@@ -127,16 +182,9 @@ Row(){
       }
 
       TextInput({ placeholder: '陪餐人姓名 *', text: this.name })
-        .onChange((value: string) => {
-          this.name = value; // 更新状态变量
-        })
         .margin({bottom:10})
 
       TextInput({ placeholder: '请输入评价', text: this.evaluation })
-        .onChange((value: string) => {
-          this.evaluation = value; // 更新状态变量
-        })
-
 
       Text("陪餐图片上传")
         .fontColor(Color.Black)
@@ -165,22 +213,14 @@ Row(){
       .margin({top: 250})
       .borderRadius(5)
       .backgroundColor(Color.Green)
-      // 修改提交按钮的 onClick 事件
-
-      .onClick(() => {
-        const positionOptions = ['教师', '家长', '中层领导', '校领导'];
-        const record: GeneratedObjectLiteralInterface_1 = {
-          unit: this.selectedUnit,
-          meal: this.selectedMeal,
-          position: positionOptions[parseInt(this.selectedPosition)], // 转换为实际的字符串值
-          name: this.name,
-          evaluation: this.evaluation,
-          date: this.dates
-        };
+      .onClick(async() => {
         router.pushUrl({
-          url: 'pages/peicanRecrods',
-          params: { record: JSON.stringify(record) }
-        });
+          url: 'pages/peicanRecords',  params: {
+            token: this.receivedToken,
+            tenantId: this.tenantId
+          } })
+        const result = await this.report();
+        // this.unitId = result.token!;
       })
 
 
@@ -195,14 +235,64 @@ Row(){
       selected: this.selectDate,
       onAccept: (value: DatePickerResult) => {
         // 使用可选链和默认值保证安全性
-        const year = value.year ?? new Date().getFullYear();
-        const month = value.month ?? new Date().getMonth() + 1; // 这里不需要减1
-        const day = value.day ?? new Date().getDate();
+        const year = value.year ?? new Date().getFullYear()
+        const month = value.month ?? new Date().getMonth() + 1
+        const day = value.day ?? new Date().getDate()
 
-        this.selectDate = new Date(year, month - 1, day); // 这里需要减1
-        this.dates = `${year}-${(month+1).toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
+        this.selectDate = new Date(year, month - 1, day)
+        this.dates = `${year}-${(month+1).toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`
       }
     })
   }
 
+  private async report(): Promise<reportHandlerResult> {
+    try {
+      const httpRequest = http.createHttp();
+      const response = await httpRequest.request(
+        'https://api.suoeryun.com/ifood/jeecg-school/school/xxMealRecord/add',
+        {
+          method: http.RequestMethod.POST,
+          header: { 'Content-Type': 'application/json',
+            'Tenant-Id':this.tenantId.toString(),
+            'X-Access-Token':this.receivedToken
+          },
+          extraData: JSON.stringify({
+            "mealDate": this.selectDate,
+            "mealCategory": this.mealOptions,
+            "repastNum": "",
+            "withNum": "",
+            "xxMealRecordInfoList": [],
+            "demandUnit": "1910528462460329985",
+            "demandUnitName": this.unitOptions
+          })
+        }
+      );
+
+      if (response.responseCode !== 200) {
+        return {
+          success: false,
+          message: `HTTP Error: ${response.responseCode}`
+          // 添加其他错误处理逻辑
+        };
+      }
+
+      const jsonData = JSON.parse(response.result as string) as reportResponse;
+      //console.log('', response.responseCode);
+      //console.log('',jsonData.code);
+      return {
+        success: jsonData.code === 200,
+        code: jsonData.code,
+        //userInfo: jsonData.result.userInfo,
+        // token: jsonData.result.token,
+        message: jsonData.message,
+        relTenantIds:jsonData.result.userInfo.relTenantIds
+      };
+    } catch (error) {
+      //console.error('Login Error:', JSON.stringify(error));
+      return {
+        success: false,
+        message: 'error!'
+      };
+    }
+  }
 }

@@ -7,14 +7,28 @@ import http from '@ohos.net.http';
 AppStorage.setOrCreate('token', '');
 AppStorage.setOrCreate('tenantId', 0);
 
+interface Houchu_Delete_Request {
+  success: boolean;
+  code?: number;
+  result:string;
+  message?: string;
+}
+interface Houchu_Edit_Request {
+  success: boolean;
+  code?: number;
+  result: string;
+  message?: string;
+}
+
+
 interface  records{//定义接口返回类型
-  id: string;
+  id?: number;
   schoolId: string;
   schoolName:  string;
   unitId: string;
   unitName: string;
   userName: string;// 后端返回的姓名
-  realname: string;
+  //realname: string;
   idCard?: string;
   portraitPhoto?:string;
   position:  string;//  后端返回的职位
@@ -64,13 +78,35 @@ interface RouteParams {
 }
 
 interface kitchenStaffs extends records {
-  name: string;      // 对应原接口的realname
+  id:number;
+  unitId: string;
+  name: string;      // 对应原接口的username
   workplace: string; // 对应原接口的unitName
   status: string;    // 需确认来源字段
   issueTime: string; // 对应healthStartTime
   expireTime: string;// 对应healthEndTime
   type_dictText:string;//对应在职状态
   position: string;// 对应原接口的position
+  tel: string;
+  schoolId: string;
+  schoolName:  string;
+  //realname: string;
+  idCard?: string;
+  portraitPhoto?:string;
+  type: string;//  后端返回的职位类型
+  licenceIssuing: string;//  后端返回的营业执照有效期
+  healthNumber: string;//  后端返回的健康证号
+  healthUrl?: string;  // 后端返回的健康证图片
+  photoQualification: string;//  后端返回的营业执照图片
+  remark: string;//  后端返回的备注
+  inspectionType?:number//  后端返回的职位类型
+  version: number;//  后端返回的版本
+  canteenId:  string;// 后端返回的食堂id
+  wxopenId: string;// 后端返回的微信openid
+  tenantId:  number;//  后端返回的租户id
+  demandUnitIds:string;// 后端返回的食堂id
+  code?: number;// 后端返回的code
+
 }
 
 @Entry
@@ -85,6 +121,9 @@ struct KitchenStaffList {
   @State receivedToken: string = '';//参数传递
   @State tenantId: number = 0;//同上
   @State unitId: string ='';
+
+  @State isDeleting: boolean = false;
+  //@State Edit_Id: string = ''; // 保持字符串类型时
   //@State ddd:  string[] = [];
 
 
@@ -113,7 +152,17 @@ struct KitchenStaffList {
     if (result.success && result.records) {
       this.kitchenStaffs = result.records.map(item => ({
         //...item,
-        name: item.userName || '',          // 映射姓名
+        id: item.id||0,
+        unitId: item.unitId || '',
+        name: item.userName || '', // 映射姓名
+        tel: item.tel || '',
+        type: item.type || '未知类型',
+        portraitPhoto: item.portraitPhoto || '',
+        healthUrl: item.healthUrl || '',
+        remark: item.remark || '',
+        inspectionType: item.inspectionType || 0,
+        version: item.version || 0,
+        canteenId: item.canteenId || '',
         workplace: item.unitName || '',     // 映射工作单位
         status: item.type_dictText || '未知状态',
         issueTime: item.healthStartTime || '未设置',
@@ -142,7 +191,10 @@ struct KitchenStaffList {
     console.debug('所有unitIds:',//打印所有uid
       result.records?.map(item => item.unitId).filter(Boolean)
     )
-
+    console.log('id',this.kitchenStaffs[0].id)//打印id
+    console.debug('所有Id:',//打印所有Id
+      result.records?.map(item => item.id).filter(Boolean)
+    )
   }
 
 
@@ -216,7 +268,7 @@ struct KitchenStaffList {
     .backgroundColor("#f5f5f5");
   }
 
-  private async Houchuchaxun(): Promise<HouchuHandlerResult> {
+  private async Houchuchaxun(): Promise<HouchuHandlerResult> {//这个请求是针对查询后厨人员列表的
     try {
       const httpRequest = http.createHttp();
 
@@ -264,6 +316,58 @@ struct KitchenStaffList {
       };
     }
   }
+
+
+
+  private async HouchuDelete(staffId?: number): Promise<Houchu_Delete_Request> {//这个请求是针对查询后厨人员列表的
+
+    try {
+      const httpRequest = http.createHttp();
+
+      const response = await httpRequest.request(
+        'https://api.suoeryun.com/ifood/jeecg-school/school/xxUnitUser/delete',
+        {
+          method: http.RequestMethod.DELETE,
+          header: { 'Content-Type': 'application/x-www-form-urlencoded',
+            'Tenant-Id':this.tenantId.toString(),
+            'X-Access-Token':this.receivedToken
+          },
+          extraData:
+            `id=${staffId?.toString() ?? ''}`
+
+        }
+
+      );
+
+      if (response.responseCode !== 200) {
+        //console.error('Login Error:'+response.responseCode);
+        return {
+          success: false,
+          result: '删除失败', // 新增默认值
+          message: `HTTP Error: ${response.responseCode}`
+          // 添加其他错误处理逻辑
+        };
+      }
+      console.log('slfj'+response.result.toString())
+      const jsonData = JSON.parse(response.result as string) as Houchu_Delete_Request;
+      console.log('11',jsonData.result);
+      return {
+        success: jsonData.code === 200,
+        code: jsonData.code,
+        result: jsonData.result,
+        message: jsonData.message,
+        //relTenantIds:jsonData.result.userInfo.relTenantIds
+      };
+
+    } catch (error) {
+      console.error('Login Error:', JSON.stringify(error));
+      return {
+        success: false,
+        result: '删除失败', // 新增默认值
+        message: '服务器繁忙'
+      };
+    }
+  }//后厨人员删除接口
 
 
   @Builder
@@ -332,6 +436,25 @@ struct KitchenStaffList {
               .fontSize(16)
               .fontColor(Color.Green)
           }
+          .onClick(async () => {
+             // this.Edit_Id  = await this.HouchuDelete(staff.id)
+             console.log(staff.id?.toString())
+
+            router.pushUrl({
+              url: "pages/EditStaff",
+              params: {
+                token: this.receivedToken,
+                relTenantIds: this.tenantId,
+                unitId: this.unitId,
+                editId: staff.id?.toString() // 传递编辑ID
+              }
+            });
+               // if() {
+               //   this.onPageShow();
+                //}
+
+
+          })
           .width(150)
           .height(40)
           .borderRadius(20)
@@ -349,14 +472,20 @@ struct KitchenStaffList {
           .onClick(() => {
             AlertDialog.show({                   // 点击按钮，弹出一个对话框
               title: "删除人员",                 // 设置标题
-              message: "",          // 设置内容
+              message: "确认删除该人员？",          // 设置内容
               alignment: DialogAlignment.Center, // 设置弹窗的对齐方式
               confirm: {                         // 单个按钮的配置文本
-                value: "text",
+                value: "确定",
                 fontColor: Color.Red,
                 backgroundColor: "#aabbcc",
-                action: () => {
-                  console.log("点击了")
+                action:async () => {
+                  console.log(staff.id?.toString())
+                  const deleteResult = await this.HouchuDelete(staff.id)
+                  console.log("牢莩是神")
+                  if (deleteResult.success) {
+                    // 删除成功后刷新列表
+                    this.onPageShow();
+                  }
                 }
               }
             })
