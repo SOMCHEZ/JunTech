@@ -61,7 +61,7 @@ struct Index1 {
   @State tabData:TabData[]= [
     { pinfen: 0, baifenbi: 0, fenxian: '安全' },    // 今日
     { pinfen: 2, baifenbi: 30, fenxian: '低风险' },  // 本周
-    { pinfen: 8, baifenbi: 70, fenxian: '中风险' },  // 本月
+    { pinfen: 8, baifenbi: 70, fenxian: '中风' },  // 本月
     { pinfen: 9, baifenbi: 95, fenxian: '高风险' }     // 本年
   ]
 
