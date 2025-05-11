@@ -1,4 +1,14 @@
 import router from '@ohos.router';
+// 定义接收的参数类型
+interface RecipeFormData {
+  date?: string;
+  recipeName?: string;
+  mealType?: string;
+  diningType?: string;
+  place?: string;
+  photoUri?: string;
+}
+
 @Entry
 @Component
 struct ReportPlanPage {
@@ -9,7 +19,7 @@ struct ReportPlanPage {
   @State selectedUnit: string = '请选择需求单位'
   @State selectedDate: string = '请选择供应日期'
   @State selectDate: Date = new Date()
-
+  @State selectedText: RecipeFormData[] =[]
   private unitOptions = [
     '选择需求单位',
     '实验第二学校（库房）',
@@ -17,9 +27,16 @@ struct ReportPlanPage {
   ]
 
   aboutToAppear() {
+
+    let params = router.getParams()
+    console.log('params', params)
+    if (params && params.toString()) {
+      this.selectedText.push(params as RecipeFormData)
+    }
     if (this.unitOptions.length > 0) {
       this.selectedUnit = this.unitOptions[0]
     }
+
 
   }
 
@@ -82,152 +99,189 @@ struct ReportPlanPage {
         .width('100%')
         .margin({ bottom: 15 })
 
+
         Column() {
-          Column() {
-            Column() {
-              // 标题部分
-              Text('实训第二学校（库房）')
-                .width('100%')
-                .height(30)
-                .padding({ left: 10 })
-                .backgroundColor('#E8F5E9') // 背景色区分标题
-                .fontColor('#2E7D32') // 深绿色字体
-                .fontSize(14)
-                .fontWeight(FontWeight.Bold)
+          if (this.selectedText.length  >0) {
+              List(){
+                ForEach(this.selectedText, (formData: RecipeFormData) => {
+                  ListItem() {
+                    Column() {
 
-              // 表单内容部分
-              Column({ space: 10 }) {
-                Row() {
-                  Text('供应时间：')
-                    .width('30%')
-                    .fontSize(12)
-                    .fontColor('#333333')
-                  Text('2024-04-01')
-                    .width('70%')
-                    .fontSize(12)
-                    .fontColor('#666666')
-                }
 
-                Row() {
-                  Text('需求单号：')
-                    .width('30%')
-                    .fontSize(12)
-                    .fontColor('#333333')
-                  Text('DH20240401001')
-                    .width('70%')
-                    .fontSize(12)
-                    .fontColor('#666666')
-                }
+                      Text('实训第二学校（库房）')
+                            .width('100%')
+                            .height(30)
+                            .padding({ left: 10 })
+                            .backgroundColor('#E8F5E9') // 背景色区分标题
+                            .fontColor('#2E7D32') // 深绿色字体
+                            .fontSize(14)
+                            .fontWeight(FontWeight.Bold)
 
-                Row() {
-                  Text('需求类型：')
-                    .width('30%')
-                    .fontSize(12)
-                    .fontColor('#333333')
-                  Text('食材采购')
-                    .width('70%')
-                    .fontSize(12)
-                    .fontColor('#666666')
-                }
-                Row() {
-                  Text('用餐类型：')
-                    .width('30%')
-                    .fontSize(12)
-                    .fontColor('#333333')
-                  Text('其他')
-                    .width('70%')
-                    .fontSize(12)
-                    .fontColor('#666666')
-                }
-                Row() {
-                  Text('餐别：')
-                    .width('30%')
-                    .fontSize(12)
-                    .fontColor('#333333')
-                  Text('其他')
-                    .width('70%')
-                    .fontSize(12)
-                    .fontColor('#666666')
-                }
-                Row() {
-                  Text('制单人：')
-                    .width('30%')
-                    .fontSize(12)
-                    .fontColor('#333333')
-                  Text('人')
-                    .width('70%')
-                    .fontSize(12)
-                    .fontColor('#666666')
-                }
-                Row() {
-                  Text('制单时间：')
-                    .width('30%')
-                    .fontSize(12)
-                    .fontColor('#333333')
-                  Text('2025')
-                    .width('70%')
-                    .fontSize(12)
-                    .fontColor('#666666')
-                }
-                Row() {
-                  Text('摘要：')
-                    .width('30%')
-                    .fontSize(12)
-                    .fontColor('#333333')
-                  Text('无')
-                    .width('70%')
-                    .fontSize(12)
-                    .fontColor('#666666')
-                }
-                // 操作按钮
-                Row({ space: 7 }) {
-                  Button('重新编辑')
-                    .backgroundColor('#ffffffff')
-                    .fontColor('#4CAF50')
-                    .fontSize(10)
-                    .borderRadius(12)
+                          Column({ space: 10 }) {
+                            Row() {
+                              Text('供应时间：')
+                                .width('30%')
+                                .fontSize(12)
+                                .fontColor('#333333')
+                              Text(formData.date ?? 'N/A')
+                                .width('70%')
+                                .fontSize(12)
+                                .fontColor('#666666')
+                            }
+
+                            .justifyContent(FlexAlign.Start)
+
+                              Row() {
+                                Text('需求单号：')
+                                  .width('30%')
+                                  .fontSize(12)
+                                  .fontColor('#333333')
+                                Text('XQ20250510006')
+                                  .width('70%')
+                                  .fontSize(12)
+                                  .fontColor('#666666')
+
+                              }
+                              .justifyContent(FlexAlign.Start)
+
+                              Row() {
+                                Text('需求类型：')
+                                  .width('30%')
+                                  .fontSize(12)
+                                  .fontColor('#333333')
+                                Text(formData.mealType ?? 'N/A')
+                                  .width('70%')
+                                  .fontSize(12)
+                                  .fontColor('#666666')
+
+                              }
+                              .justifyContent(FlexAlign.Start)
+                              Row() {
+                                Text('用餐类型：')
+                                  .width('30%')
+                                  .fontSize(12)
+                                  .fontColor('#333333')
+                                Text(formData.diningType ?? 'N/A')
+                                  .width('70%')
+                                  .fontSize(12)
+                                  .fontColor('#666666')
+                              }
+                              .justifyContent(FlexAlign.Start)
+                              Row() {
+                                Text('餐别：')
+                                  .width('30%')
+                                  .fontSize(12)
+                                  .fontColor('#333333')
+                                Text(formData.place ?? 'N/A')
+                                  .width('70%')
+                                  .fontSize(12)
+                                  .fontColor('#666666')
+                              }
+                              .justifyContent(FlexAlign.Start)
+                              Row() {
+                                Text('制单人：')
+                                  .width('30%')
+                                  .fontSize(12)
+                                  .fontColor('#333333')
+                                Text('人')
+                                  .width('70%')
+                                  .fontSize(12)
+                                  .fontColor('#666666')
+                              }
+                              Row() {
+                                Text('制单时间：')
+                                  .width('30%')
+                                  .fontSize(12)
+                                  .fontColor('#333333')
+                                Text(formData.recipeName ?? 'N/A')
+                                  .width('70%')
+                                  .fontSize(12)
+                                  .fontColor('#666666')
+                              }
+                              Row() {
+                                Text('摘要：')
+                                  .width('30%')
+                                  .fontSize(12)
+                                  .fontColor('#333333')
+                                Text('无')
+                                  .width('70%')
+                                  .fontSize(12)
+                                  .fontColor('#666666')
+                              }
+
+
+
+                            // 操作按钮
+                            Row({ space: 7 }) {
+                              Button('重新编辑')
+                                .backgroundColor('#ffffffff')
+                                .fontColor('#4CAF50')
+                                .fontSize(10)
+                                .borderRadius(12)
+                                .border({
+                                  color: '#4CAF50',
+                                  width: 1
+                                })
+                                .onClick(() => {
+                                  router.pushUrl({
+                                    url: 'pages/addPlan' })
+                                })
+
+                              Button('单据日志')
+                                .backgroundColor('#ffffffff')
+                                .fontColor('#4CAF50')
+                                .fontSize(10)
+                                .borderRadius(12)
+                                .border({
+                                  color: '#4CAF50',
+                                  width: 1
+                                })
+
+                              Button('删除单据')
+                                .backgroundColor('#ffffffff')
+                                .fontColor('#4CAF50')
+                                .fontSize(10)
+                                .borderRadius(12)
+                                .border({
+                                  color: '#4CAF50',
+                                  width: 1
+                                })
+                            }
+                      }
+                      .backgroundColor(Color.White)
+                          .width('100%')
+                          .justifyContent(FlexAlign.Start)
+
+
+
+                    }
+                    .padding({ left: 10, right: 10, top: 5, bottom: 10 })
+                    .backgroundColor(Color.White)
+                    .width('80%')
+                    .height('auto')
+                    .alignItems(HorizontalAlign.Center)
                     .border({
+                      width: 2,
                       color: '#4CAF50',
-                      width: 1
+                      radius: 8
                     })
 
-                  Button('单据日志')
-                    .backgroundColor('#ffffffff')
-                    .fontColor('#4CAF50')
-                    .fontSize(10)
-                    .borderRadius(12)
-                    .border({
-                      color: '#4CAF50',
-                      width: 1
-                    })
-
-                  Button('删除单据')
-                    .backgroundColor('#ffffffff')
-                    .fontColor('#4CAF50')
-                    .fontSize(10)
-                    .borderRadius(12)
-                    .border({
-                      color: '#4CAF50',
-                      width: 1
-                    })
-                }
-                .width('100%')
-                .justifyContent(FlexAlign.SpaceEvenly)
+                  }
+                })
               }
-              .padding({ left: 10, right: 10, top: 5, bottom: 10 })
+              .width('100%')
+              .borderRadius(8)
+          } else {
+              Column() {
+                Text('- 暂无相关数据 -')
+                .position({
+                  x: 110,
+                  y: 180
+                })
             }
-            .width('100%')
-            .borderRadius(8)
           }
-          .backgroundColor(Color.White)
-          .width('80%')
-          .border({
-            width: 2,
-            color: '#4CAF50',
-            radius: 8
-          })
-        }
 
+        }
         .width('100%')
         .backgroundColor('#f2dbdada')
         .layoutWeight(1)
@@ -240,7 +294,7 @@ struct ReportPlanPage {
           .margin({ top: 20 })
           .onClick(() => {
             router.pushUrl({
-              url: 'pages/addpan' })
+              url: 'pages/addPlan' })
           })
       }
 
