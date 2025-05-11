@@ -22,11 +22,10 @@
     "pages/ApprovalPage",
     "pages/addPlan",
     "pages/chukudan",
-    "pages/stock",
+    "pages/dingdanxiangqing",
+    "pages/dingdanxiangqing0",
     "pages/yishenpi",
-    "pages/signature",
-    "pages/renew"
-
+    "pages/signature"
 
   ]
 }
