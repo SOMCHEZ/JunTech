@@ -1,7 +1,7 @@
 //这里是接口参数传递以及，路由界面
 import router from '@ohos.router';
 import http from '@ohos.net.http';
-import { promptAction } from '@kit.ArkUI';
+import { promptAction, Router } from '@kit.ArkUI';
 import { PrintExtensionAbility } from '@kit.BasicServicesKit';
 
 interface RouteParams {
@@ -75,6 +75,9 @@ struct Index1 {
               Image($r('app.media.banner2'))
               Image($r('app.media.banner3'))
             }
+            .autoPlay(true)     // 开启自动轮播
+            .interval(3000)     // 轮播间隔时间为3秒
+            .loop(true)
             .aspectRatio(2.1)
             .borderRadius(10)
             .margin({
@@ -85,11 +88,23 @@ struct Index1 {
               Image($r('app.media.notice'))
                 .height(25)
                 .layoutWeight(1)
-              Text()
-                .height(50)
+              Text('')
+                .height(40)
                 .layoutWeight(4.5)
                 .animation({duration: 3000})
             }
+            .onClick(() => {
+              router.push({          // 使用push入栈一个新页面
+                url: 'pages/gonggao' // 通过url指定新打开的页面
+              ,
+                params:{
+                  token:this.receivedToken,
+                  relTenantIds:this.tenantId
+
+                }
+              })
+            })
+            .padding({top:10})
             .width('100%')
             .height(60)
             .padding({
