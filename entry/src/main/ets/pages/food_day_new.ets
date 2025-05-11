@@ -1,7 +1,14 @@
 import prompt from '@ohos.prompt';
 import router from '@ohos.router';
 import { Router } from '@kit.ArkUI';
+import photoAccessHelper from '@ohos.file.photoAccessHelper';
+import fs from '@ohos.file.fs';
+import {BusinessError} from '@ohos.base';
 import picker from '@ohos.file.picker';
+import common from '@ohos.app.ability.common';
+import abilityAccessCtrl from '@ohos.abilityAccessCtrl';
+import { JSON } from '@kit.ArkTS';
+
 
 interface GeneratedObjectLiteralInterface_1 {
   date: string;
@@ -10,28 +17,57 @@ interface GeneratedObjectLiteralInterface_1 {
   diningType: string;
   place: string;
   photoUri: string;
+  from?: string;
 }
+const photoSelectOptions=new photoAccessHelper.PhotoSelectOptions();
 
 @Entry
 @Component
 struct food_day_new {
-
-
   private selectDate: Date = new Date()
   @State date:string ='选择日期'
   @State selectedDate: string = '请选择筛选日期';
-  @State recipeName: string = '';
+  @State recipeName: string = '请输入食谱名称';
   @State mealType: string = '';
   @State diningType: string = '';
   @State photoUri: string = '';
+  @State message: string = ''
   private time =[]
   private photoCount: number = 0
   private unitOptions = [
-     '早餐', '午餐', '晚餐','早点','午点','晚点','其他','营养改善计划'
+    '早餐', '午餐', '晚餐','早点','午点','晚点','其他','营养改善计划'
   ]
   private classify=['不区分', '教师餐', '学生餐']
   private place=['实训第二学校餐厅']
   private photoPicker = new picker.PhotoViewPicker();
+  @State placeValue: string = '实训第二学校餐厅';
+  @State formDataList: GeneratedObjectLiteralInterface_1[] = [];
+  @State editIndex: number = -1;
+
+  aboutToAppear() {
+    let params = router.getParams() as GeneratedObjectLiteralInterface_1;
+    if (params && typeof params === 'object') {
+      if (params.date) {
+        this.selectedDate = params.date;
+      }
+      if (params.recipeName) {
+        this.recipeName = params.recipeName;
+      }
+      if (params.mealType) {
+        this.mealType = params.mealType;
+      }
+      if (params.diningType) {
+        this.diningType = params.diningType;
+      }
+      if (params.place) {
+        this.placeValue = params.place;
+      }
+      if (params.photoUri) {
+        this.photoUri = params.photoUri;
+      }
+    }
+  }
+
   build() {
     Column() {
       // 表单容器
@@ -57,6 +93,7 @@ struct food_day_new {
               })
               .width('70%')
             FormItem('食谱日期', true)
+
           }
           .margin({top: 5, bottom: 5 })
           // 食谱名称
@@ -64,7 +101,7 @@ struct food_day_new {
             Text('食谱名称 *')
               .fontSize(16)
               .width('30%')
-            TextInput({ placeholder: '请输入食谱名称' })
+            TextInput({placeholder: this.recipeName })
               .width('60%')
               .height(40)
               .textAlign(TextAlign.Start)
@@ -82,8 +119,8 @@ struct food_day_new {
               .fontSize(16)
               .width('30%')
             Select(this.unitOptions.map<SelectOption>((item: string) => ({ value: item })))
-              .selected(0)
-              .value('请选择餐别')
+              .selected(this.unitOptions.indexOf(this.mealType) >= 0 ? this.unitOptions.indexOf(this.mealType) : 0)
+              .value(this.mealType || '请选择餐别')
               .onSelect((index: number) => {
                 this.mealType = this.unitOptions[index]
               })
@@ -97,10 +134,10 @@ struct food_day_new {
               .fontSize(16)
               .width('30%')
             Select(this.classify.map<SelectOption>((item: string) => ({ value: item })))
-              .selected(0)
-              .value('请选择用餐类型')
+              .selected(this.classify.indexOf(this.diningType) >= 0 ? this.classify.indexOf(this.diningType) : 0)
+              .value(this.diningType || '请选择用餐类型')
               .onSelect((index: number) => {
-                this.diningType = this.unitOptions[index]
+                this.diningType = this.classify[index]
               })
               .width('70%')
             FormItem('用餐类型', true)
@@ -112,10 +149,10 @@ struct food_day_new {
               .fontSize(16)
               .width('30%')
             Select(this.place.map<SelectOption>((item: string) => ({ value: item })))
-              .selected(0)
-              .value(this.place[0])
+              .selected(this.place.indexOf(this.placeValue) >= 0 ? this.place.indexOf(this.placeValue) : 0)
+              .value(this.placeValue)
               .onSelect((index: number) => {
-                this.mealType = this.place[index]
+                this.placeValue = this.place[index]
               })
               .width('70%')
             FormItem('提交单位',true)
@@ -123,23 +160,23 @@ struct food_day_new {
           .margin({top: 5, bottom: 5 })
 
           Row({ space: 10 }) {
-              Text('上传食谱照片 *')
-                .fontSize(16)
-                .width('40%')
-                .margin({right:110})
-              Text(`${this.photoCount}/20`)
-                .width('60%')
-                .height(40)
+            Text('上传食谱照片 *')
+              .fontSize(16)
+              .width('40%')
+              .margin({right:110})
+            Text(`${this.photoCount}/20`)
+              .width('60%')
+              .height(40)
           }
           .margin({top: 5, bottom: 5 })
 
+          // 上传图片按钮
           Image($r('app.media.evidence_add'))
             .width(100)
             .height(100)
-            .objectFit(ImageFit.Contain)
-            .margin({right:222})
+            .margin({ right: 222 })
             .onClick(() => {
-              this.selectPhoto();
+              this.openGallery();
             })
         }
         .layoutWeight(1)
@@ -156,6 +193,18 @@ struct food_day_new {
     }
     .padding(20)
     .width('100%')
+  }
+  // 媒体权限申请
+  private requestMediaPermission() {
+    let context = getContext(this) as common.UIAbilityContext;
+    let atManager = abilityAccessCtrl.createAtManager();
+    atManager.requestPermissionsFromUser(context, ["ohos.permission.READ_MEDIA"], (error, result) => {
+      if (result) {
+        console.log("result: " + JSON.stringify(result));
+      } else {
+        console.log("error: " + JSON.stringify(error));
+      }
+    });
   }
   // 日期选择对话框
   private showDateDialog() {
@@ -175,39 +224,22 @@ struct food_day_new {
     })
   }
   // 图片选择
-  private async selectPhoto() {
-    try {
-      let photoSelectOptions = new picker.PhotoSelectOptions();
-      photoSelectOptions.MIMEType = picker.PhotoViewMIMETypes.IMAGE_TYPE;
-      photoSelectOptions.maxSelectNumber = 20 - this.photoCount;
-      
-      let photoPickerResult = await this.photoPicker.select(photoSelectOptions);
-      if (photoPickerResult && photoPickerResult.photoUris && photoPickerResult.photoUris.length > 0) {
-        this.photoCount += photoPickerResult.photoUris.length;
-        // Store the first photo URI for display
-        this.photoUri = photoPickerResult.photoUris[0];
-        prompt.showToast({
-          message: `已选择 ${photoPickerResult.photoUris.length} 张图片`,
-          duration: 2000
-        });
-      }
-    } catch (err) {
-      prompt.showToast({
-        message: '选择图片失败',
-        duration: 2000
-      });
-      console.error(`选择图片失败: ${err}`);
-    }
+  private openGallery() {
+    const photoViewPicker =new photoAccessHelper.PhotoViewPicker();
+    photoViewPicker.select()
+      .then((photoSelectResult)=>{
+        AlertDialog.show({message:JSON.stringify(photoSelectResult,null,2)})
+      })
   }
 
   // 表单提交逻辑
   private submitForm() {
-    if (!this.selectedDate ||
-      !this.recipeName ||
-      !this.mealType ||
-      !this.diningType
-      // ||
-      // !this.photoUri
+    if (!this.selectedDate
+    // ||
+    // !this.recipeName ||
+    // !this.mealType ||
+    // !this.diningType||
+    // !this.placeValue
     ) {
       prompt.showToast({
         message: '请填写所有必填项',
@@ -221,19 +253,41 @@ struct food_day_new {
       duration: 2000
     });
     let formData: GeneratedObjectLiteralInterface_1 = {
-    date: this.selectedDate,
-    recipeName: this.recipeName,
-    mealType: this.mealType,
-    diningType: this.diningType,
-    place: this.place[0],
-      photoUri: this.photoUri
-  };
+      date: this.selectedDate,
+      recipeName: this.recipeName,
+      mealType: this.mealType,
+      diningType: this.diningType,
+      place: this.placeValue,
+      photoUri: this.photoUri,
+      from: 'food_day_new'
+    };
+    if (this.editIndex >= 0) {
+      this.formDataList[this.editIndex] = formData;
+    } else {
+      this.formDataList.push(formData);
+    }
     router.replaceUrl({
-    url: 'pages/food_day',
-    params: formData
-  });
+      url: 'pages/food_day',
+      params: {
+        formDataList: this.formDataList,
+        from: 'food_day_new'
+      }
+    });
   }
 
+}
+
+// 用于存储和初始化全局context
+export class GlobalContext {
+  private static context: common.UIAbilityContext;
+
+  public static initContext(context: common.UIAbilityContext): void {
+    GlobalContext.context = context;
+  }
+
+  public static getContext(): common.UIAbilityContext {
+    return GlobalContext.context;
+  }
 }
 
 @Component
