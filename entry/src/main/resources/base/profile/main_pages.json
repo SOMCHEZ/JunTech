@@ -24,7 +24,8 @@
     "pages/chukudan",
     "pages/kucun",
     "pages/yishenpi",
-    "pages/signature"
+    "pages/signature",
+    "pages/renew"
 
   ]
 }
