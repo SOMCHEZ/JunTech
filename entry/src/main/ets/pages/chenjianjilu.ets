@@ -141,7 +141,7 @@ struct CalendarPage {
         .fontSize(16)
         .fontColor('#00C853')
         .onClick(() => {
-          router.push({ url: '' })
+          router.push({ url: 'pages/weichenjianrenyuan' })
         })
     }
     .width('100%')
