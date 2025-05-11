@@ -39,8 +39,8 @@ interface LoginHandlerResult {
 @Component
 struct Index {
   @State typeid: string = '';
-  @State userUsername: string = '15502933673';
-  @State userPassword: string = '123456';
+  @State userUsername: string = '';
+  @State userPassword: string = '';
 
   // 状态管理
   @State private responseCode: number = 0;
@@ -54,8 +54,19 @@ struct Index {
           .width('100%')
           .height('30%')
           .objectFit(ImageFit.Cover)
+          .zIndex(1)
       }
       .position({x:0,y:0})
+      Text('您好！')
+        .fontColor(Color.White)
+        .fontSize(50)
+        .zIndex(100)
+        .position({x:20,y:50})
+      Text('欢迎使用')
+        .fontSize(30)
+        .zIndex(100)
+        .fontColor(Color.White)
+        .position({x:150,y:70})
 
       RelativeContainer() {
         Image("")
