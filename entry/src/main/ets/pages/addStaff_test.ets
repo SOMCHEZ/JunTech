@@ -44,9 +44,6 @@ interface addHandlerResult {
 }
 
 
-
-
-
 interface RouteParams {//接口传递参数定义
   token?: string;
   relTenantIds?: number;
@@ -290,7 +287,10 @@ struct AddStaff {
       .position({x:18, y:'95%'})
       .onClick(async() => {
         router.pushUrl({
-          url: 'pages/kitchenStaff_test' })
+          url: 'pages/peicanRecords',  params: {
+            token: this.receivedToken,
+            tenantId: this.tenantId
+          } })
         const result = await this.addStaff();
        // this.unitId = result.token!;
       })
@@ -391,7 +391,7 @@ struct AddStaff {
         relTenantIds:jsonData.result.userInfo.relTenantIds
       };
     } catch (error) {
-     // console.error('Login Error:', JSON.stringify(error));
+     //console.error('Login Error:', JSON.stringify(error));
       return {
         success: false,
         message: 'fuck u!'

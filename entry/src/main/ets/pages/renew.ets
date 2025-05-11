@@ -12,9 +12,8 @@ struct shicai {
   @State selectedUnit: string = '请选择供应商'
   @State searchText: string = ''
   @State activeTab: number = 0; // 用于跟踪当前激活的选项卡索引
-  @State isRefreshing: boolean = false
-  @State refreshY: number = 0
   @State refreshTrigger: number = 80 // 触发刷新的下拉距离(像素)
+  //分类种类
   private categoryOptions = [
     '全部分类',
     '谷薯类',
@@ -28,6 +27,7 @@ struct shicai {
     '其他'
 
   ]
+  //供应商种类
   private unitOptions = [
     '请选择供应商',
     '小杨肉食店',
@@ -44,11 +44,6 @@ struct shicai {
     }
   }
 
-  // aboutToAppear() {
-  //   if (this.categoryOptions.length > 0) {
-  //     this.selectedcategory= this.categoryOptions[0]
-  //   }
-  // }
 
 
   build() {
@@ -95,6 +90,7 @@ struct shicai {
 
 
         Row() {
+          //选择分类
           Select(this.categoryOptions.map<SelectOption>((item: string) => ({ value: item })))
             .value(this.selectedcategory)// 绑定到状态变量
             .onSelect((index) => {
@@ -104,7 +100,7 @@ struct shicai {
 
             .width('40%')
             .margin({ top: 10 })
-
+          //选择供应商
           Select(this.unitOptions.map<SelectOption>((item: string) => ({ value: item })))
             .value(this.selectedUnit)
             .width(190)
@@ -197,13 +193,13 @@ struct shicai {
               Text('- 暂无相关数据 -')
                 .fontSize(16)
                 .fontColor('#666666')
-                .margin({ top: 20, bottom: 20 }) // 改用margin而不是position
+                .margin({ top: 20, bottom: 20 })
             }
             .width('100%')
             .height('100%')
             .justifyContent(FlexAlign.Center) // 垂直居中
             .alignItems(HorizontalAlign.Center) // 水平居中
-            .backgroundColor('#f2dbdada') // 使用更明显的背景色
+            .backgroundColor('#f2dbdada')
 
           }
           .edgeEffect(EdgeEffect.Spring)
@@ -223,10 +219,10 @@ struct shicai {
               Text("确定")
                 .margin({ bottom: 10,top:10 })
                 .onClick(() => {
+                  console.log('11')
                   // 跳转到 chuku 页面
-                  router.pushUrl({
-                    url: 'pages/addPlan'
-                  });
+                  router.back();
+
                 });
             }
             .height(38)
