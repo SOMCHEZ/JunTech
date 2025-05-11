@@ -7,6 +7,15 @@ import http from '@ohos.net.http';
 AppStorage.setOrCreate('token', '');
 AppStorage.setOrCreate('tenantId', 0);
 
+interface Houchu_Delete_Request {
+  success: boolean;
+  code?: number;
+  result:string;
+  message?: string;
+}
+
+
+
 interface  records{//定义接口返回类型
   id?: number;
   schoolId: string;
@@ -64,7 +73,7 @@ interface RouteParams {
 }
 
 interface kitchenStaffs extends records {
-  id?:number;
+  id:number;
   name: string;      // 对应原接口的realname
   workplace: string; // 对应原接口的unitName
   status: string;    // 需确认来源字段
@@ -86,6 +95,8 @@ struct KitchenStaffList {
   @State receivedToken: string = '';//参数传递
   @State tenantId: number = 0;//同上
   @State unitId: string ='';
+
+  @State isDeleting: boolean = false;
   //@State Id: number =0;
   //@State ddd:  string[] = [];
 
@@ -272,6 +283,58 @@ struct KitchenStaffList {
   }
 
 
+
+  private async HouchuDelete(staffId?: number): Promise<Houchu_Delete_Request> {//这个请求是针对查询后厨人员列表的
+
+    try {
+      const httpRequest = http.createHttp();
+
+      const response = await httpRequest.request(
+        'https://api.suoeryun.com/ifood/jeecg-school/school/xxUnitUser/delete',
+        {
+          method: http.RequestMethod.DELETE,
+          header: { 'Content-Type': 'application/x-www-form-urlencoded',
+            'Tenant-Id':this.tenantId.toString(),
+            'X-Access-Token':this.receivedToken
+          },
+          extraData:
+          `id=${staffId?.toString() ?? ''}`
+
+        }
+
+      );
+
+      if (response.responseCode !== 200) {
+        //console.error('Login Error:'+response.responseCode);
+        return {
+          success: false,
+          result: '删除失败', // 新增默认值
+          message: `HTTP Error: ${response.responseCode}`
+          // 添加其他错误处理逻辑
+        };
+      }
+      console.log('slfj'+response.result.toString())
+      const jsonData = JSON.parse(response.result as string) as Houchu_Delete_Request;
+      console.log('11',jsonData.result);
+      return {
+        success: jsonData.code === 200,
+        code: jsonData.code,
+        result: jsonData.result,
+        message: jsonData.message,
+        //relTenantIds:jsonData.result.userInfo.relTenantIds
+      };
+
+    } catch (error) {
+      console.error('Login Error:', JSON.stringify(error));
+      return {
+        success: false,
+        result: '删除失败', // 新增默认值
+        message: '服务器繁忙'
+      };
+    }
+  }
+
+
   @Builder
   renderMultipleStaffCards() {
     Scroll() {
@@ -355,14 +418,20 @@ struct KitchenStaffList {
           .onClick(() => {
             AlertDialog.show({                   // 点击按钮，弹出一个对话框
               title: "删除人员",                 // 设置标题
-              message: "",          // 设置内容
+              message: "确认删除该人员？",          // 设置内容
               alignment: DialogAlignment.Center, // 设置弹窗的对齐方式
               confirm: {                         // 单个按钮的配置文本
-                value: "text",
+                value: "确定",
                 fontColor: Color.Red,
                 backgroundColor: "#aabbcc",
-                action: () => {
-                  console.log("点击了")
+                action:async () => {
+                  console.log(staff.id?.toString())
+                  const deleteResult = await this.HouchuDelete(staff.id)
+                  console.log("牢莩是神")
+                  if (deleteResult.success) {
+                    // 删除成功后刷新列表
+                    this.onPageShow();
+                  }
                 }
               }
             })
