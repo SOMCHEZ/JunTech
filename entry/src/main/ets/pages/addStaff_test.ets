@@ -44,9 +44,6 @@ interface addHandlerResult {
 }
 
 
-
-
-
 interface RouteParams {//接口传递参数定义
   token?: string;
   relTenantIds?: number;
@@ -290,7 +287,7 @@ struct AddStaff {
       .position({x:18, y:'95%'})
       .onClick(async() => {
         router.pushUrl({
-          url: 'pages/kitchenStaff_test',  params: {
+          url: 'pages/peicanRecords',  params: {
             token: this.receivedToken,
             tenantId: this.tenantId
           } })
