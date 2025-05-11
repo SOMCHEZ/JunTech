@@ -240,7 +240,7 @@ struct Page1 {
         const day = value.day ?? new Date().getDate()
 
         this.selectDate = new Date(year, month - 1, day)
-        this.dates = `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`
+        this.dates = `${year}-${(month+1).toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`
       }
     })
   }
