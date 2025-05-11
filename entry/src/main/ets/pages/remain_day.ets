@@ -1,170 +1,349 @@
 import router from '@ohos.router';
+import http from '@ohos.net.http';
+
+//永久存储token和租户id
+AppStorage.setOrCreate('token', '');
+AppStorage.setOrCreate('tenantId', 0);
+
+interface SampleFormData {
+  id?: string;
+  formDataList: boolean;
+  from: string;
+  date?: string;
+  sampleType?: string;
+  mealType?: string;
+  dishName?: string;
+  sampleWeight?: string;
+  destroyPerson?: string;
+  destroyTime?: string;
+  sampleImages?: string[];
+  fridgeImages?: string[];
+  remark?: string;
+}
+
+interface RouteParams {
+  token?: string;
+  relTenantIds?: number;
+}
+
+interface SampleListResult {
+  records: SampleFormData[];
+  total: number;
+  size: number;
+  current: number;
+}
+
+
+interface SampleListResponse {
+  code: number;
+  message: string;
+  result: SampleListResult;
+  timestamp: number;
+}
+
+interface GeneratedTypeLiteralInterface_1 {
+  success: boolean;
+  records?: SampleFormData[];
+  message?: string;
+}
+
 @Entry
 @Component
-struct CalendarPage {
-  // 当前显示的月份和年份（响应式状态变量）
-  @State private currentDate: Date = new Date()
-  // 当前选中的日期（响应式状态变量）
-  @State private selectedDate: Date = new Date()
-  private weekDays: string[] = ['日', '一', '二', '三', '四', '五', '六']
-  @State private selectedTab: number = 0 // 0:全部 1:晨检 2:午检 3:晚检
-  private tabList: string[] = ['全部', '晨检', '午检', '晚检']
-  private (date: Date): string {
-    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
-  }
+struct remain_day {
+  private selectDate: Date = new Date()
+  @State selectedMeal: string = '请选择餐别'
+  @State selectedDate: string = '请选择筛选日期'
+  private unitOptions = [
+    '全部', '晨检', '午检', '晚检'
+  ]
+  @State formDataList: SampleFormData[] = []
+  @State receivedToken: string = ''
+  @State tenantId: number = 0
 
+  async onPageShow() {
+    const params = router.getParams() as RouteParams;
 
-  private getDatesForWeek(): number[] {
-    // 计算当月第一天
-    const firstDayOfMonth = new Date(this.currentDate.getFullYear(), this.currentDate.getMonth(), 1)
-    // 计算当月最后一天
-    const lastDayOfMonth = new Date(this.currentDate.getFullYear(), this.currentDate.getMonth() + 1, 0)
-
-    // 获取当前选中日期的星期几（0-6，0表示星期日）
-    const currentDayOfWeek = this.selectedDate.getDay()
-
-    // 计算当前选中日期所在周的第一天（星期日）
-    const startDate = new Date(this.selectedDate)
-    startDate.setDate(this.selectedDate.getDate() - currentDayOfWeek)
-
-    // 生成当前周的日期数组
-    const dates: number[] = []
-    for (let i = 0; i < 7; i++) {
-      const currentDate = new Date(startDate)
-      currentDate.setDate(startDate.getDate() + i)
-      dates.push(currentDate.getDate())
+    if (!AppStorage.get('token') && params?.token) {
+      AppStorage.set('token', params.token);
     }
-    return dates
-  }
-
-
-  private changeWeek(increment: number) {
-    // 计算新日期（当前日期 ± 增量周数）
-    const newDate = new Date(this.selectedDate)
-    newDate.setDate(this.selectedDate.getDate() + (increment * 7))
-
-    // 更新月份和年份显示
-    this.currentDate = new Date(newDate)
-    this.selectedDate = newDate
-  }
-
-  @Builder
-  private CalendarHeaderBuilder() {
-    Row() {
-      // 显示当前年月
-      Text(`${this.currentDate.getFullYear()}年${this.currentDate.getMonth() + 1}月`)
-        .fontSize(24)
-        .fontWeight(FontWeight.Medium)
-        .fontColor('#ffffffff')
-      Blank()
-      // 周切换按钮
-      Row() {
-        Text('<') // 上一周按钮
-          .fontSize(24)
-          .fontColor('#ffffffff')
-          .margin({ right: 20 })
-          .onClick(() => this.changeWeek(-1))
-        Text('>') // 下一周按钮
-          .fontSize(24)
-          .fontColor('#ffffffff')
-          .onClick(() => this.changeWeek(1))
-      }
+    if (!AppStorage.get('tenantId') && params?.relTenantIds) {
+      AppStorage.set('tenantId', params.relTenantIds);
     }
-    .width('100%')
-    .padding({ left: 16, right: 16, top: 12, bottom: 12 })
-    .backgroundColor('#00C853')
-  }
 
-  //构建星期标题行
-  @Builder
-  private WeekDaysBuilder() {
-    Row() {
-      // 渲染星期文本（一至日）
-      ForEach(this.weekDays, (day: string) => {
-        Text(day)
-          .fontSize(15)
-          .width('14.28%') // 平均分配宽度（100%/7）
-          .textAlign(TextAlign.Center)
-          .fontColor('#ffffffff')
-      })
+    this.receivedToken = AppStorage.get('token') ?? '';
+    this.tenantId = AppStorage.get('tenantId') ?? 0;
+
+    const result = await this.fetchSampleList();
+    if (result.success && result.records) {
+      this.formDataList = result.records;
     }
-    .width('100%')
-    .padding({ top: 8, bottom: 8 })
   }
 
-  /**
-   * 组件构建方法
-   */
   build() {
     Column() {
-      // 渲染日历头部
-      this.CalendarHeaderBuilder()
-      // 日历内容绿色区域
+      // 顶部选择栏
       Column() {
-        // 渲染星期标题行
-        this.WeekDaysBuilder()
-        // 渲染日期选择行
         Row() {
-          ForEach(this.getDatesForWeek(), (date: number) => {
-            Column() {
-              Stack() {
-                // 选中日期高亮背景
-                if (date === this.selectedDate.getDate()) {
-                  Circle()
-                    .width(40)
-                    .height(40)
-                    .fill('#ffffffff')
-                }
-                // 日期文本（选中日期使用主题色，未选中使用白色）
-                Text(`${date < 10 ? '0' : ''}${date}`)
-                  .fontSize(18)
-                  .fontColor(date === this.selectedDate.getDate() ? '#00C853' : '#FFFFFF')
-              }
-            }
-            .width('14.28%') // 平均分配宽度（100%/7）
-            .height(50)
-            .justifyContent(FlexAlign.Center)
-            .onClick(() => {
-              // 更新选中日期
-              const newDate = new Date(this.selectedDate)
-              newDate.setDate(date)
-              this.selectedDate = newDate
+          Select(this.unitOptions.map<SelectOption>((item: string) => ({ value: item })))
+            .selected(0)
+            .value(this.unitOptions[0])
+            .onSelect((index: number) => {
+              this.selectedMeal = this.unitOptions[index]
             })
-          })
+            .margin(10)
+            .width('40%')
+            .height(40)
+            .font({ size: 15 })
+
+          Text(this.selectedDate)
+            .width('60%')
+            .height(40)
+            .textAlign(TextAlign.Center)
+            .borderRadius(4)
+            .borderWidth(1)
+            .borderColor('#CCCCCC')
+            .onClick(() => {
+              this.showDateDialog()
+            })
         }
         .width('100%')
-        .padding({ bottom: 16 })
-      }
-      .width('100%')
-      .backgroundColor('#00C853') // 绿色背景只包裹日历内容
+        .margin({ bottom: 15 })
 
-      Column() {
-        Column() {
-          Text('~暂无相关数据~')
-            .margin({top: 16})
-            .fontSize(15)
-            .fontColor('#BBBBBB')
+        // 数据展示区
+        if (this.formDataList.length > 0) {
+          Column() {
+            ForEach(this.formDataList, (formData: SampleFormData) => {
+              Scroll() {
+                Column() {
+                  // 信息区
+                  Column() {
+                    Text(`留样日期：${formData.date}`)
+                      .fontSize(16)
+                      .fontColor('#222')
+                      .margin({ top: 8, bottom: 4 })
+                    Text(`留样类型：${formData.sampleType}`)
+                      .fontSize(16)
+                      .fontColor('#222')
+                      .margin({ bottom: 4 })
+                    Text(`餐    别：${formData.mealType}`)
+                      .fontSize(16)
+                      .fontColor('#222')
+                      .margin({ bottom: 4 })
+                    Text(`菜品名称：${formData.dishName}`)
+                      .fontSize(16)
+                      .fontColor('#222')
+                      .margin({ bottom: 4 })
+                    Text(`留样重量：${formData.sampleWeight}克`)
+                      .fontSize(16)
+                      .fontColor('#222')
+                      .margin({ bottom: 4 })
+                    Text(`销毁人员：${formData.destroyPerson}`)
+                      .fontSize(16)
+                      .fontColor('#222')
+                      .margin({ bottom: 4 })
+                    Text(`销毁时间：${formData.destroyTime}`)
+                      .fontSize(16)
+                      .fontColor('#222')
+                      .margin({ bottom: 8 })
+                  }
+                  .alignItems(HorizontalAlign.Start)
+
+                  // 图片区
+                  if (formData.sampleImages && formData.sampleImages.length > 0) {
+                    Text('留样图片：')
+                      .fontSize(16)
+                      .fontColor('#222')
+                      .margin({ top: 8, bottom: 4 })
+                    Row() {
+                      ForEach(formData.sampleImages, (image: string) => {
+                        Image(image)
+                          .width(120)
+                          .height(90)
+                          .margin({ right: 8 })
+                          .borderRadius(8)
+                      })
+                    }
+                  }
+
+                  if (formData.fridgeImages && formData.fridgeImages.length > 0) {
+                    Text('留样柜图片：')
+                      .fontSize(16)
+                      .fontColor('#222')
+                      .margin({ top: 8, bottom: 4 })
+                    Row() {
+                      ForEach(formData.fridgeImages, (image: string) => {
+                        Image(image)
+                          .width(120)
+                          .height(90)
+                          .margin({ right: 8 })
+                          .borderRadius(8)
+                      })
+                    }
+                  }
+
+                  // 按钮区
+                  Row() {
+                    Blank()
+                    Button('重新编辑')
+                      .width(120)
+                      .height(36)
+                      .fontColor('#07C160')
+                      .fontSize(15)
+                      .borderRadius(18)
+                      .borderWidth(1)
+                      .borderColor('#07C160')
+                      .backgroundColor('#fff')
+                      .onClick(() => {
+                        router.pushUrl({
+                          url: 'pages/remain',
+                          params: {
+                            token: this.receivedToken,
+                            relTenantIds: this.tenantId,
+                            formData: formData
+                          }
+                        })
+                      })
+                    Button('删除单据')
+                      .width(120)
+                      .height(36)
+                      .fontColor('#07C160')
+                      .fontSize(15)
+                      .borderRadius(18)
+                      .borderWidth(1)
+                      .borderColor('#07C160')
+                      .backgroundColor('#fff')
+                      .margin({ left: 16 })
+                      .onClick(() => {
+                        this.deleteSample(formData)
+                      })
+                  }
+                  .margin({ top: 16, bottom: 0 })
+                  .justifyContent(FlexAlign.End)
+                }
+                .backgroundColor('#fff')
+                .borderRadius(18)
+                .borderWidth(2)
+                .borderColor('#07C160')
+                .shadow({ radius: 8, color: '#07C16022', offsetX: 0, offsetY: 4 })
+                .margin({ top: 12, bottom: 12, left: 8, right: 8 })
+                .padding(18)
+              }
+            })
+          }
+          .width('100%')
+          .layoutWeight(1)
+        } else {
+          Column() {
+            Text('- 暂无相关数据 -')
+              .position({
+                x: 110,
+                y: 180
+              })
+          }
         }
-        .layoutWeight(1)
       }
-      .width('100%')
       .layoutWeight(1)
 
-      Button('新增留样')
+      // 新建留样按钮
+      Button('新建留样', { type: ButtonType.Capsule })
         .width('90%')
         .height(50)
-        .fontSize(16)
-        .fontColor('#ffffffff')
-        .backgroundColor('#00C853')
-        .margin({ bottom: 16 })
+        .backgroundColor('#07C160')
+        .fontColor('#FFFFFF')
+        .fontSize(18)
+        .borderRadius(12)
+        .margin({ top: 10, bottom: 20 })
+        .alignSelf(ItemAlign.Center)
         .onClick(() => {
           router.pushUrl({
-            url: 'pages/remain'
-          });
+            url: 'pages/remain',
+            params: {
+              token: this.receivedToken,
+              relTenantIds: this.tenantId
+            }
+          })
         })
     }
     .width('100%')
-    .height('100%')
-    .backgroundColor('#F5F5F5')
+    .padding({ left: 10, right: 10 })
+  }
+
+
+  private showDateDialog() {
+    DatePickerDialog.show({
+      start: new Date('2000-1-1'),
+      end: new Date('2100-1-1'),
+      selected: this.selectDate,
+      onAccept: (value: DatePickerResult) => {
+        const year = value.year ?? new Date().getFullYear()
+        const month = value.month ?? new Date().getMonth() + 1
+        const day = value.day ?? new Date().getDate()
+
+        this.selectDate = new Date(year, month - 1, day)
+        this.selectedDate = `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`
+      }
+    })
+  }
+
+  private async fetchSampleList(): Promise<GeneratedTypeLiteralInterface_1> {
+    try {
+      const httpRequest = http.createHttp();
+      const response = await httpRequest.request(
+        'https://api.suoeryun.com/ifood/jeecg-school/school/sample/list',
+        {
+          method: http.RequestMethod.GET,
+          header: {
+            'Tenant-Id': this.tenantId.toString(),
+            'X-Access-Token': this.receivedToken
+          }
+        }
+      );
+
+      if (response.responseCode !== 200) {
+        return {
+          success: false,
+          message: `HTTP Error: ${response.responseCode}`
+        };
+      }
+
+      const jsonData = JSON.parse(response.result as string) as SampleListResponse;
+      return {
+        success: jsonData.code === 200,
+        records: jsonData.result.records,
+        message: jsonData.message
+      };
+    } catch (error) {
+      console.error('Error:', error);
+      return {
+        success: false,
+        message: '服务器繁忙'
+      };
+    }
+  }
+
+  private async deleteSample(sample: SampleFormData): Promise<void> {
+    try {
+      const httpRequest = http.createHttp();
+      const response = await httpRequest.request(
+        'https://api.suoeryun.com/ifood/jeecg-school/school/sample/delete',
+        {
+          method: http.RequestMethod.POST,
+          header: {
+            'Content-Type': 'application/json',
+            'Tenant-Id': this.tenantId.toString(),
+            'X-Access-Token': this.receivedToken
+          },
+          extraData: JSON.stringify({
+            id: sample.id
+          })
+        }
+      );
+
+      if (response.responseCode === 200) {
+        this.formDataList = this.formDataList.filter(item => item !== sample);
+      }
+    } catch (error) {
+      console.error('Delete Error:', error);
+    }
   }
 }

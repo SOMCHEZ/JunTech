@@ -29,7 +29,8 @@
     "pages/weichenjianrenyuan",
     "pages/chenjianjilu",
     "pages/shishikucun",
-    "pages/renew"
+    "pages/renew",
+    "pages/kucun"
 
   ]
 }

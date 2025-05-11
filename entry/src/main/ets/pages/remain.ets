@@ -1,8 +1,42 @@
 import router from '@ohos.router';
+import http from '@ohos.net.http';
+import photoAccessHelper from '@ohos.file.photoAccessHelper';
+
+//永久存储token和租户id
+AppStorage.setOrCreate('token', '');
+AppStorage.setOrCreate('tenantId', 0);
+
+interface RouteParams {
+  token?: string;
+  relTenantIds?: number;
+  formData?: SampleFormData;
+}
+
+interface SampleFormData {
+  id?: string;
+  unitName?: string;
+  date?: string;
+  sampleType?: string;
+  mealType?: string;
+  fridgeTemp?: string;
+  dishName?: string;
+  sampleWeight?: string;
+  destroyPerson?: string;
+  destroyTime?: string;
+  sampleImages?: string[];
+  fridgeImages?: string[];
+  remark?: string;
+}
+
+interface SampleResponse {
+  code: number;
+  message: string;
+  result: SampleFormData;
+  timestamp: number;
+}
 
 @Entry
 @Component
-
 struct SampleFormPage {
   @State submitUnit: string = '实训第二学校餐厅'
   @State sampleDate: string = '请选择日期'
@@ -16,11 +50,42 @@ struct SampleFormPage {
   @State sampleImages: string[] = []
   @State fridgeImages: string[] = []
   @State remark: string = ''
+  @State receivedToken: string = ''
+  @State tenantId: number = 0
 
   private unitOptions: string[] = ['实训第二学校餐厅', '其他']
   private typeOptions: string[] = ['不区分', '教师餐', '学生餐']
   private mealOptions: string[] = ['早餐', '午餐', '晚餐', '其他']
   private destroyTimeOptions: string[] = ['上午', '下午', '晚上']
+
+  async onPageShow() {
+    const params = router.getParams() as RouteParams;
+
+    if (!AppStorage.get('token') && params?.token) {
+      AppStorage.set('token', params.token);
+    }
+    if (!AppStorage.get('tenantId') && params?.relTenantIds) {
+      AppStorage.set('tenantId', params.relTenantIds);
+    }
+
+    this.receivedToken = AppStorage.get('token') ?? '';
+    this.tenantId = AppStorage.get('tenantId') ?? 0;
+
+    if (params?.formData) {
+      // 编辑模式，填充表单数据
+      const formData = params.formData;
+      this.sampleDate = formData.date ?? '请选择日期';
+      this.sampleType = formData.sampleType ?? '不区分';
+      this.mealType = formData.mealType ?? '午餐';
+      this.dishName = formData.dishName ?? '';
+      this.sampleWeight = formData.sampleWeight ?? '';
+      this.destroyPerson = formData.destroyPerson ?? '';
+      this.destroyTime = formData.destroyTime ?? '请选择销毁时间';
+      this.sampleImages = formData.sampleImages ?? [];
+      this.fridgeImages = formData.fridgeImages ?? [];
+      this.remark = formData.remark ?? '';
+    }
+  }
 
   build() {
     Column() {
@@ -41,6 +106,7 @@ struct SampleFormPage {
               .width('65%')
           }
           .margin({top: 5, bottom: 5 })
+
           // 留样日期
           Row(){
             this.formRow('留样日期', true)
@@ -50,6 +116,7 @@ struct SampleFormPage {
               .width('65%')
           }
           .margin({top: 5, bottom: 5 })
+
           // 留样类型
           Row() {
             this.formRow('留样类型', true)
@@ -59,15 +126,17 @@ struct SampleFormPage {
               .width('65%')
           }
           .margin({top: 5, bottom: 5 })
+
           // 餐别
           Row() {
-            this.formRow('留样类型', true)
+            this.formRow('餐    别', true)
             Select(this.mealOptions.map<SelectOption>(item => ({ value: item })))
               .value(this.mealType)
               .onSelect(index => this.mealType = this.mealOptions[index])
               .width('65%')
           }
           .margin({top: 5, bottom: 5 })
+
           // 留样柜温度
           Row(){
             this.formRow('留样柜温度℃', true)
@@ -77,6 +146,7 @@ struct SampleFormPage {
               .width('100%')
           }
           .margin({top: 5, bottom: 5 })
+
           // 菜品名称
           Row(){
             this.formRow('菜品名称', true)
@@ -85,6 +155,7 @@ struct SampleFormPage {
               .width('100%')
           }
           .margin({top: 5, bottom: 5 })
+
           // 留样重量
           Row(){
             this.formRow('留样重量(克)', true)
@@ -94,6 +165,7 @@ struct SampleFormPage {
               .width('100%')
           }
           .margin({top: 5, bottom: 5 })
+
           // 销毁人员
           Row(){
             this.formRow('销毁人员', true)
@@ -102,6 +174,7 @@ struct SampleFormPage {
               .width('100%')
           }
           .margin({top: 5, bottom: 5 })
+
           // 销毁时间
           Row(){
             this.formRow('销毁时间', false)
@@ -111,10 +184,11 @@ struct SampleFormPage {
               .width('65%')
           }
           .margin({top: 5, bottom: 5 })
+
           // 上传留样图片
-          this.formImageRow('上传留样图片', true, this.sampleImages, 10, (imgs) => this.sampleImages = imgs)
+          this.formImageRow('上传留样图片', true, this.sampleImages, 10, (imgs: string[]) => this.sampleImages = imgs)
           // 放入留样柜拍照
-          this.formImageRow('放入留样柜拍照', true, this.fridgeImages, 2, (imgs) => this.fridgeImages = imgs)
+          this.formImageRow('放入留样柜拍照', true, this.fridgeImages, 2, (imgs: string[]) => this.fridgeImages = imgs)
 
           // 备注
           Column() {
@@ -123,7 +197,6 @@ struct SampleFormPage {
               .onChange(val => this.remark = val)
               .width('100%')
           }
-
         }
         .padding(16)
         .width('100%')
@@ -182,7 +255,6 @@ struct SampleFormPage {
       }
       .margin({top: 5, bottom: 5 })
       Row() {
-        // 这里只做示意，实际可用ImagePicker组件
         Image($r('app.media.evidence_add'))
           .width(80)
           .height(80)
@@ -190,8 +262,7 @@ struct SampleFormPage {
           .borderColor('#eee')
           .borderRadius(8)
           .onClick(() => {
-            // 这里实现图片选择逻辑
-            //onChange([...images, '新图片路径'])
+            this.openGallery
           })
           .margin({right:220})
       }
@@ -199,6 +270,14 @@ struct SampleFormPage {
     }
     .margin({ top: 8, bottom: 8 })
     .width('100%')
+  }
+
+  private openGallery() {
+    const photoViewPicker =new photoAccessHelper.PhotoViewPicker();
+    photoViewPicker.select()
+      .then((photoSelectResult)=>{
+        AlertDialog.show({message:JSON.stringify(photoSelectResult,null,2)})
+      })
   }
 
   // 日期选择
@@ -216,8 +295,45 @@ struct SampleFormPage {
     })
   }
 
-  private submit() {
-    // 校验与提交逻辑
-    // ...
+  private async submit(): Promise<void> {
+    try {
+      const httpRequest = http.createHttp();
+      const response = await httpRequest.request(
+        'https://api.suoeryun.com/ifood/jeecg-school/school/sample/add',
+        {
+          method: http.RequestMethod.POST,
+          header: {
+            'Content-Type': 'application/json',
+            'Tenant-Id': this.tenantId.toString(),
+            'X-Access-Token': this.receivedToken
+          },
+          extraData: JSON.stringify({
+            unitName: this.submitUnit,
+            date: this.sampleDate,
+            sampleType: this.sampleType,
+            mealType: this.mealType,
+            fridgeTemp: this.fridgeTemp,
+            dishName: this.dishName,
+            sampleWeight: this.sampleWeight,
+            destroyPerson: this.destroyPerson,
+            destroyTime: this.destroyTime,
+            sampleImages: this.sampleImages,
+            fridgeImages: this.fridgeImages,
+            remark: this.remark
+          })
+        }
+      );
+
+      if (response.responseCode === 200) {
+        const jsonData = JSON.parse(response.result as string) as SampleResponse;
+        if (jsonData.code === 200) {
+          router.back();
+        } else {
+          console.error('提交失败:', jsonData.message);
+        }
+      }
+    } catch (error) {
+      console.error('Submit Error:', error);
+    }
   }
 }

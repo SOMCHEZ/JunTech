@@ -1,7 +1,13 @@
 import router from '@ohos.router';
+import http from '@ohos.net.http';
+
+//永久存储token和租户id
+AppStorage.setOrCreate('token', '');
+AppStorage.setOrCreate('tenantId', 0);
 
 // 定义接收的参数类型
 interface RecipeFormData {
+  id?: string;
   formDataList: boolean;
   from: string;
   date?: string;
@@ -10,6 +16,33 @@ interface RecipeFormData {
   diningType?: string;
   place?: string;
   photoUri?: string;
+}
+
+interface RouteParams {
+  token?: string;
+  relTenantIds?: number;
+  formDataList?: RecipeFormData[];
+  from?: string;
+  date?: string;
+  recipeName?: string;
+  mealType?: string;
+  diningType?: string;
+  place?: string;
+  photoUri?: string;
+}
+
+interface RecipeListResult {
+  records: RecipeFormData[];
+  total: number;
+  size: number;
+  current: number;
+}
+
+interface RecipeListResponse {
+  code: number;
+  message: string;
+  result: RecipeListResult;
+  timestamp: number;
 }
 
 @Entry
@@ -21,18 +54,31 @@ struct food_day {
   private unitOptions = [
     '其他', '早餐', '午餐', '晚餐'
   ]
-  @State formDataList: RecipeFormData[] =  []// 改为数组存储多条数据
+  @State formDataList: RecipeFormData[] = []
+  @State receivedToken: string = ''
+  @State tenantId: number = 0
 
-  aboutToAppear() {
-    let params = router.getParams() as RecipeFormData;
+  async onPageShow() {
+    const params = router.getParams() as RouteParams;
 
-    if (params && params.from === 'food_day_new') {
-      // 确保 formDataList 是数组类型
+    if (!AppStorage.get('token') && params?.token) {
+      AppStorage.set('token', params.token);
+    }
+    if (!AppStorage.get('tenantId') && params?.relTenantIds) {
+      AppStorage.set('tenantId', params.relTenantIds);
+    }
+
+    this.receivedToken = AppStorage.get('token') ?? '';
+    this.tenantId = AppStorage.get('tenantId') ?? 0;
+
+    // 处理来自 food_day_new 的数据
+    if (params?.from === 'food_day_new') {
       if (Array.isArray(params.formDataList)) {
         this.formDataList = params.formDataList;
-      } else {
-        // 兼容旧逻辑：将当前参数作为新条目加入数组
-        this.formDataList.push({
+      } else if (params.date || params.recipeName) {
+        // 添加新条目到现有列表
+        const newRecipe: RecipeFormData = {
+          id: Date.now().toString(), // 生成唯一ID
           from: params.from,
           date: params.date,
           recipeName: params.recipeName,
@@ -40,153 +86,61 @@ struct food_day {
           diningType: params.diningType,
           place: params.place,
           photoUri: params.photoUri,
-          formDataList: false // 保持接口字段完整性
-        });
+          formDataList: false
+        };
+        this.formDataList = [...this.formDataList, newRecipe];
       }
-    } else if (params) {
-      // 首次新建页面传参处理（非 food_day_new 跳转）
-      this.formDataList.push(params as RecipeFormData);
     }
   }
-
 
   build() {
     Column() {
       // 顶部选择栏
+      Row() {
+        Select(this.unitOptions.map<SelectOption>((item: string) => ({ value: item })))
+          .selected(0)
+          .value(this.unitOptions[0])
+          .onSelect((index: number) => {
+            this.selectedMeal = this.unitOptions[index]
+          })
+          .margin(10)
+          .width('40%')
+          .height(40)
+          .font({ size: 15 })
+
+        Text(this.selectedDate)
+          .width('60%')
+          .height(40)
+          .textAlign(TextAlign.Center)
+          .borderRadius(4)
+          .borderWidth(1)
+          .borderColor('#CCCCCC')
+          .onClick(() => {
+            this.showDateDialog()
+          })
+      }
+      .width('100%')
+      .margin({ bottom: 15 })
+
+      // 数据展示区
       Column() {
-        Row() {
-          Select(this.unitOptions.map<SelectOption>((item: string) => ({ value: item })))
-            .selected(0)
-            .value(this.unitOptions[0])
-            .onSelect((index: number) => {
-              this.selectedMeal = this.unitOptions[index]
-            })
-            .margin(10)
-            .width('40%')
-            .height(40)
-            .font({ size: 15 })
-
-          Text(this.selectedDate)
-            .width('60%')
-            .height(40)
+        if (this.formDataList.length === 0) {
+          Text('~ 暂无相关数据 ~')
+            .fontSize(16)
+            .fontColor(Color.Gray)
+            .padding({ top: 200 })
             .textAlign(TextAlign.Center)
-            .borderRadius(4)
-            .borderWidth(1)
-            .borderColor('#CCCCCC')
-            .onClick(() => {
-              this.showDateDialog()
-            })
-        }
-        .width('100%')
-        .margin({ bottom: 15 })
-
-        // 数据展示区
-        if (this.formDataList.length > 0) {
-          Column() {
-            ForEach(this.formDataList, (formData: RecipeFormData) => {
-              Scroll() {
-                Column() {
-                  // 信息区
-                  Column() {
-                    Text(`食谱日期：${formData.date}`)
-                      .fontSize(16)
-                      .fontColor('#222')
-                      .margin({ top: 8, bottom: 4 })
-                    Text(`食谱名称：${formData.recipeName}`)
-                      .fontSize(16)
-                      .fontColor('#222')
-                      .margin({ bottom: 4 })
-                    Text(`餐    别：${formData.mealType}`)
-                      .fontSize(16)
-                      .fontColor('#222')
-                      .margin({ bottom: 4 })
-                    Text(`用餐类型：${formData.diningType}`)
-                      .fontSize(16)
-                      .fontColor('#222')
-                      .margin({ bottom: 4 })
-                    Text(`餐    厅：${formData.place}`)
-                      .fontSize(16)
-                      .fontColor('#222')
-                      .margin({ bottom: 8 })
-                  }
-                  .alignItems(HorizontalAlign.Start)
-                  // 图片区
-                  if (formData.photoUri) {
-                    Image(formData.photoUri)
-                      .width(120)
-                      .height(90)
-                      .margin({ top: 8, bottom: 8 })
-                      .borderRadius(8)
-                  }
-                  // 按钮区
-                  Row() {
-                    Blank()
-                    Button('重新编辑')
-                      .width(120)
-                      .height(36)
-                      .fontColor('#07C160')
-                      .fontSize(15)
-                      .borderRadius(18)
-                      .borderWidth(1)
-                      .borderColor('#07C160')
-                      .backgroundColor('#fff')
-                      .onClick(() => {
-                        router.pushUrl({
-                          url: 'pages/food_day_new',
-                          params: {
-                            date: formData.date || '',
-                            recipeName: formData.recipeName || '',
-                            mealType: formData.mealType || '',
-                            diningType: formData.diningType || '',
-                            place: formData.place || '',
-                            photoUri: formData.photoUri || ''
-                          }
-                        })
-                      })
-                    Button('删除单据')
-                      .width(120) // 增大宽度
-                      .height(36)
-                      .fontColor('#07C160')
-                      .fontSize(15)
-                      .borderRadius(18)
-                      .borderWidth(1)
-                      .borderColor('#07C160')
-                      .backgroundColor('#fff')
-                      .margin({ left: 16 })
-                      .onClick(() => {
-                        this.formDataList = this.formDataList.filter(item => item !== formData)
-                      })
-                  }
-                  .margin({ top: 16, bottom: 0 })
-                  .justifyContent(FlexAlign.End)
-                }
-                .backgroundColor('#fff')
-                .borderRadius(18)
-                .borderWidth(2)
-                .borderColor('#07C160')
-                .shadow({ radius: 8, color: '#07C16022', offsetX: 0, offsetY: 4 })
-                .margin({ top: 12, bottom: 12, left: 8, right: 8 })
-                .padding(18)
-              }
-            })
-          }
-          .width('100%')
-          .layoutWeight(1)
-          // 下拉回弹效果
         } else {
-          Column() {
-            Text('- 暂无相关数据 -')
-              .position({
-                x: 110,
-                y: 180
-              })
+          List() {
+            ForEach(this.formDataList, (recipe: RecipeFormData) => {
+              this.renderRecipeCard(recipe)
+            }, (recipe: RecipeFormData) => recipe.id ?? recipe.recipeName ?? '')
           }
+          .scrollBarWidth(0)
         }
       }
       .layoutWeight(1)
-
-
-      // 新建食谱按钮
+      // 新建食谱按钮 - 固定在底部
       Button('新建食谱', { type: ButtonType.Capsule })
         .width('90%')
         .height(50)
@@ -200,13 +154,124 @@ struct food_day {
           router.pushUrl({
             url: 'pages/food_day_new',
             params: {
+              token: this.receivedToken,
+              relTenantIds: this.tenantId,
               formDataList: this.formDataList
             }
           })
         })
     }
     .width('100%')
+    .height('100%')
+    .backgroundColor(Color.White)
     .padding({ left: 10, right: 10 })
+  }
+
+  @Builder
+  renderRecipeCard(recipe: RecipeFormData) {
+    Stack() {
+      Column({ space: 5 }) {
+        // 信息区
+        Column() {
+          Text(`食谱日期：${recipe.date}`)
+            .fontSize(16)
+            .fontColor('#222')
+            .margin({ top: 8, bottom: 4 })
+          Text(`食谱名称：${recipe.recipeName}`)
+            .fontSize(16)
+            .fontColor('#222')
+            .margin({ bottom: 4 })
+          Text(`餐    别：${recipe.mealType}`)
+            .fontSize(16)
+            .fontColor('#222')
+            .margin({ bottom: 4 })
+          Text(`用餐类型：${recipe.diningType}`)
+            .fontSize(16)
+            .fontColor('#222')
+            .margin({ bottom: 4 })
+          Text(`餐    厅：${recipe.place}`)
+            .fontSize(16)
+            .fontColor('#222')
+            .margin({ bottom: 8 })
+        }
+        .alignItems(HorizontalAlign.Start)
+
+        // 图片区
+        if (recipe.photoUri) {
+          Image(recipe.photoUri)
+            .width(120)
+            .height(90)
+            .margin({ top: 8, bottom: 8 })
+            .borderRadius(8)
+        }
+
+        Divider()
+          .width('85%')
+          .height(2)
+          .color(Color.Gray)
+          .margin({ left: 'auto', right: 'auto' })
+
+        // 按钮区
+        Row({ space: 16 }) {
+          Button('重新编辑')
+            .width(120)
+            .height(36)
+            .fontColor('#07C160')
+            .fontSize(15)
+            .borderRadius(18)
+            .borderWidth(1)
+            .borderColor('#07C160')
+            .backgroundColor('#fff')
+            .onClick(() => {
+              router.pushUrl({
+                url: 'pages/food_day_new',
+                params: {
+                  token: this.receivedToken,
+                  relTenantIds: this.tenantId,
+                  date: recipe.date,
+                  recipeName: recipe.recipeName,
+                  mealType: recipe.mealType,
+                  diningType: recipe.diningType,
+                  place: recipe.place,
+                  photoUri: recipe.photoUri
+                }
+              })
+            })
+
+          Button('删除单据')
+            .width(120)
+            .height(36)
+            .fontColor('#07C160')
+            .fontSize(15)
+            .borderRadius(18)
+            .borderWidth(1)
+            .borderColor('#07C160')
+            .backgroundColor('#fff')
+            .onClick(() => {
+              AlertDialog.show({
+                title: "删除单据",
+                message: "确定要删除吗？",
+                alignment: DialogAlignment.Center,
+                confirm: {
+                  value: "确定",
+                  fontColor: Color.Red,
+                  backgroundColor: "#aabbcc",
+                  action: () => {
+                    this.formDataList = this.formDataList.filter(item => item !== recipe)
+                  }
+                }
+              })
+            })
+        }
+        .margin({ top: 16, bottom: 16 })
+        .justifyContent(FlexAlign.Center)
+      }
+      .padding({ top: 16, bottom: 16 })
+    }
+    .width('90%')
+    .margin({ top: 16, left: 'auto', right: 'auto' })
+    .backgroundColor(Color.White)
+    .border({ width: 2, color: Color.Green, radius: 8 })
   }
 
   private showDateDialog() {
