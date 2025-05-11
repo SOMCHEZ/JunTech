@@ -126,8 +126,6 @@ struct AddStaff {
           .onSelect((index: number) => {
             //this.selectedUnitIndex = index;
             this.selectedUnitIndex = this.units[index].value;
-
-
           })
           .backgroundColor(Color.White)
           .width('70%')
