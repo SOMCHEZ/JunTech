@@ -11,11 +11,15 @@ struct Page1 {
   @State name: string = ''
   @State evaluation: string = ''
   @State charCount: number = 0
-
+  @State date: string = '选择日期'
+  @State selectedDate: string = '请选择供应日期'
+  @State selectDate: Date = new Date()
+  @State dates: string = '请选择'
   private unitOptions = [
-    '实验第一中学',
-    '实验第二中学',
-    '实验第三中学'
+
+    '实训第一中学',
+    '实训第二中学',
+    '实训第三中学'
   ]
 
   // 新增：餐别选项列表
@@ -31,14 +35,40 @@ struct Page1 {
       Text('陪餐记录')
         .fontSize(24)
         .margin(20)
+Row(){
 
+
+    Text("选择日期")
+   //   .fontColor(Color.Black)
+   //   .fontSize(16)
+   //   Text(this.dates)
+  Select([])
+
+    .onClick(() => {
+      this.showDateDialog()
+
+    })
+    .value(this.dates)
+    .margin(10)
+    .width('70%')
+    .margin({left:20,right:0,bottom:10})
+  // DatePicker()
+  //   .lunar(false)
+  //   .onDateChange(value=>{
+  //     this.date=value.toDateString()
+  //   })
+  //   .width("80%")
+  //   .height(50)
+}
 
       Row(){
+
         Text("提交单位")
           .fontColor(Color.Black)
           .fontSize(16)
 
         Select(this.unitOptions.map<SelectOption>((item: string) => ({ value: item })))
+          .value('请选择')
           .selected(0)
           .onSelect((index: number) => {
             this.selectedUnit = this.unitOptions[index]
@@ -54,6 +84,7 @@ struct Page1 {
           .fontSize(16)
 
         Select(this.mealOptions.map<SelectOption>((item: string) => ({ value: item })))
+          .value('请选择')
           .selected(0)
           .onSelect((index: number) => {
             this.selectedMeal = this.mealOptions[index]
@@ -75,6 +106,7 @@ struct Page1 {
           { value: '中层领导' },
           { value: '校领导' },
         ] as SelectOption[])
+          .value('请选择')
           .selected(0)
           .onSelect((index: number) => {
             this.selectedPosition = index.toString()
@@ -122,4 +154,21 @@ struct Page1 {
     .width('100%')
     .height('100%')
   }
+  private showDateDialog() {
+    DatePickerDialog.show({
+      start: new Date('2000-1-1'),
+      end: new Date('2100-1-1'),
+      selected: this.selectDate,
+      onAccept: (value: DatePickerResult) => {
+        // 使用可选链和默认值保证安全性
+        const year = value.year ?? new Date().getFullYear()
+        const month = value.month ?? new Date().getMonth() + 1
+        const day = value.day ?? new Date().getDate()
+
+        this.selectDate = new Date(year, month - 1, day)
+        this.dates = `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`
+      }
+    })
+  }
+
 }
