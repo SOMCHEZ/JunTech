@@ -9,7 +9,6 @@ interface RouteParams {
   relTenantIds?: number;
 }
 
-
 interface ImageCount{
   url:string
   count:number
@@ -34,7 +33,7 @@ struct Index1 {
     { url: 'app.media.education_6', count: 0, text: '后厨人员',route:'pages/kitchenStaff_test' },
     { url: 'app.media.education_4', count: 0, text: '每日留样' ,route:'pages/remain_day'},
     { url: 'app.media.home_9', count: 0, text: '晨检记录' ,route:'pages/chenjianjilu'},
-    { url: 'app.media.home_3', count: 0, text: '陪餐记录' ,route:'pages/sad'},
+    { url: 'app.media.home_3', count: 0, text: '陪餐记录' ,route:'pages/peicanRecords'},
     { url: 'app.media.home_13', count: 0, text: '陪餐评价' ,route:'pages/addStaff_test'},
   ];
   @State image1:cuku[]=[

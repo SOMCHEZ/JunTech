@@ -47,6 +47,8 @@ struct Index {
   @State private authToken: string = '';
   @State private currentUser: UserInfo | null = null;
 
+
+
   build() {
     Stack() {
       Row(){
@@ -194,11 +196,7 @@ struct Index {
           params:{
           token:this.authToken,
             relTenantIds:this.currentUser?.relTenantIds
-
           }
-
-
-
         });
         break;
 
@@ -208,7 +206,6 @@ struct Index {
           params:{
             token:this.authToken,
             relTenantIds:this.currentUser?.relTenantIds
-
           }
         });
 
