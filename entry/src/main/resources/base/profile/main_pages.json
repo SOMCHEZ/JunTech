@@ -22,9 +22,11 @@
     "pages/ApprovalPage",
     "pages/addPlan",
     "pages/chukudan",
-    "pages/kucun",
+    "pages/stock",
     "pages/yishenpi",
-    "pages/signature"
+    "pages/signature",
+    "pages/renew"
+
 
   ]
 }
