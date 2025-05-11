@@ -240,7 +240,7 @@ struct ReportPlanPage {
           .margin({ top: 20 })
           .onClick(() => {
             router.pushUrl({
-              url: 'pages/addpan' })
+              url: 'pages/addPlan' })
           })
       }
 
