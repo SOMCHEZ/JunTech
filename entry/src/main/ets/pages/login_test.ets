@@ -39,8 +39,8 @@ interface LoginHandlerResult {
 @Component
 struct Index {
   @State typeid: string = '';
-  @State userUsername: string = '';
-  @State userPassword: string = '';
+  @State userUsername: string = '15502933673';
+  @State userPassword: string = '123456';
 
   // 状态管理
   @State private responseCode: number = 0;
