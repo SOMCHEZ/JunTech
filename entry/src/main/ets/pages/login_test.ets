@@ -140,7 +140,7 @@ struct Index {
         'https://api.suoeryun.com/ifood/jeecg-system/sys/login',
         {
           method: http.RequestMethod.POST,
-          header: { 'Content-Type': 'application/json' },
+          header: { 'Content-Type': 'application/json'},
           extraData: JSON.stringify({
             username: this.userUsername,
             password: this.userPassword
