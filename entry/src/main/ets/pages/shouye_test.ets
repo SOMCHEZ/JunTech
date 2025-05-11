@@ -45,6 +45,10 @@ struct Index1 {
   @State selectedTab: number = 0
   private tabs: Array<string> = ['今日', '本周', '本月', '本年']
 
+  @State pinfen:number=0
+  @State baifenbi:number=0
+  @State fenxian:string='高风险'
+
   @State receivedToken: string = '';//参数传递
   @State tenantId: number = 0;//同上
 
@@ -141,7 +145,7 @@ struct Index1 {
                       .fontSize(16)
                       .fontColor(0x222222)
                       .margin({ bottom: 8 })
-                    Text('高风险')
+                    Text(this.fenxian)
                       .fontSize(16)
                       .fontColor(0xFF0000)
                       .margin({ left: 100, bottom: 8 })
@@ -149,7 +153,7 @@ struct Index1 {
                   .width('100%')
 
                   Row() {
-                    Text('0')
+                    Text(this.pinfen.toString())
                       .fontSize(48)
                       .fontColor(0xFF0000)
                       .fontWeight(FontWeight.Bold)
@@ -161,7 +165,7 @@ struct Index1 {
                       .fontSize(16)
                       .margin({ left: 100  , top: 24})
                       .fontColor(0x222222)
-                    Text('0%')
+                    Text(this.baifenbi+'%')
                       .fontSize(18)
                       .fontColor(0xFF9900)
                       .fontWeight(FontWeight.Bold)
