@@ -13,6 +13,14 @@ AppStorage.setOrCreate('unitId', '');
 AppStorage.setOrCreate('editId', '');
 
 // 明确定义所有接口类型
+interface Houchu_Edit_Request {
+  success: boolean;
+  code?: number;
+  result: string;
+  message?: string;
+}
+
+
 interface UserInfo {
   id: string;
   username: string;
@@ -299,7 +307,7 @@ struct AddStaff {
       .onClick(async() => {
         router.pushUrl({
           url: 'pages/kitchenStaff_test' })
-        const result = await this.addStaff();
+        const result = await this.HouchuEdit();
         // this.unitId = result.token!;
       })
     }
@@ -336,6 +344,71 @@ struct AddStaff {
     DatePickerDialog.show(dialog);
   }
 
+
+  private async HouchuEdit(): Promise<Houchu_Edit_Request> {//这个请求是针对编辑后厨人员列表的
+
+    try {
+      const httpRequest = http.createHttp();
+
+      const response = await httpRequest.request(
+        'https://api.suoeryun.com/ifood/jeecg-school/school/xxUnitUser/edit',
+        {
+          method: http.RequestMethod.POST,
+          header: { 'Content-Type': 'application/json',
+            'Tenant-Id':this.tenantId.toString(),
+            'X-Access-Token':this.receivedToken
+          },
+          extraData: JSON.stringify({
+            "unitName":this.selectedUnitIndex,
+            "unitId":this.UnitId,
+            "userName": this.name,
+            "position": this.jobPosition,
+            "tel": this.phone,
+            "type": "1",
+            "healthStartTime":this.issueDate,
+            "healthEndTime": this.expiryDate,
+            "portraitPhoto": null,
+            "healthUrl": "https://admin.suoeryun.com/pcUpload/043015131332-32.png",
+            "remark": "123",
+            "inspectionType": 0,
+            "version": 0,
+            "canteenId": null,
+            "id": this.Edit_id
+          })
+
+        }
+
+      );
+
+      if (response.responseCode !== 200) {
+        //console.error('Login Error:'+response.responseCode);
+        return {
+          success: false,
+          result: '删除失败', // 新增默认值
+          message: `HTTP Error: ${response.responseCode}`
+          // 添加其他错误处理逻辑
+        };
+      }
+      console.log('slfj'+response.result.toString())
+      const jsonData = JSON.parse(response.result as string) as Houchu_Edit_Request;
+      console.log('11',jsonData.result);
+      return {
+        success: jsonData.code === 200,
+        code: jsonData.code,
+        result: jsonData.result,
+        message: jsonData.message,
+        //relTenantIds:jsonData.result.userInfo.relTenantIds
+      };
+
+    } catch (error) {
+      console.error('Login Error:', JSON.stringify(error));
+      return {
+        success: false,
+        result: '删除失败', // 新增默认值
+        message: '服务器繁忙'
+      };
+    }
+  }
 
 
 

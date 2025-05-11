@@ -13,12 +13,7 @@ interface Houchu_Delete_Request {
   result:string;
   message?: string;
 }
-interface Houchu_Edit_Request {
-  success: boolean;
-  code?: number;
-  result: string;
-  message?: string;
-}
+
 
 
 interface  records{//定义接口返回类型
