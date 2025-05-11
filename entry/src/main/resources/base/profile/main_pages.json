@@ -28,7 +28,8 @@
     "pages/signature",
     "pages/weichenjianrenyuan",
     "pages/chenjianjilu",
-    "pages/shishikucun"
+    "pages/shishikucun",
+    "pages/renew"
 
   ]
 }
