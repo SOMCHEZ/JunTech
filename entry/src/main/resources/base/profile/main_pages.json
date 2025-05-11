@@ -10,7 +10,7 @@
     "pages/login_test",
     "pages/Today_VEG",
     "pages/uploadPlan",
-    "pages/sad",
+    "pages/reportRecords",
     "pages/gerenxinxi",
     "pages/wentijieda",
     "pages/mima",
@@ -26,7 +26,11 @@
     "pages/dingdanxiangqing0",
     "pages/yishenpi",
     "pages/signature",
-    "pages/renew"
+    "pages/weichenjianrenyuan",
+    "pages/chenjianjilu",
+    "pages/shishikucun",
+    "pages/renew",
+    "pages/gonggao"
 
   ]
 }

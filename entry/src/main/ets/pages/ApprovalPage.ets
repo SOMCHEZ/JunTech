@@ -104,7 +104,7 @@ struct ReportPlanPage {
         Column() {
           Text('- 暂无相关数据 -')
             .position({
-              x: 110,
+              x: 120,
               y: 180
             })
         }
@@ -118,7 +118,7 @@ struct ReportPlanPage {
 
     .width('100%')
     .height('100%')
-    .padding(20)
+    .padding({top:20})
     // .backgroundColor('#F5F5F5')
 
 

@@ -68,6 +68,13 @@ struct DatePickerExample {
                   bottom: 8
                 })
                 .borderRadius(8)
+                .onClick(() => {
+                  // 跳转到 chuku 页面
+                  router.pushUrl({
+                    url: 'pages/renew'
+                  });
+
+                });
             }
             .width('80%')
             .height(35)

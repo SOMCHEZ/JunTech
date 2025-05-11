@@ -54,8 +54,19 @@ struct Index {
           .width('100%')
           .height('30%')
           .objectFit(ImageFit.Cover)
+          .zIndex(1)
       }
       .position({x:0,y:0})
+      Text('您好！')
+        .fontColor(Color.White)
+        .fontSize(50)
+        .zIndex(100)
+        .position({x:20,y:50})
+      Text('欢迎使用')
+        .fontSize(30)
+        .zIndex(100)
+        .fontColor(Color.White)
+        .position({x:150,y:70})
 
       RelativeContainer() {
         Image("")
@@ -140,7 +151,7 @@ struct Index {
         'https://api.suoeryun.com/ifood/jeecg-system/sys/login',
         {
           method: http.RequestMethod.POST,
-          header: { 'Content-Type': 'application/json' },
+          header: { 'Content-Type': 'application/json'},
           extraData: JSON.stringify({
             username: this.userUsername,
             password: this.userPassword

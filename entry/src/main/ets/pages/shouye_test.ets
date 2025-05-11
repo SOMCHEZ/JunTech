@@ -1,7 +1,7 @@
 //这里是接口参数传递以及，路由界面
 import router from '@ohos.router';
 import http from '@ohos.net.http';
-import { promptAction } from '@kit.ArkUI';
+import { promptAction, Router } from '@kit.ArkUI';
 import { PrintExtensionAbility } from '@kit.BasicServicesKit';
 
 interface RouteParams {
@@ -27,23 +27,24 @@ interface cuku{
 struct Index1 {
   @State image: ImageCount[] = [
     { url: 'app.media.education_3', count: 0, text: '每日工作' ,route:'pages/kitchenStaff_test'},
-    { url: 'app.media.home_1', count: 0, text: '上报计划' ,route:'pages/addStaff_test'},
-    { url: 'app.media.home_2', count: 0, text: '需求审批' ,route:'pages/addStaff_test'},
+    { url: 'app.media.home_1', count: 0, text: '上报计划' ,route:'pages/addPlan'},
+    { url: 'app.media.home_2', count: 0, text: '需求审批' ,route:'pages/ApprovalPage'},
     { url: 'app.media.home_4', count: 0, text: '新品审批' ,route:'pages/addStaff_test'},
     { url: 'app.media.home_recipe_reporting', count: 0, text: '今日菜品' ,route:'pages/food_day'},
     { url: 'app.media.education_6', count: 0, text: '后厨人员',route:'pages/kitchenStaff_test' },
     { url: 'app.media.education_4', count: 0, text: '每日留样' ,route:'pages/remain_day'},
-    { url: 'app.media.home_9', count: 0, text: '晨检记录' ,route:'pages/addStaff_test'},
+    { url: 'app.media.home_9', count: 0, text: '晨检记录' ,route:'pages/chenjianjilu'},
     { url: 'app.media.home_3', count: 0, text: '陪餐记录' ,route:'pages/sad'},
     { url: 'app.media.home_13', count: 0, text: '陪餐评价' ,route:'pages/addStaff_test'},
   ];
   @State image1:cuku[]=[
     {url1:'app.media.home_6',count1:0,text1:'供应出库',route1:'pages/kucun' },
-    {url1:'app.media.home_12',count1:0,text1:'实时库存',route1:'pages/addStaff_test'},
+    {url1:'app.media.home_12',count1:0,text1:'实时库存',route1:'pages/shishikucun'},
   ]
 
 
-
+  @State selectedTab: number = 0
+  private tabs: Array<string> = ['今日', '本周', '本月', '本年']
 
   @State receivedToken: string = '';//参数传递
   @State tenantId: number = 0;//同上
@@ -75,6 +76,9 @@ struct Index1 {
               Image($r('app.media.banner2'))
               Image($r('app.media.banner3'))
             }
+            .autoPlay(true)     // 开启自动轮播
+            .interval(3000)     // 轮播间隔时间为3秒
+            .loop(true)
             .aspectRatio(2.1)
             .borderRadius(10)
             .margin({
@@ -85,16 +89,101 @@ struct Index1 {
               Image($r('app.media.notice'))
                 .height(25)
                 .layoutWeight(1)
-              Text()
-                .height(50)
+              Text('')
+                .height(40)
                 .layoutWeight(4.5)
                 .animation({duration: 3000})
+                .textAlign(TextAlign.Center)
             }
+            .onClick(() => {
+              router.push({          // 使用push入栈一个新页面
+                url: 'pages/gonggao' // 通过url指定新打开的页面
+              ,
+                params:{
+                  token:this.receivedToken,
+                  relTenantIds:this.tenantId
+
+                }
+              })
+            })
+            .padding({top:10})
             .width('100%')
             .height(60)
             .padding({
               left: 10,
             })
+            Column() {
+              // 顶部Tab
+              Row() {
+                ForEach(this.tabs, (tab: string, idx: number) => {
+                  Text(tab)
+                    .fontColor(this.selectedTab === idx ? 0x00B050 : 0x222222)
+                    .fontWeight(FontWeight.Bold)
+                    .backgroundColor(this.selectedTab === idx ? 0xF0FFF0 : 0xFFFFFF)
+                    .padding({
+                      left: 16,
+                      right: 16,
+                      top: 8,
+                      bottom: 8
+                    })
+                    .onClick(() => {
+                      this.selectedTab = idx
+                    })
+                })
+              }
+              .width('100%')
+              .margin({ bottom: 16 })
+
+              // 评分与描述
+              Row() {
+                Column() {
+                  Row() {
+                    Text('今日本校当前综合评分')
+                      .fontSize(16)
+                      .fontColor(0x222222)
+                      .margin({ bottom: 8 })
+                    Text('高风险')
+                      .fontSize(16)
+                      .fontColor(0xFF0000)
+                      .margin({ left: 100, bottom: 8 })
+                  }
+                  .width('100%')
+
+                  Row() {
+                    Text('0')
+                      .fontSize(48)
+                      .fontColor(0xFF0000)
+                      .fontWeight(FontWeight.Bold)
+                    Text('分')
+                      .fontSize(18)
+                      .fontColor(0x222222)
+                      .margin({ left: 4, top: 24 })
+                    Text('超过本地区')
+                      .fontSize(16)
+                      .margin({ left: 100  , top: 24})
+                      .fontColor(0x222222)
+                    Text('0%')
+                      .fontSize(18)
+                      .fontColor(0xFF9900)
+                      .fontWeight(FontWeight.Bold)
+                      .margin({ left: 2, right: 2 , top: 24})
+                    Text('的学校')
+                      .fontSize(16)
+                      .margin({top: 24})
+                      .fontColor(0x222222)
+                  }
+                  .width('100%')
+                }
+                .width('100%')
+                .align(Alignment.Start)
+              }
+              .align(Alignment.End)
+              .margin({ left: 15 })
+            }
+            .justifyContent(FlexAlign.SpaceBetween)
+            .padding(10)
+            .backgroundColor(0xFFFFFF)
+            .borderRadius(12)
 
             Text('需求计划')
               .fontSize(20)
