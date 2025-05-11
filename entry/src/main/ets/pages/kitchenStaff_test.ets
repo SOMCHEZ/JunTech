@@ -349,10 +349,10 @@ struct KitchenStaffList {
           .onClick(() => {
             AlertDialog.show({                   // 点击按钮，弹出一个对话框
               title: "删除人员",                 // 设置标题
-              message: "确定要删除吗？",          // 设置内容
+              message: "",          // 设置内容
               alignment: DialogAlignment.Center, // 设置弹窗的对齐方式
               confirm: {                         // 单个按钮的配置文本
-                value: "确定",
+                value: "text",
                 fontColor: Color.Red,
                 backgroundColor: "#aabbcc",
                 action: () => {
