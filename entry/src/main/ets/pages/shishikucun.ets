@@ -1,5 +1,14 @@
 import Router from '@system.router';
-
+interface kucun1{
+  name: string,
+  price: number,
+  inTime: string,
+  amount: number,
+  needType: string,
+  mealCategory: string,
+  supplier: string,
+  productionDate: string
+}
 @Entry
 @Component
 struct kucun {
@@ -9,6 +18,41 @@ struct kucun {
   @State selectedMealCategory: string = '餐别';
   @State searchText: string = '';
 
+  shishikucun0: kucun1[] = [
+    {
+      name: '白米',
+      price: 0.5,
+      inTime: '2023-06-01',
+      amount: 0,
+      needType: '学生餐',
+      mealCategory: '其他',
+      supplier: '上海大学',
+      productionDate: '2023-05-01'
+    },
+    {
+      name: '白米',
+      price: 0.5,
+      inTime: '2023-06-01',
+      amount: 0,
+      needType: '学生餐',
+      mealCategory: '其他',
+      supplier: '上海大学',
+      productionDate: '2023-05-01'
+    },
+  ]
+
+  shishikucun: kucun1[] = [
+    {
+      name: '白米',
+      price: 0.5,
+      inTime: '2023-06-01',
+      amount: 100,
+      needType: '学生餐',
+      mealCategory: '其他',
+      supplier: '上海大学',
+      productionDate: '2023-05-01'
+    },
+   ]
   categoryOptions: string[] = ['全部分类', '谷薯类', '蔬菜水果类', '鱼禽肉蛋类','牛奶类','大豆坚果类','干菜调料类','糕点面包类','主食半成品类','其他'];
   stockTypeOptions: string[] = ['库存类型', '学生餐', '教师餐'];
   mealTypeOptions: string[] = ['用餐类型', '其他', '营养餐'];
@@ -192,17 +236,76 @@ struct kucun {
               }
             })
             .margin({ bottom: 8 })
+          // 添加库存内容滑动框
+          Scroll() {
+            Column() {
+              ForEach(this.shishikucun, (item: kucun1) => {
+                Column() {
+                  Row() {
+                    Text(item.name)
+                      .fontSize(20)
+                      .fontWeight(FontWeight.Bold)
+                      .margin({ right: 10 })
+                    Text('生产日期: ' + item.productionDate)
+                      .fontSize(14)
+                      .fontColor('#888')
+                  }
+                  .margin({ bottom: 4 })
+                  Divider()
+                    .color('#ddd')
+                    .margin({ bottom: 8 })
+                  Text('供应价：' + item.price + '元/Kg ')
+                    .fontSize(16)
+                    .fontColor('#e57373')
+                    .margin({ bottom: 2 })
+                  Text('入库时间：' + item.inTime)
+                    .fontSize(14)
+                  Text('库存量：' + item.amount + '斤')
+                    .fontSize(14)
+                  Text('需求类型：' + item.needType)
+                    .fontSize(14)
+                  Text('餐别：' + item.mealCategory)
+                    .fontSize(14)
+                  Text('供应商：' + item.supplier)
+                    .fontSize(14)
+                }
+                .onClick(() => {
+                  Router.push({
+                    uri: 'pages/dingdanxiangqing',
+                    params: {
+                      productName: item.name,
+                      stockAmount: item.amount + '斤 (1Kg)', // 这里可根据实际单位拼接
+                      orderNo: 'RK20250509002', // 实际单号
+                      operateTime: '2025-05-09 17:36:09', // 实际操作时间
+                      operateAmount: '1Kg', // 实际操作数量
+                      operator: '张三', // 实际操作人
+                      supplier: item.supplier
+                    }
+                  })
+                })
+                .padding(12)
+                .width('100%')
+                .margin({ bottom: 12 })
+                .backgroundColor('#fff8f0')
+                .borderRadius(12)
+                .shadow({ radius: 4, color: '#eee', offsetX: 0, offsetY: 2 })
+              })
+            }
+            .height('100%')
+          }
+          .height('100%')
+          .margin({ bottom: 8 })
           Button('去出库')
             .height(40)
             .width(100)
-            .position({x: 250, y: 500})
+            .position({x: 270, y: 500})
             .onClick(() => {
               Router.push({
                 uri: 'pages/chuku',
               });
             })
             .fontColor('#a3000000')
-            .backgroundColor('#ffc1bdbd')
+            .backgroundColor('#6ff8f2f2')
         }
         .padding(0)
         .height('100%')
@@ -293,17 +396,75 @@ struct kucun {
               }
             })
             .margin({ bottom: 8 })
+          Scroll() {
+            Column() {
+              ForEach(this.shishikucun0, (item: kucun1) => {
+                Column() {
+                  Row() {
+                    Text(item.name)
+                      .fontSize(20)
+                      .fontWeight(FontWeight.Bold)
+                      .margin({ right: 10 })
+                    Text('生产日期: ' + item.productionDate)
+                      .fontSize(14)
+                      .fontColor('#888')
+                  }
+                  .margin({ bottom: 4 })
+                  Divider()
+                    .color('#ddd')
+                    .margin({ bottom: 8 })
+                  Text('供应价：' + item.price + '元/Kg ')
+                    .fontSize(16)
+                    .fontColor('#e57373')
+                    .margin({ bottom: 2 })
+                  Text('入库时间：' + item.inTime)
+                    .fontSize(14)
+                  Text('库存量：' + item.amount + '斤')
+                    .fontSize(14)
+                  Text('需求类型：' + item.needType)
+                    .fontSize(14)
+                  Text('餐别：' + item.mealCategory)
+                    .fontSize(14)
+                  Text('供应商：' + item.supplier)
+                    .fontSize(14)
+                }
+                .onClick(() => {
+                  Router.push({
+                    uri: 'pages/dingdanxiangqing0',
+                    params: {
+                      productName: item.name,
+                      stockAmount: item.amount + '斤 (1Kg)', // 这里可根据实际单位拼接
+                      orderNo: 'RK20250509002', // 实际单号
+                      operateTime: '2025-05-09 17:36:09', // 实际操作时间
+                      operateAmount: '1Kg', // 实际操作数量
+                      operator: '张三', // 实际操作人
+                      supplier: item.supplier
+                    }
+                  })
+                })
+                .padding(12)
+                .width('100%')
+                .margin({ bottom: 12 })
+                .backgroundColor('#fff8f0')
+                .borderRadius(12)
+                .shadow({ radius: 4, color: '#eee', offsetX: 0, offsetY: 2 })
+              })
+            }
+            .height('100%')
+          }
+          .height(550)
+          .margin({ bottom: 8 })
           Button('去出库')
             .height(40)
             .width(100)
-            .position({x: 250, y: 500})
+            .position({x: 270, y: 500})
             .onClick(() => {
               Router.push({
                 uri: 'pages/chuku',
               });
             })
             .fontColor('#a3000000')
-            .backgroundColor('#ffc1bdbd')
+            .backgroundColor('#6ff8f2f2')
         }
         .padding(0)
         .height('100%')
