@@ -6,6 +6,7 @@ import http from '@ohos.net.http';
 //永久存储token和租户id
 AppStorage.setOrCreate('token', '');
 AppStorage.setOrCreate('tenantId', 0);
+AppStorage.setOrCreate('man', 'fuck');
 
 interface Houchu_Delete_Request {
   success: boolean;
@@ -70,6 +71,7 @@ interface HouchuHandlerResult {
 interface RouteParams {
   token?: string;
   relTenantIds?: number;
+  man:string;
 }
 
 interface kitchenStaffs extends records {
@@ -116,6 +118,7 @@ struct KitchenStaffList {
   @State receivedToken: string = '';//参数传递
   @State tenantId: number = 0;//同上
   @State unitId: string ='';
+  @State man: string = '';
 
   @State isDeleting: boolean = false;
   //@State Edit_Id: string = ''; // 保持字符串类型时
@@ -138,9 +141,16 @@ struct KitchenStaffList {
       AppStorage.set('tenantId', params.relTenantIds);
       //this.tenantId = params.relTenantIds;
     }
+
+    if (!AppStorage.get('man') && params?.man) {
+      AppStorage.set('man', params.man);
+      //this.tenantId = params.relTenantIds;
+    }
+
     // 同步到组件状态
     this.receivedToken = AppStorage.get('token')??'';
     this.tenantId = AppStorage.get('tenantId')??0;
+    this.man= AppStorage.get('man')??'';
 
     const result = await this.Houchuchaxun();// 调用Houchuchaxun方法这个函数是用来查数据的
 
@@ -190,6 +200,7 @@ struct KitchenStaffList {
     console.debug('所有Id:',//打印所有Id
       result.records?.map(item => item.id).filter(Boolean)
     )
+    console.log('man', this.man)
   }
 
 
