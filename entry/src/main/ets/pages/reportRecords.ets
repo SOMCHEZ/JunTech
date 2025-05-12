@@ -5,6 +5,16 @@ import http from '@ohos.net.http';
 AppStorage.setOrCreate('token', '');
 AppStorage.setOrCreate('tenantId', 0);
 
+// 新增：定义 ReportFormData 接口
+interface ReportFormData {
+  unit: string;
+  meal: string;
+  position: string;
+  name: string;
+  evaluation: string;
+  date: string;
+}
+
 interface UserInfo {
   id: string;
   username: string;
@@ -52,13 +62,21 @@ interface SelectOption{
   label: string;
 }
 
-
+// Page1.ets
+interface GeneratedObjectLiteralInterface_1 {
+  unit: string;
+  meal: string;
+  position: string;
+  name: string;
+  evaluation: string;
+  date: string;
+}
 @Entry
 @Component
 struct Page1 {
   @State selectedPosition: string = ''
   @State private selectedUnitIndex:string = '实训第二学校餐厅';
-  @State private selectedMealIndex:string = '0';
+  @State private selectedMealIndex:string = '其他';
   @State selectedUnit: string = ''
   @State selectedMeal: string = '' // 新增：选中的餐别
   @State name: string = ''
@@ -122,18 +140,18 @@ struct Page1 {
         .margin(20)
       Row(){
         Text("选择日期")
-   //   .fontColor(Color.Black)
-   //   .fontSize(16)
-   //   Text(this.dates)
-          Select([])
-            .onClick(() => {
-              this.showDateDialog()
-            })
-            .value(this.dates)
-            .margin(10)
-            .width('70%')
-            .margin({left:20,right:0,bottom:10})
-}
+        //   .fontColor(Color.Black)
+        //   .fontSize(16)
+        //   Text(this.dates)
+        Select([])
+          .onClick(() => {
+            this.showDateDialog()
+          })
+          .value(this.dates)
+          .margin(10)
+          .width('70%')
+          .margin({left:20,right:0,bottom:10})
+      }
 
       Row(){
         Text("提交单位")
@@ -158,7 +176,7 @@ struct Page1 {
 
         Select(this.mealOptions)
           .value('请选择')
-          .selected(this.mealOptions.findIndex(item => item.value === this.selectedMealIndex))
+          .selected(this.mealOptions.findIndex(item => item.label === this.selectedMealIndex))
           .onSelect((index: number) => {
             this.selectedMealIndex = this.mealOptions[index].value;
           })
@@ -167,6 +185,43 @@ struct Page1 {
           .margin({left:20,right:0,bottom:10})
 
       }
+      // 陪餐人姓名
+      Row() {
+        Text("陪餐人姓名")
+          .fontSize(16)
+          .margin({ left: 20, right: 10 })
+        TextInput({ placeholder: '请输入姓名' }) // ArkTS 中推荐的写法
+          .onChange((value: string) => {
+            this.name = value;
+          })// 输入变化更新 @State name
+          .layoutWeight(1)
+          .margin({ right: 20 })
+      }
+      // 陪餐评价
+      Row() {
+        Text("陪餐评价")
+          .fontSize(16)
+          .margin({ left: 20, right: 10 })
+        TextArea({ placeholder: '请输入评价（200字以内）' })
+          .onChange((value: string) => {
+            this.evaluation = value
+            this.charCount = value.length
+          })
+          .height(50)
+          .layoutWeight(1)
+          .maxLength(200)
+          .onChange((value: string) => {
+            this.evaluation = value
+            this.charCount = value.length
+          })
+          .height(38)
+          .layoutWeight(1)
+          .margin({ right: 20 })
+
+
+
+      }
+
 
       Button({type: ButtonType.Normal})
       {
@@ -182,14 +237,28 @@ struct Page1 {
       .margin({top: 250})
       .borderRadius(5)
       .backgroundColor(Color.Green)
-      .onClick(async() => {
+      .onClick(async () => {
+        // 构造要传递的数据
+        const formData: ReportFormData = {
+          unit: this.selectedUnitIndex,
+          meal: this.selectedMealIndex,
+          position: '教师', // 可以根据业务动态获取或固定值
+          name: this.name,
+          evaluation: this.evaluation,
+          date: this.dates
+        };
+
+        // 跳转页面并携带数据
         router.pushUrl({
-          url: 'pages/peicanRecords',  params: {
+          url: 'pages/peicanRecords',
+          params: {
             token: this.receivedToken,
-            tenantId: this.tenantId
-          } })
+            tenantId: this.tenantId,
+            record: JSON.stringify(formData) // 关键：传递 record 数据
+          }
+        });
+
         const result = await this.report();
-        // this.unitId = result.token!;
       })
 
 
@@ -223,7 +292,7 @@ struct Page1 {
           },
           extraData: JSON.stringify({
             "mealDate": this.dates,
-            "mealCategory": this.selectedMeal.valueOf(),
+            "mealCategory": "0",
             "repastNum": "",
             "withNum": "",
             "xxMealRecordInfoList": [
