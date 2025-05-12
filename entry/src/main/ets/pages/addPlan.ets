@@ -368,17 +368,27 @@ struct DatePickerExample {
 
   private submitForm() {
     // 验证必填项
-    if (!this.selectedText[1] ||
-      !this.selectedText[1] ||
-      !this.selectedText[3] ||
-      !this.selectedText[5]) {
+    const isStudentMeal = this.selectedText[3] === '学生餐';
+
+    if (this.selectedText[0] === '请选择' ||  // 需求单位
+      this.selectedText[1] === '请选择' ||  // 供应日期
+      this.selectedText[3] === '请选择' ||  // 需求类型
+      this.selectedText[5] === '请选择'     // 餐别
+    ) {
       prompt.showToast({
         message: '请填写所有必填项',
         duration: 2000
       });
       return;
     }
-
+    // 如果是学生餐，则必须填写用餐类型
+    if (isStudentMeal && this.selectedText[4] === '请选择') {
+      prompt.showToast({
+        message: '请选择用餐类型',
+        duration: 2000
+      });
+      return;
+    }
     prompt.showToast({
       message: '保存成功',
       duration: 2000
@@ -386,19 +396,23 @@ struct DatePickerExample {
 
     // 创建表单数据对象
     let formData: GeneratedObjectLiteralInterface_1 = {
-      date: this.selectedText[1],
+      date: this.selectedText[2] === '请选择'
+        ? this.selectedText[1]
+        : `${this.selectedText[1]} ${this.selectedText[2]}`,
       recipeName: this.selectedText[1], // 使用已选择的日期
       mealType: this.selectedText[3],   // 使用已选择的餐别
-      diningType: this.selectedText[4], // 用餐类型
+      diningType: isStudentMeal ? this.selectedText[4] : '', // 非学生餐时为空 用餐类型
       place: this.selectedText[5],      // 需求单位
-      photoUri: this.selectedText[5]    // 餐别（如果需要）
+      photoUri: this.selectedText[0]    // 餐别（如果需要）
     };
 
     // 跳转到 'uploadPlan' 页面并传递 formData
-    router.pushUrl ({
+    router.back ({
       url: 'pages/uploadPlan',  // 页面路径
       params: formData          // 传递的参数
     });
+
+
   }
 
 

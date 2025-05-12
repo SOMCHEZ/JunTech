@@ -26,13 +26,12 @@ struct ReportPlanPage {
     '实验第二学校餐厅'
   ]
 
-  aboutToAppear() {
-
-    let params = router.getParams()
-    console.log('params', params)
-    if (params && params.toString()) {
-      this.selectedText.push(params as RecipeFormData)
-    }
+  // 修改生命周期函数
+  onPageShow() {
+      let params = router.getParams()
+      if (params && params.toString()) {
+        this.selectedText.push(params as RecipeFormData)
+      }
     if (this.unitOptions.length > 0) {
       this.selectedUnit = this.unitOptions[0]
     }
@@ -104,11 +103,10 @@ struct ReportPlanPage {
           if (this.selectedText.length  >0) {
               List(){
                 ForEach(this.selectedText, (formData: RecipeFormData) => {
-                  ListItem() {
-                    Column() {
-
-
-                      Text('实训第二学校（库房）')
+                    ListItem()
+                    {
+                        Column() {
+                          Text(formData.photoUri?? 'N/A')
                             .width('100%')
                             .height(30)
                             .padding({ left: 10 })
@@ -131,88 +129,88 @@ struct ReportPlanPage {
 
                             .justifyContent(FlexAlign.Start)
 
-                              Row() {
-                                Text('需求单号：')
-                                  .width('30%')
-                                  .fontSize(12)
-                                  .fontColor('#333333')
-                                Text('XQ20250510006')
-                                  .width('70%')
-                                  .fontSize(12)
-                                  .fontColor('#666666')
+                            Row() {
+                              Text('需求单号：')
+                                .width('30%')
+                                .fontSize(12)
+                                .fontColor('#333333')
+                              Text('XQ20250510006')
+                                .width('70%')
+                                .fontSize(12)
+                                .fontColor('#666666')
 
-                              }
-                              .justifyContent(FlexAlign.Start)
+                            }
+                            .justifyContent(FlexAlign.Start)
 
-                              Row() {
-                                Text('需求类型：')
-                                  .width('30%')
-                                  .fontSize(12)
-                                  .fontColor('#333333')
-                                Text(formData.mealType ?? 'N/A')
-                                  .width('70%')
-                                  .fontSize(12)
-                                  .fontColor('#666666')
+                            Row() {
+                              Text('需求类型：')
+                                .width('30%')
+                                .fontSize(12)
+                                .fontColor('#333333')
+                              Text(formData.mealType ?? 'N/A')
+                                .width('70%')
+                                .fontSize(12)
+                                .fontColor('#666666')
 
-                              }
-                              .justifyContent(FlexAlign.Start)
-                              Row() {
-                                Text('用餐类型：')
-                                  .width('30%')
-                                  .fontSize(12)
-                                  .fontColor('#333333')
-                                Text(formData.diningType ?? 'N/A')
-                                  .width('70%')
-                                  .fontSize(12)
-                                  .fontColor('#666666')
-                              }
-                              .justifyContent(FlexAlign.Start)
-                              Row() {
-                                Text('餐别：')
-                                  .width('30%')
-                                  .fontSize(12)
-                                  .fontColor('#333333')
-                                Text(formData.place ?? 'N/A')
-                                  .width('70%')
-                                  .fontSize(12)
-                                  .fontColor('#666666')
-                              }
-                              .justifyContent(FlexAlign.Start)
-                              Row() {
-                                Text('制单人：')
-                                  .width('30%')
-                                  .fontSize(12)
-                                  .fontColor('#333333')
-                                Text('人')
-                                  .width('70%')
-                                  .fontSize(12)
-                                  .fontColor('#666666')
-                              }
-                              Row() {
-                                Text('制单时间：')
-                                  .width('30%')
-                                  .fontSize(12)
-                                  .fontColor('#333333')
-                                Text(formData.recipeName ?? 'N/A')
-                                  .width('70%')
-                                  .fontSize(12)
-                                  .fontColor('#666666')
-                              }
-                              Row() {
-                                Text('摘要：')
-                                  .width('30%')
-                                  .fontSize(12)
-                                  .fontColor('#333333')
-                                Text('无')
-                                  .width('70%')
-                                  .fontSize(12)
-                                  .fontColor('#666666')
-                              }
+                            }
+                            .justifyContent(FlexAlign.Start)
+                            Row() {
+                              Text('用餐类型：')
+                                .width('30%')
+                                .fontSize(12)
+                                .fontColor('#333333')
+                              Text(formData.diningType ?? 'N/A')
+                                .width('70%')
+                                .fontSize(12)
+                                .fontColor('#666666')
+                            }
+                            .justifyContent(FlexAlign.Start)
+                            Row() {
+                              Text('餐别：')
+                                .width('30%')
+                                .fontSize(12)
+                                .fontColor('#333333')
+                              Text(formData.place ?? 'N/A')
+                                .width('70%')
+                                .fontSize(12)
+                                .fontColor('#666666')
+                            }
+                            .justifyContent(FlexAlign.Start)
+                            Row() {
+                              Text('制单人：')
+                                .width('30%')
+                                .fontSize(12)
+                                .fontColor('#333333')
+                              Text('人')
+                                .width('70%')
+                                .fontSize(12)
+                                .fontColor('#666666')
+                            }
+                            Row() {
+                              Text('制单时间：')
+                                .width('30%')
+                                .fontSize(12)
+                                .fontColor('#333333')
+                              Text(formData.recipeName ?? 'N/A')
+                                .width('70%')
+                                .fontSize(12)
+                                .fontColor('#666666')
+                            }
+                            Row() {
+                              Text('摘要：')
+                                .width('30%')
+                                .fontSize(12)
+                                .fontColor('#333333')
+                              Text('无')
+                                .width('70%')
+                                .fontSize(12)
+                                .fontColor('#666666')
+                            }
 
 
 
                             // 操作按钮
-                            Row({ space: 7 }) {
+                            Row({ space: 5 }) {
                               Button('重新编辑')
                                 .backgroundColor('#ffffffff')
                                 .fontColor('#4CAF50')
@@ -246,27 +244,27 @@ struct ReportPlanPage {
                                   color: '#4CAF50',
                                   width: 1
                                 })
+                                .onClick(() => {
+                                  this.selectedText = this.selectedText.filter(item => item !== formData)
+                                })
                             }
-                      }
-                      .backgroundColor(Color.White)
+                          }
+                          .backgroundColor(Color.White)
                           .width('100%')
                           .justifyContent(FlexAlign.Start)
-
-
-
+                        }
+                        //.padding({ left: 1, right: 10, top: 5, bottom: 10 })
+                        .backgroundColor('#4CAF50')
+                        .width('80%')
+                        .height('auto')
+                        .alignItems(HorizontalAlign.Center)
+                        .border({
+                          width: 2,
+                          color: '#4CAF50',
+                          radius: 8
+                        })
                     }
-                    .padding({ left: 10, right: 10, top: 5, bottom: 10 })
-                    .backgroundColor(Color.White)
-                    .width('80%')
-                    .height('auto')
-                    .alignItems(HorizontalAlign.Center)
-                    .border({
-                      width: 2,
-                      color: '#4CAF50',
-                      radius: 8
-                    })
-
-                  }
+                    .padding({left:25,bottom:10 })
                 })
               }
               .width('100%')
@@ -293,8 +291,19 @@ struct ReportPlanPage {
           .fontColor('#FFFFFF')
           .margin({ top: 20 })
           .onClick(() => {
+            // 手动构造一个新的单据对象并添加进数组
+            // const newForm: RecipeFormData = {
+            //   date: '2025-04-05',
+            //   recipeName: '新菜谱',
+            //   mealType: '早餐',
+            //   diningType: '堂食',
+            //   place: '食堂A'
+            // };
+            // this.selectedText.push(newForm);
             router.pushUrl({
-              url: 'pages/addPlan' })
+              url: 'pages/addPlan'
+
+            })
           })
       }
 
