@@ -2,7 +2,7 @@
 
 import router from '@ohos.router';
 import http from '@ohos.net.http';
-//import { promptAction } from '@kit.ArkUI';
+import { promptAction } from '@kit.ArkUI';
 //import filePicker from '@ohos.file.picker';
 
 
@@ -285,13 +285,23 @@ struct AddStaff {
       .borderRadius(10)
       .position({x:18, y:'95%'})
       .onClick(async() => {
+        if(this.name.length!==0&&this.jobPosition.length!==0&&this.phone.length!==0&&this.status.length!==0&&this.issueDate.length!==0&&this.expiryDate.length!==0){
         router.pushUrl({
           url: 'pages/kitchenStaff',  params: {
             token: this.receivedToken,
             tenantId: this.tenantId,
             man : this.man
           } })
-        const result = await this.addStaff();
+          const result = await this.addStaff();
+        }
+        else {
+          promptAction.showToast({
+            message: '请填写所有必填项',
+            duration: 2000,
+            bottom:670
+          });
+        }
+
        // this.unitId = result.token!;
       })
     }
