@@ -11,6 +11,7 @@
     "pages/Today_VEG",
     "pages/uploadPlan",
     "pages/reportRecords",
+    "pages/peicanRecords",
     "pages/gerenxinxi",
     "pages/wentijieda",
     "pages/mima",
@@ -31,6 +32,7 @@
     "pages/shishikucun",
     "pages/renew",
     "pages/gonggao",
-    "pages/kucun"
+    "pages/kucun",
+    "pages/EditStaff"
   ]
 }
