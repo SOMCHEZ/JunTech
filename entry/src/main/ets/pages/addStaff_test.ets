@@ -70,16 +70,7 @@ struct AddStaff {
   @State receivedToken: string = '';//参数传递
   @State tenantId: number = 0;//同上
   @State UnitId: string  ="";
-  @State  man: string = 'Love';
-
-  private units: Array<SelectOption> = [
-    { value: '实训第二学校餐厅', label: '实训第二学校餐厅' },
-    { value: '其他单位', label: '其他单位' }
-  ];
-  private statuses: Array<SelectOption> = [
-    { value: '在职', label: '在职' },
-    { value: '离职', label: '离职' }
-  ];
+ // @State  man: string = 'Love';
 
 
 
@@ -115,6 +106,18 @@ struct AddStaff {
     //console.log('houchu1', result); // 打印返回结果
   }
 
+
+
+  private units: Array<SelectOption> = [
+    { value: '实训第二学校餐厅', label: '实训第二学校餐厅' },
+    { value: '实训第二学校(库房)', label: '实训第二学校(库房)' },
+    { value: '实训第二学校(床上)', label: '实训第二学校(床上)' },
+    { value: '其他单位', label: '其他单位' }
+  ];
+  private statuses: Array<SelectOption> = [
+    { value: '在职', label: '在职' },
+    { value: '离职', label: '离职' }
+  ];
   build() {
     Column({ space: 0 }) {
       Row({ space: 10}) {
