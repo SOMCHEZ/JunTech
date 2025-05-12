@@ -8,6 +8,7 @@ import http from '@ohos.net.http';
 //永久存储token和租户id
 AppStorage.setOrCreate('token', '');
 AppStorage.setOrCreate('tenantId', 0);
+AppStorage.setOrCreate('unitId', '');
 
 interface PlanningFoodItem {
   id: string;
@@ -53,7 +54,6 @@ interface PlanningFoodItem {
   quantitySupplied: string;
   marketWeight: number | null;
 }
-
 interface addHandlerResult {
   success: boolean;
   code?: number;
@@ -62,25 +62,21 @@ interface addHandlerResult {
   message?: string;
   relTenantIds?:number;
 }
-
 interface addResult {
   userInfo: UserInfo;
   token: string;
 }
-
 interface addResponse {
   code: number;
   message: string;
   result: addResult;
   timestamp: number;
 }
-
 interface RouteParams {//接口传递参数定义
   token?: string;
   relTenantIds?: number;
   unitId?: string;
 }
-
 interface UserInfo {
   id: string;
   username: string;
@@ -90,7 +86,10 @@ interface UserInfo {
   relTenantIds:number;
   // 其他字段根据实际API响应补充...
 }
-
+interface SelectOption{
+  value: string;
+  label: string;
+}
 interface GeneratedObjectLiteralInterface_1 {
   date: string;
   recipeName: string;
@@ -99,6 +98,7 @@ interface GeneratedObjectLiteralInterface_1 {
   place: string;
   photoUri: string;
 }
+
 
 @Entry
 @Component
@@ -111,15 +111,17 @@ struct DatePickerExample {
   @State scaleValue: number = 0.8
   @State receivedToken: string = '';//参数传递
   @State tenantId: number = 0;//同上
-  @State UnitId: string  ="";
+  @State displayTime: string = ''
+  @State unitId: string  ="";
   @State summary: string = ''// 摘要内容
   @State selectedText: string[] = ['请选择','请选择','请选择','请选择','请选择','请选择','请输入摘要']
   @State private showMealType: boolean = false // 控制是否显示用餐类型
   private unitOptions = ['实验第二学校（库房）', '实验第二学校餐厅']
-  private selectedTime = ['上午', '下午']
+  private selectedTime = ['forenoon', 'afternoon']
   private demandOptions = ['学生餐', '老师餐']
   private mealTypeOptions = ['其他','营养餐']
   private mealOptions = ['其他', '早餐', '午餐', '晚餐']
+
 
   async onPageShow() {
     const params = router.getParams() as RouteParams;
@@ -145,8 +147,8 @@ struct DatePickerExample {
     // 同步到组件状态
     this.receivedToken = AppStorage.get('token')??'';
     this.tenantId = AppStorage.get('tenantId')??0;
-    this.UnitId = AppStorage.get('unitId') ?? '';
-    console.log('rel',this.UnitId);
+    this.unitId = AppStorage.get('unitId') ?? '';
+    console.log('rel',this.unitId);
     console.log('UID', params?.unitId);
     //const result = await this.Houchuchaxun();// 调用Houchuchaxun方法这个函数是用来查数据的
     //console.log('houchu1', result); // 打印返回结果
@@ -164,9 +166,9 @@ struct DatePickerExample {
             'X-Access-Token':this.receivedToken
           },
           extraData: JSON.stringify({
-            "unitId": "1917168448022519809",
-            "supplyDate": "2025-05-12",
-            "supplyTime": "forenoon",
+            "unitId": this.unitId,
+            "supplyDate": this.selectedText[1],
+            "supplyTime": this.selectedText[2],
             "requirementType": "1",
             "planningFoodList": [
               {
@@ -417,7 +419,9 @@ struct DatePickerExample {
                   token: this.receivedToken,
                   tenantId: this.tenantId,
                 } })
+              console.log('meal',this.selectedText[2]);
               const result = await this.addStaff()
+
               //this.submitForm();
             })
             .height(35)
@@ -560,10 +564,9 @@ struct DatePickerExample {
       selected: array.findIndex(item => item === this.selectedText[index]),
       canLoop:false,
       onAccept: (value: TextPickerResult) => {
-        // 安全写法：添加双重验证
-        if (typeof value.index === 'number' &&
-          value.index < array.length) {
+        if (typeof value.index === 'number' && value.index < array.length) {
           this.selectedText[index] = array[value.index]
+          this.displayTime = this.selectedText[index] === 'forenoon' ? '上午' : this.selectedText[index]
         }
         switch (index){
           case 3:

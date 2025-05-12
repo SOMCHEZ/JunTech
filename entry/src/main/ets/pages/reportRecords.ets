@@ -151,6 +151,7 @@ struct Page1 {
             this.selectedMealIndex = this.mealOptions[index].value;
             console.log('meal', this.selectedMealIndex);
           })
+          .backgroundColor(Color.White)
           .width('70%')
           .margin({ left: 63, right: 0, bottom: 10 })
       }
