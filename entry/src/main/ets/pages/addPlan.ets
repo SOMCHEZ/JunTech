@@ -1,9 +1,95 @@
 import { promptAction } from '@kit.ArkUI'
 import { image } from '@kit.ImageKit'
 import prompt from '@ohos.prompt';
-
-
 import router from '@ohos.router';
+import http from '@ohos.net.http';
+
+
+//永久存储token和租户id
+AppStorage.setOrCreate('token', '');
+AppStorage.setOrCreate('tenantId', 0);
+
+interface PlanningFoodItem {
+  id: string;
+  storehouseId: number | null;
+  foodAndSupplierId: string;
+  foodId: string;
+  supplyWay: string;
+  superiorLimit: number | null;
+  lowerLimit: number | null;
+  storageLocation: number | null;
+  stock: number | null;
+  storehouseStatus: number | null;
+  izCollect: string;
+  encoding: string;
+  groupId: string;
+  groupName: string;
+  foodName: string;
+  forShort: string;
+  internationalCode: number | null;
+  pinyinCode: string;
+  specification: string;
+  expirationDay: number | null;
+  brandLevel: string;
+  minDeclare: number | null;
+  unit: string;
+  packageQuantity: number | null;
+  procurementPricing: number | null;
+  supplyPricing: number | null;
+  marketPrice: number | null;
+  modifyPrice: number | null;
+  supplyNames: string;
+  supplyName: string;
+  supplierId: string;
+  aggregatePurchasePrice: number | null;
+  images: string;
+  izConvert: number | null;
+  realSpecification: string;
+  placeOrigin: string;
+  remarks: number | null;
+  remark: number | null;
+  testReport: number | null;
+  supplyWay_dictText: string;
+  quantitySupplied: string;
+  marketWeight: number | null;
+}
+
+interface addHandlerResult {
+  success: boolean;
+  code?: number;
+  userInfo?: UserInfo;
+  token?: string;
+  message?: string;
+  relTenantIds?:number;
+}
+
+interface addResult {
+  userInfo: UserInfo;
+  token: string;
+}
+
+interface addResponse {
+  code: number;
+  message: string;
+  result: addResult;
+  timestamp: number;
+}
+
+interface RouteParams {//接口传递参数定义
+  token?: string;
+  relTenantIds?: number;
+  unitId?: string;
+}
+
+interface UserInfo {
+  id: string;
+  username: string;
+  clientType: string;
+  realname: string;
+  avatar: string | null;
+  relTenantIds:number;
+  // 其他字段根据实际API响应补充...
+}
 
 interface GeneratedObjectLiteralInterface_1 {
   date: string;
@@ -23,6 +109,9 @@ struct DatePickerExample {
   @State showDialog: boolean = false
   @State opacityValue: number = 0
   @State scaleValue: number = 0.8
+  @State receivedToken: string = '';//参数传递
+  @State tenantId: number = 0;//同上
+  @State UnitId: string  ="";
   @State summary: string = ''// 摘要内容
   @State selectedText: string[] = ['请选择','请选择','请选择','请选择','请选择','请选择','请输入摘要']
   @State private showMealType: boolean = false // 控制是否显示用餐类型
@@ -32,7 +121,136 @@ struct DatePickerExample {
   private mealTypeOptions = ['其他','营养餐']
   private mealOptions = ['其他', '早餐', '午餐', '晚餐']
 
+  async onPageShow() {
+    const params = router.getParams() as RouteParams;
+    //console.log('houchu', params?.token);// 打印接收到的参数
+    //console.log('houchu', params?.relTenantIds);//  打印接收到的参数
 
+    // 安全取值如果返回值空，则使用appsetcreat中所预保存的token和id
+    if (!AppStorage.get('token') && params?.token) {
+      AppStorage.set('token', params.token);
+      //this.receivedToken = params.token;
+    }
+
+    if (!AppStorage.get('tenantId') && params?.relTenantIds) {
+      AppStorage.set('tenantId', params.relTenantIds);
+      //this.tenantId = params.relTenantIds;
+    }
+
+    if (!AppStorage.get('unitId') && params?.unitId) {
+      AppStorage.set('unitId', params.unitId);
+      //this.UnitId = params.unitId;
+    }
+
+    // 同步到组件状态
+    this.receivedToken = AppStorage.get('token')??'';
+    this.tenantId = AppStorage.get('tenantId')??0;
+    this.UnitId = AppStorage.get('unitId') ?? '';
+    console.log('rel',this.UnitId);
+    console.log('UID', params?.unitId);
+    //const result = await this.Houchuchaxun();// 调用Houchuchaxun方法这个函数是用来查数据的
+    //console.log('houchu1', result); // 打印返回结果
+  }
+
+  private async addStaff(): Promise<addHandlerResult> {
+    try {
+      const httpRequest = http.createHttp();
+      const response = await httpRequest.request(
+        'https://api.suoeryun.com/ifood/jeecg-school/school/xxDemandPlanning/addOrUpdate',
+        {
+          method: http.RequestMethod.POST,
+          header: { 'Content-Type': 'application/json',
+            'Tenant-Id':this.tenantId.toString(),
+            'X-Access-Token':this.receivedToken
+          },
+          extraData: JSON.stringify({
+            "unitId": "1917168448022519809",
+            "supplyDate": "2025-05-12",
+            "supplyTime": "forenoon",
+            "requirementType": "1",
+            "planningFoodList": [
+              {
+                "id": "",
+                "storehouseId": null,
+                "foodAndSupplierId": "",
+                "foodId": "",
+                "supplyWay": "",
+                "superiorLimit": null,
+                "lowerLimit": null,
+                "storageLocation": null,
+                "stock": null,
+                "storehouseStatus": null,
+                "izCollect": "",
+                "encoding": "",
+                "groupId": "",
+                "groupName": "",
+                "foodName": "",
+                "forShort": "",
+                "internationalCode": null,
+                "pinyinCode": "",
+                "specification": "",
+                "expirationDay": null,
+                "brandLevel": "",
+                "minDeclare": null,
+                "unit": "",
+                "packageQuantity": null,
+                "procurementPricing": null,
+                "supplyPricing": null,
+                "marketPrice": null,
+                "modifyPrice": null,
+                "supplyNames": "",
+                "supplyName": "",
+                "supplierId": "",
+                "aggregatePurchasePrice": null,
+                "images": "",
+                "izConvert": null,
+                "realSpecification": "",
+                "placeOrigin": "",
+                "remarks": null,
+                "remark": null,
+                "testReport": null,
+                "supplyWay_dictText": "",
+                "quantitySupplied": "",
+                "marketWeight": null
+              }
+            ] as  Array<PlanningFoodItem>,
+            "summary": "",
+            "mealType": "1",
+            "mealCategory": "1",
+            "unitName": "实训第二学校(库房)",
+            "unitType": "1",
+            "planningStatus": "1"
+          })
+        }
+      );
+
+      if (response.responseCode !== 200) {
+        return {
+          success: false,
+          message: `HTTP Error: ${response.responseCode}`
+          // 添加其他错误处理逻辑
+        };
+      }
+
+      const jsonData = JSON.parse(response.result as string) as addResponse;
+      //console.log('', response.responseCode);
+      //console.log('',jsonData.code);
+      return {
+        success: jsonData.code === 200,
+        code: jsonData.code,
+        //userInfo: jsonData.result.userInfo,
+        // token: jsonData.result.token,
+        message: jsonData.message,
+        relTenantIds:jsonData.result.userInfo.relTenantIds
+      };
+    } catch (error) {
+      //console.error('Login Error:', JSON.stringify(error));
+      return {
+        success: false,
+        message: 'fuck u!'
+      };
+    }
+  }
 
   build() {
     Stack(){
@@ -192,9 +410,15 @@ struct DatePickerExample {
                 .fontSize(16)
                 .fontColor(Color.White)
             }
-            .onClick(() => {
-              this.submitForm();
-
+            .onClick(async() => {
+              router.pushUrl({
+                url: 'pages/uploadPlan',
+                params: {
+                  token: this.receivedToken,
+                  tenantId: this.tenantId,
+                } })
+              const result = await this.addStaff()
+              //this.submitForm();
             })
             .height(35)
             .backgroundColor('#02BC65')
@@ -359,10 +583,8 @@ struct DatePickerExample {
               this.selectedText[4] = '请选择'
             }
             break;
-
         }
       }
-
     })
   }
 
@@ -370,17 +592,17 @@ struct DatePickerExample {
     // 验证必填项
     const isStudentMeal = this.selectedText[3] === '学生餐';
 
-    if (this.selectedText[0] === '请选择' ||  // 需求单位
-      this.selectedText[1] === '请选择' ||  // 供应日期
-      this.selectedText[3] === '请选择' ||  // 需求类型
-      this.selectedText[5] === '请选择'     // 餐别
-    ) {
-      prompt.showToast({
-        message: '请填写所有必填项',
-        duration: 2000
-      });
-      return;
-    }
+    // if (this.selectedText[0] === '请选择' ||  // 需求单位
+    //   this.selectedText[1] === '请选择' ||  // 供应日期
+    //   this.selectedText[3] === '请选择' ||  // 需求类型
+    //   this.selectedText[5] === '请选择'     // 餐别
+    // ) {
+    //   prompt.showToast({
+    //     message: '请填写所有必填项',
+    //     duration: 2000
+    //   });
+    //   return;
+    // }
     // 如果是学生餐，则必须填写用餐类型
     if (isStudentMeal && this.selectedText[4] === '请选择') {
       prompt.showToast({
@@ -411,9 +633,5 @@ struct DatePickerExample {
       url: 'pages/uploadPlan',  // 页面路径
       params: formData          // 传递的参数
     });
-
-
   }
-
-
 }
