@@ -1,3 +1,8 @@
+import { prompt } from '@kit.ArkUI'
+
+interface DialogResult {
+  index: number;
+}
 @Entry
 @Component
 struct mima {
@@ -37,11 +42,24 @@ struct mima {
         .backgroundColor('#36C56B')
         .margin(20)
         .onClick(() => {
-          // 在这里添加确认修改的逻辑，例如保存到服务器或本地存储
-          //添加判断mima1==mima2的判断
-          console.log(`旧密码: ${this.mima}, 新密码: ${this.mima2}`)
+          if (this.mima1 !== this.mima2) {
+            prompt.showDialog({
+              title: '提示',
+              message: '两次密码不一致',
+              buttons: [
+                { text: '确定', color: '#007AFF' }
+              ]
+            }).then((result: DialogResult) => {
+              // 可以根据 result.index 做进一步处理
+              console.info('弹窗结果：', result.index);
+            });
+          } else {
+            // 密码一致，执行保存逻辑
+            console.log(`旧密码: ${this.mima}, 新密码: ${this.mima2}`);
+          }
         })
-      }
+
+    }
       .width('100%')
       .margin(10)
     }

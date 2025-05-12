@@ -21,6 +21,18 @@ interface cuku{
   text1:string
   route1:string
 }
+interface pingfen{
+   pinfen:number
+   baifenbi:number
+   fenxian:string
+}
+
+interface TabData  {
+  pinfen: number,
+  baifenbi: number,
+  fenxian: string
+}
+
 @Entry
 @Component
 struct Index1 {
@@ -44,6 +56,14 @@ struct Index1 {
 
   @State selectedTab: number = 0
   private tabs: Array<string> = ['今日', '本周', '本月', '本年']
+
+  // 每个tab对应的数据
+  @State tabData:TabData[]= [
+    { pinfen: 0, baifenbi: 0, fenxian: '安全' },    // 今日
+    { pinfen: 2, baifenbi: 30, fenxian: '低风险' },  // 本周
+    { pinfen: 8, baifenbi: 70, fenxian: '中风' },  // 本月
+    { pinfen: 9, baifenbi: 95, fenxian: '高风险' }     // 本年
+  ]
 
   @State receivedToken: string = '';//参数传递
   @State tenantId: number = 0;//同上
@@ -119,12 +139,7 @@ struct Index1 {
                     .fontColor(this.selectedTab === idx ? 0x00B050 : 0x222222)
                     .fontWeight(FontWeight.Bold)
                     .backgroundColor(this.selectedTab === idx ? 0xF0FFF0 : 0xFFFFFF)
-                    .padding({
-                      left: 16,
-                      right: 16,
-                      top: 8,
-                      bottom: 8
-                    })
+                    .padding({ left: 16, right: 16, top: 8, bottom: 8 })
                     .onClick(() => {
                       this.selectedTab = idx
                     })
@@ -137,11 +152,11 @@ struct Index1 {
               Row() {
                 Column() {
                   Row() {
-                    Text('今日本校当前综合评分')
+                    Text(this.tabs[this.selectedTab] +'本校当前综合评分')
                       .fontSize(16)
                       .fontColor(0x222222)
                       .margin({ bottom: 8 })
-                    Text('高风险')
+                    Text(this.tabData[this.selectedTab].fenxian)
                       .fontSize(16)
                       .fontColor(0xFF0000)
                       .margin({ left: 100, bottom: 8 })
@@ -149,7 +164,7 @@ struct Index1 {
                   .width('100%')
 
                   Row() {
-                    Text('0')
+                    Text(this.tabData[this.selectedTab].pinfen.toString())
                       .fontSize(48)
                       .fontColor(0xFF0000)
                       .fontWeight(FontWeight.Bold)
@@ -159,21 +174,20 @@ struct Index1 {
                       .margin({ left: 4, top: 24 })
                     Text('超过本地区')
                       .fontSize(16)
-                      .margin({ left: 100  , top: 24})
+                      .margin({ left: 100, top: 24 })
                       .fontColor(0x222222)
-                    Text('0%')
+                    Text(this.tabData[this.selectedTab].baifenbi + '%')
                       .fontSize(18)
                       .fontColor(0xFF9900)
                       .fontWeight(FontWeight.Bold)
-                      .margin({ left: 2, right: 2 , top: 24})
+                      .margin({ left: 2, right: 2, top: 24 })
                     Text('的学校')
                       .fontSize(16)
-                      .margin({top: 24})
+                      .margin({ top: 24 })
                       .fontColor(0x222222)
                   }
                   .width('100%')
                 }
-                .width('100%')
                 .align(Alignment.Start)
               }
               .align(Alignment.End)

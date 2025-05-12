@@ -70,6 +70,7 @@ struct AddStaff {
   @State receivedToken: string = '';//参数传递
   @State tenantId: number = 0;//同上
   @State UnitId: string  ="";
+  @State  man: string = 'Love';
 
 
 
@@ -126,8 +127,6 @@ struct AddStaff {
           .onSelect((index: number) => {
             //this.selectedUnitIndex = index;
             this.selectedUnitIndex = this.units[index].value;
-
-
           })
           .backgroundColor(Color.White)
           .width('70%')
@@ -287,9 +286,10 @@ struct AddStaff {
       .position({x:18, y:'95%'})
       .onClick(async() => {
         router.pushUrl({
-          url: 'pages/peicanRecords',  params: {
+          url: 'pages/kitchenStaff',  params: {
             token: this.receivedToken,
-            tenantId: this.tenantId
+            tenantId: this.tenantId,
+            man : this.man
           } })
         const result = await this.addStaff();
        // this.unitId = result.token!;
