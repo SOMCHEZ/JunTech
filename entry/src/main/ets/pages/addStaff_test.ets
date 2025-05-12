@@ -110,6 +110,7 @@ struct AddStaff {
 
   private units: Array<SelectOption> = [
     { value: '实训第二学校餐厅', label: '实训第二学校餐厅' },
+    { value: '实训第二学校(库房)', label: '实训第二学校(库房)' },
     { value: '其他单位', label: '其他单位' }
   ];
   private statuses: Array<SelectOption> = [

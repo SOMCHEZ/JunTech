@@ -158,10 +158,18 @@ struct KitchenStaffList {
     //刚才删除的逻辑
 
 
-
-
-
     //删除的逻辑在上面
+    if (result.records && result.records.length > 0) {
+
+      this.unitId = result.records?.find(item =>//存放uid
+      item?.unitId && item.unitId.trim() !== '',
+      )?.unitId ?? 'default_unit_id'
+
+    } else {
+      //console.error('未获取到有效数据');
+      this.unitId = ''; // 设置默认值
+    }
+
 
     // 新增筛选逻辑
     const filteredRecords = result.records?.filter(item =>

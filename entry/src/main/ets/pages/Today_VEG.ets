@@ -32,7 +32,7 @@ async function Tv(): Promise<boolean> {
     "startTime": "2025-04-30",
     "endTime": "2025-04-30",
     "mealCategory": "0",
-    "dishName": "鱼香哥",
+    "dishName": "鱼香周哥",
     "sampleType": "0",
     "demandUnit": "1651892693627330561",
     "demandUnitName": "浐灞二小餐厅",
@@ -53,7 +53,7 @@ let data: Data = {
   "startTime": "2025-04-30",//开始时间
   "endTime": "2025-04-30",//结束时间
   "mealCategory": "0",//类别
-  "dishName": "鱼香哥",//菜名
+  "dishName": "鱼香周哥",//菜名
   "sampleType": "0",//样本类型
   "demandUnit": "1651892693627330561",
   "demandUnitName": "浐灞二小餐厅",//餐厅名
