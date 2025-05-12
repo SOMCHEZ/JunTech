@@ -2,7 +2,7 @@
 
 import router from '@ohos.router';
 import http from '@ohos.net.http';
-//import { promptAction } from '@kit.ArkUI';
+import { promptAction } from '@kit.ArkUI';
 //import filePicker from '@ohos.file.picker';
 
 
@@ -70,6 +70,7 @@ struct AddStaff {
   @State receivedToken: string = '';//参数传递
   @State tenantId: number = 0;//同上
   @State UnitId: string  ="";
+ // @State  man: string = 'Love';
 
 
 
@@ -126,8 +127,6 @@ struct AddStaff {
           .onSelect((index: number) => {
             //this.selectedUnitIndex = index;
             this.selectedUnitIndex = this.units[index].value;
-
-
           })
           .backgroundColor(Color.White)
           .width('70%')
@@ -286,12 +285,23 @@ struct AddStaff {
       .borderRadius(10)
       .position({x:18, y:'95%'})
       .onClick(async() => {
-        router.pushUrl({
-          url: 'pages/peicanRecords',  params: {
+        if(this.name.length!==0&&this.jobPosition.length!==0&&this.phone.length!==0&&this.status.length!==0&&this.issueDate.length!==0&&this.expiryDate.length!==0){
+        router.back({
+          url: 'pages/kitchenStaff_test',  params: {
             token: this.receivedToken,
-            tenantId: this.tenantId
+            tenantId: this.tenantId,
+           // man : this.man
           } })
-        const result = await this.addStaff();
+          const result = await this.addStaff();
+        }
+        else {
+          promptAction.showToast({
+            message: '请填写所有必填项',
+            duration: 2000,
+            bottom:670
+          });
+        }
+
        // this.unitId = result.token!;
       })
     }
