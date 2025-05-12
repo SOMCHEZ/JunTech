@@ -1,6 +1,9 @@
 import router from '@ohos.router';
-import prompt from '@ohos.prompt';
+import http from '@ohos.net.http';
+import { BusinessError } from '@ohos.base';
+import promptAction from '@ohos.promptAction';
 
+// 接口响应数据类型定义
 interface IngredientItem {
   name: string;
   brand: string;
@@ -19,6 +22,14 @@ interface GeneratedObjectLiteralInterface_1 {
   mealType: string;
   meal: string;
   createTime: string;
+}
+
+interface ApiResponse {
+  code: number;
+  message: string;
+  result: GeneratedObjectLiteralInterface_1;
+  success: boolean;
+  timestamp: number;
 }
 
 @Entry
@@ -45,7 +56,7 @@ struct OutboundOrderDetail {
     }
   ];
 
-  private orderInfo: GeneratedObjectLiteralInterface_1 = {
+  @State orderDetail: GeneratedObjectLiteralInterface_1 = {
     unit: '实训第一学校餐厅',
     orderNo: 'CK20250506001',
     date: '2025-05-06',
@@ -55,12 +66,69 @@ struct OutboundOrderDetail {
     createTime: '2025-05-06 17:22:18'
   };
 
-  get totalAmount(): string {
-    let sum = 0;
-    this.items.forEach(item => {
-      sum += item.price * item.quantity;
-    });
-    return sum.toFixed(2);
+  @State orderId: string = '';
+  @State tenantId: number = 0;
+  @State token: string = '';
+  @State loading: boolean = false;
+  @State message: string = '';
+
+  async queryOrderDetail() {
+    if (!this.orderId) {
+      this.message = '订单ID不能为空';
+      return;
+    }
+
+    let httpRequest: http.HttpRequest | null = null; // 提前声明变量
+
+    try {
+      httpRequest = http.createHttp();
+      let url = `https://api.suoeryun.com/ifood/jeecg-school/school/xxSupplyOutManagement/queryById`;
+
+      let response = await httpRequest.request(
+        url,
+        {
+          method: http.RequestMethod.GET,
+          header: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'tenant-id': this.tenantId.toString(),
+            'X-Access-Token': this.token
+          },
+          extraData: {
+            id: this.orderId
+          }
+        }
+      );
+
+      if (response.responseCode === http.ResponseCode.OK) {
+        const responseData = JSON.parse(response.result as string) as ApiResponse;
+        if (responseData.code === 200 && responseData.success) {
+          this.orderDetail = responseData.result;
+        } else {
+          this.message = responseData.message || '获取订单详情失败';
+          promptAction.showToast({
+            message: this.message,
+            duration: 2000
+          });
+        }
+      } else {
+        this.message = '网络请求失败';
+        promptAction.showToast({
+          message: this.message,
+          duration: 2000
+        });
+      }
+    } catch (error) {
+      const err = error as BusinessError;
+      this.message = '网络请求失败';
+      console.error('Query detail failed:', err.message);
+      promptAction.showToast({
+        message: this.message,
+        duration: 2000
+      });
+    } finally {
+      this.loading = false;
+      httpRequest?.destroy(); // 确保资源释放
+    }
   }
 
   build() {
@@ -80,16 +148,16 @@ struct OutboundOrderDetail {
           .onClick(() => router.back());
         // 信息卡片
         Column() {
-          Text(this.orderInfo.unit)
+          Text(this.orderDetail.unit)
             .fontSize(24)
             .fontWeight(FontWeight.Bold)
             .margin({ bottom: 10 });
-          Text('单据号：' + this.orderInfo.orderNo).fontSize(16).fontColor('#666').margin({ bottom: 2 });
-          Text('出库日期：' + this.orderInfo.date).fontSize(16).fontColor('#666').margin({ bottom: 2 });
-          Text('出库类型：' + this.orderInfo.type).fontSize(16).fontColor('#666').margin({ bottom: 2 });
-          Text('用餐类型：' + this.orderInfo.mealType).fontSize(16).fontColor('#666').margin({ bottom: 2 });
-          Text('餐别：' + this.orderInfo.meal).fontSize(16).fontColor('#666').margin({ bottom: 2 });
-          Text('制单时间：' + this.orderInfo.createTime).fontSize(16).fontColor('#666');
+          Text('单据号：' + this.orderDetail.orderNo).fontSize(16).fontColor('#666').margin({ bottom: 2 });
+          Text('出库日期：' + this.orderDetail.date).fontSize(16).fontColor('#666').margin({ bottom: 2 });
+          Text('出库类型：' + this.orderDetail.type).fontSize(16).fontColor('#666').margin({ bottom: 2 });
+          Text('用餐类型：' + this.orderDetail.mealType).fontSize(16).fontColor('#666').margin({ bottom: 2 });
+          Text('餐别：' + this.orderDetail.meal).fontSize(16).fontColor('#666').margin({ bottom: 2 });
+          Text('制单时间：' + this.orderDetail.createTime).fontSize(16).fontColor('#666');
         }
         .padding(20)
         .backgroundColor('#fff')
@@ -173,7 +241,7 @@ struct OutboundOrderDetail {
       // 底部合计与按钮
       Row() {
         Column() {
-          Text('总计：' + 3.36+ '元')
+          Text('总计：' + 3.36 + '元')
             .fontSize(24)
             .fontColor('#FF4040')
             .fontWeight(FontWeight.Bold)
