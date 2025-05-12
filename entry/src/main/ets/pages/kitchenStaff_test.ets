@@ -6,6 +6,7 @@ import http from '@ohos.net.http';
 //永久存储token和租户id
 AppStorage.setOrCreate('token', '');
 AppStorage.setOrCreate('tenantId', 0);
+AppStorage.setOrCreate('man', 'fuck');
 
 interface Houchu_Delete_Request {
   success: boolean;
@@ -23,7 +24,7 @@ interface  records{//定义接口返回类型
   unitId: string;
   unitName: string;
   userName: string;// 后端返回的姓名
-  realname: string;
+  //realname: string;
   idCard?: string;
   portraitPhoto?:string;
   position:  string;//  后端返回的职位
@@ -70,17 +71,39 @@ interface HouchuHandlerResult {
 interface RouteParams {
   token?: string;
   relTenantIds?: number;
+  man:string;
 }
 
 interface kitchenStaffs extends records {
   id:number;
-  name: string;      // 对应原接口的realname
+  unitId: string;
+  name: string;      // 对应原接口的username
   workplace: string; // 对应原接口的unitName
   status: string;    // 需确认来源字段
   issueTime: string; // 对应healthStartTime
   expireTime: string;// 对应healthEndTime
   type_dictText:string;//对应在职状态
   position: string;// 对应原接口的position
+  tel: string;
+  schoolId: string;
+  schoolName:  string;
+  //realname: string;
+  idCard?: string;
+  portraitPhoto?:string;
+  type: string;//  后端返回的职位类型
+  licenceIssuing: string;//  后端返回的营业执照有效期
+  healthNumber: string;//  后端返回的健康证号
+  healthUrl?: string;  // 后端返回的健康证图片
+  photoQualification: string;//  后端返回的营业执照图片
+  remark: string;//  后端返回的备注
+  inspectionType?:number//  后端返回的职位类型
+  version: number;//  后端返回的版本
+  canteenId:  string;// 后端返回的食堂id
+  wxopenId: string;// 后端返回的微信openid
+  tenantId:  number;//  后端返回的租户id
+  demandUnitIds:string;// 后端返回的食堂id
+  code?: number;// 后端返回的code
+
 }
 
 @Entry
@@ -95,9 +118,10 @@ struct KitchenStaffList {
   @State receivedToken: string = '';//参数传递
   @State tenantId: number = 0;//同上
   @State unitId: string ='';
+  @State man: string = '';
 
   @State isDeleting: boolean = false;
-  //@State Id: number =0;
+  //@State Edit_Id: string = ''; // 保持字符串类型时
   //@State ddd:  string[] = [];
 
 
@@ -117,9 +141,16 @@ struct KitchenStaffList {
       AppStorage.set('tenantId', params.relTenantIds);
       //this.tenantId = params.relTenantIds;
     }
+
+    if (!AppStorage.get('man') && params?.man) {
+      AppStorage.set('man', params.man);
+      //this.tenantId = params.relTenantIds;
+    }
+
     // 同步到组件状态
     this.receivedToken = AppStorage.get('token')??'';
     this.tenantId = AppStorage.get('tenantId')??0;
+    this.man= AppStorage.get('man')??'';
 
     const result = await this.Houchuchaxun();// 调用Houchuchaxun方法这个函数是用来查数据的
 
@@ -127,7 +158,16 @@ struct KitchenStaffList {
       this.kitchenStaffs = result.records.map(item => ({
         //...item,
         id: item.id||0,
-        name: item.userName || '',          // 映射姓名
+        unitId: item.unitId || '',
+        name: item.userName || '', // 映射姓名
+        tel: item.tel || '',
+        type: item.type || '未知类型',
+        portraitPhoto: item.portraitPhoto || '',
+        healthUrl: item.healthUrl || '',
+        remark: item.remark || '',
+        inspectionType: item.inspectionType || 0,
+        version: item.version || 0,
+        canteenId: item.canteenId || '',
         workplace: item.unitName || '',     // 映射工作单位
         status: item.type_dictText || '未知状态',
         issueTime: item.healthStartTime || '未设置',
@@ -160,6 +200,7 @@ struct KitchenStaffList {
     console.debug('所有Id:',//打印所有Id
       result.records?.map(item => item.id).filter(Boolean)
     )
+    console.log('man', this.man)
   }
 
 
@@ -181,7 +222,7 @@ struct KitchenStaffList {
         if (this.kitchenNumbers == 0) {
           Text('~ 暂无相关数据 ~')
             .fontSize(16)
-            .fontColor(Color.Gray)
+            .fontColor(Color.Black)
             .padding({ top: 200 })
             .onClick(async() => {//这里藏了一个接口，点击后调取接口是查询的哦,但是我不用
               // const result = await this.Houchuchaxun();
@@ -332,7 +373,7 @@ struct KitchenStaffList {
         message: '服务器繁忙'
       };
     }
-  }
+  }//后厨人员删除接口
 
 
   @Builder
@@ -369,29 +410,34 @@ struct KitchenStaffList {
         Row({space:20}) {
           Text(`人员状态: ${staff.status}`)
             .fontSize(16)
-            .fontColor(Color.Gray)
+            .fontColor(Color.Black)
           Text(`人员岗位: ${staff.position}`)
             .fontSize(16)
-            .fontColor(Color.Gray);
+            .fontColor(Color.Black);
         }
+        .width('85%')
         .margin({ left: 16 });
 
         Text(`发证日期: ${staff.issueTime}`)
+          .width('85%')
           .fontSize(16)
-          .fontColor(Color.Gray)
-          .margin({ left: 16 });
+          .fontColor(Color.Black)
+          .margin({ left: 16 })
+          .align(Alignment.TopStart)
         Text(`到期日期: ${staff.expireTime}`)
+          .width('85%')
           .fontSize(16)
-          .fontColor(Color.Gray)
-          .margin({ left: 16 });
+          .fontColor(Color.Black)
+          .margin({ left: 16 })
         Text(`所属单位: ${staff.workplace}`)
+          .width('85%')
           .fontSize(16)
-          .fontColor(Color.Gray)
+          .fontColor(Color.Black)
           .margin({ left: 16, bottom: 16 });
 
         Divider()
           .width('85%')
-          .height(2)
+          .height(3)
           .color(Color.Gray)
           .margin({ left: 'auto', right: 'auto' });
 
@@ -401,6 +447,25 @@ struct KitchenStaffList {
               .fontSize(16)
               .fontColor(Color.Green)
           }
+          .onClick(async () => {
+             // this.Edit_Id  = await this.HouchuDelete(staff.id)
+             console.log(staff.id?.toString())
+
+            router.pushUrl({
+              url: "pages/EditStaff",
+              params: {
+                token: this.receivedToken,
+                relTenantIds: this.tenantId,
+                unitId: this.unitId,
+                editId: staff.id?.toString() // 传递编辑ID
+              }
+            });
+               // if() {
+               //   this.onPageShow();
+                //}
+
+
+          })
           .width(150)
           .height(40)
           .borderRadius(20)
@@ -478,7 +543,7 @@ struct DropdownSelector {
       .zIndex(100)
       .width('90%')
       .padding(10)
-      .border({ width: 1, color: Color.Gray, radius: 8 })
+      .border({ width: 1, color: Color.Black, radius: 8 })
 
       if (this.showDropdown) {
         Scroll() {
@@ -500,7 +565,7 @@ struct DropdownSelector {
         .scrollBarWidth(0)
         .width('100%')
         .backgroundColor(Color.White)
-        .border({ width: 1, color: Color.Gray, radius: 8 })
+        .border({ width: 1, color: Color.Black, radius: 8 })
         .position({ x: 0, y: 48 }) // 设置位置
         .zIndex(200) // 设置 z-index
       }
