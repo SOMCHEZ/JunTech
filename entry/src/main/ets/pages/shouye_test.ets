@@ -38,7 +38,7 @@ interface TabData  {
 struct Index1 {
   @State image: ImageCount[] = [
     { url: 'app.media.education_3', count: 0, text: '每日工作' ,route:'pages/kitchenStaff_test'},
-    { url: 'app.media.home_1', count: 0, text: '上报计划' ,route:'pages/addPlan'},
+    { url: 'app.media.home_1', count: 0, text: '上报计划' ,route:'pages/uploadPlan'},
     { url: 'app.media.home_2', count: 0, text: '需求审批' ,route:'pages/ApprovalPage'},
     { url: 'app.media.home_4', count: 0, text: '新品审批' ,route:'pages/addStaff_test'},
     { url: 'app.media.home_recipe_reporting', count: 0, text: '今日菜品' ,route:'pages/food_day'},

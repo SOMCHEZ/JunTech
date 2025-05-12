@@ -1,5 +1,11 @@
 import router from '@ohos.router';
+import http from '@ohos.net.http';
 // 定义接收的参数类型
+
+AppStorage.setOrCreate('token', '');
+AppStorage.setOrCreate('tenantId', 0);
+AppStorage.setOrCreate('unitId', '');
+
 interface RecipeFormData {
   date?: string;
   recipeName?: string;
@@ -7,6 +13,63 @@ interface RecipeFormData {
   diningType?: string;
   place?: string;
   photoUri?: string;
+}
+
+interface  records{//定义接口返回类型
+  id?: number;
+  schoolId: string;
+  schoolName:  string;
+  unitId: string;
+  unitName: string;
+  userName: string;// 后端返回的姓名
+  //realname: string;
+  idCard?: string;
+  portraitPhoto?:string;
+  position:  string;//  后端返回的职位
+  tel: string;// 后端返回的电话
+  type: string;//  后端返回的职位类型
+  type_dictText:string;// 后端返回的职位类型
+  licenceIssuing: string;//  后端返回的营业执照有效期
+  healthNumber: string;//  后端返回的健康证号
+  healthUrl?: string;  // 后端返回的健康证图片
+  healthStartTime: string;// 后端返回的营业执照有效期
+  healthEndTime:  string;// 后端返回的营业执照有效期
+  photoQualification: string;//  后端返回的营业执照图片
+  remark: string;//  后端返回的备注
+  inspectionType?:number//  后端返回的职位类型
+  version: number;//  后端返回的版本
+  canteenId:  string;// 后端返回的食堂id
+  wxopenId: string;// 后端返回的微信openid
+  tenantId:  number;//  后端返回的租户id
+  demandUnitIds:string;// 后端返回的食堂id
+  code?: number;// 后端返回的code
+
+  // 其他字段根据实际API响应补充...
+}
+
+interface RouteParams {//接口传递参数定义
+  token?: string;
+  relTenantIds?: number;
+  unitId?: string;
+}
+
+interface HouchuResult {
+  records: records[];
+  //token: string;
+}
+
+interface HouchuResponse {
+  code: number;
+  message: string;
+  result: HouchuResult;
+  timestamp: number;
+}
+
+interface HouchuHandlerResult {
+  success: boolean;
+  code?: number;
+  records?: records[];
+  message?: string;
 }
 
 @Entry
@@ -20,6 +83,9 @@ struct ReportPlanPage {
   @State selectedDate: string = '请选择供应日期'
   @State selectDate: Date = new Date()
   @State selectedText: RecipeFormData[] =[]
+  @State receivedToken: string = '';//参数传递
+  @State tenantId: number = 0;//同上
+  @State unitId: string  ="";
   private unitOptions = [
     '选择需求单位',
     '实验第二学校（库房）',
@@ -27,22 +93,109 @@ struct ReportPlanPage {
   ]
 
   // 修改生命周期函数
-  onPageShow() {
-      let params = router.getParams()
-      if (params && params.toString()) {
-        this.selectedText.push(params as RecipeFormData)
-      }
-    if (this.unitOptions.length > 0) {
-      this.selectedUnit = this.unitOptions[0]
+  async onPageShow() {
+
+    // 使用接口类型断言
+    const params = router.getParams() as RouteParams;
+    //console.log('houchu', params?.token);// 打印接收到的参数
+    //console.log('houchu', params?.relTenantIds);//  打印接收到的参数
+
+    // 安全取值如果返回值空，则使用appsetcreat中所预保存的token和id
+    if (!AppStorage.get('token') && params?.token) {
+      AppStorage.set('token', params.token);
+      //this.receivedToken = params.token;
     }
 
+    if (!AppStorage.get('tenantId') && params?.relTenantIds) {
+      AppStorage.set('tenantId', params.relTenantIds);
+      //this.tenantId = params.relTenantIds;
+    }
 
+    if (!AppStorage.get('unitId') && params?.unitId) {
+      AppStorage.set('unitId', params.unitId);
+      //this.UnitId = params.unitId;
+    }
+
+    // 同步到组件状态
+    this.receivedToken = AppStorage.get('token')??'';
+    this.tenantId = AppStorage.get('tenantId')??0;
+    this.unitId = AppStorage.get('unitId') ?? '';
+    console.log('rel',this.unitId);
+    console.log('UID', params?.unitId);
+
+    const result = await this.Houchuchaxun();
+    //const result = await this.Houchuchaxun();// 调用Houchuchaxun方法这个函数是用来查数据的
+    //console.log('houchu1', result); // 打印返回结果
+
+    if (result.records && result.records.length > 0) {
+
+      this.unitId = result.records?.find(item =>//存放uid
+      item?.unitId && item.unitId.trim() !== '',
+      )?.unitId ?? 'default_unit_id'
+
+    } else {
+      //console.error('未获取到有效数据');
+      this.unitId = ''; // 设置默认值
+    }
+
+    //   let params = router.getParams()
+    //   if (params && params.toString()) {
+    //     this.selectedText.push(params as RecipeFormData)
+    //   }
+    // if (this.unitOptions.length > 0) {
+    //   this.selectedUnit = this.unitOptions[0]
+    // }
   }
 
+
+  private async Houchuchaxun(): Promise<HouchuHandlerResult> { //这个请求是针对查询后厨人员列表的
+    try {
+      const httpRequest = http.createHttp();
+
+      const response = await httpRequest.request(
+        'https://api.suoeryun.com/ifood/jeecg-school/school/xxDemandPlanning/list',
+        {
+          method: http.RequestMethod.GET,
+          header: {
+            //'Content-Type': 'application/json',
+            'Tenant-Id': this.tenantId.toString(),
+            'X-Access-Token': this.receivedToken
+          },
+        }
+      );
+
+      if (response.responseCode !== 200) {
+        //console.error('Login Error:'+response.responseCode);
+        return {
+          success: false,
+          message: `HTTP Error: ${response.responseCode}`
+          // 添加其他错误处理逻辑
+        };
+      }
+      console.log('slfj' + response.result.toString())
+      const jsonData = JSON.parse(response.result as string) as HouchuResponse;
+      console.log('11', jsonData.result.records[1]);
+      return {
+        success: jsonData.code === 200,
+        code: jsonData.code,
+        records: jsonData.result.records,
+        message: jsonData.message,
+        //relTenantIds:jsonData.result.userInfo.relTenantIds
+      };
+
+    } catch (error) {
+      console.error('Login Error:', JSON.stringify(error));
+      return {
+        success: false,
+        message: '服务器繁忙'
+      }
+    }
+  }
+
+
+
   build() {
-
       Column() {
-
         Row() {
           Button('未上报')
             .width('50%')
@@ -264,7 +417,8 @@ struct ReportPlanPage {
                           radius: 8
                         })
                     }
-                    .padding({left:25,bottom:10 })
+                    .width('100%')
+                    .margin({left:0,right: 10, bottom:10 })
                 })
               }
               .width('100%')
@@ -301,9 +455,11 @@ struct ReportPlanPage {
             // };
             // this.selectedText.push(newForm);
             router.pushUrl({
-              url: 'pages/addPlan'
-
-            })
+              url: 'pages/addPlan',
+              params: {
+                token: this.receivedToken,
+                tenantId: this.tenantId,
+              }})
           })
       }
 
