@@ -14,16 +14,12 @@ interface Staff {
   role: string;
 }
 
-
-
 interface Houchu_Delete_Request {
   success: boolean;
   code?: number;
   result:string;
   message?: string;
 }
-
-
 
 interface  records{//定义接口返回类型
   id?: number;
@@ -128,7 +124,7 @@ struct KitchenStaffList {
   @State unitId: string ='';
   @State tel: string = '';
   @State man: string = '';
-@State unitName : string = '';
+  @State unitName : string = '';
   @State isDeleting: boolean = false;
   //@State Edit_Id: string = ''; // 保持字符串类型时
   //@State ddd:  string[] = [];
