@@ -72,6 +72,15 @@ struct AddStaff {
   @State UnitId: string  ="";
   @State  man: string = 'Love';
 
+  private units: Array<SelectOption> = [
+    { value: '实训第二学校餐厅', label: '实训第二学校餐厅' },
+    { value: '其他单位', label: '其他单位' }
+  ];
+  private statuses: Array<SelectOption> = [
+    { value: '在职', label: '在职' },
+    { value: '离职', label: '离职' }
+  ];
+
 
 
   async onPageShow() {//这是一个接收传递参数的方法
@@ -106,16 +115,6 @@ struct AddStaff {
     //console.log('houchu1', result); // 打印返回结果
   }
 
-
-
-  private units: Array<SelectOption> = [
-    { value: '实训第二学校餐厅', label: '实训第二学校餐厅' },
-    { value: '其他单位', label: '其他单位' }
-  ];
-  private statuses: Array<SelectOption> = [
-    { value: '在职', label: '在职' },
-    { value: '离职', label: '离职' }
-  ];
   build() {
     Column({ space: 0 }) {
       Row({ space: 10}) {
@@ -286,11 +285,11 @@ struct AddStaff {
       .position({x:18, y:'95%'})
       .onClick(async() => {
         if(this.name.length!==0&&this.jobPosition.length!==0&&this.phone.length!==0&&this.status.length!==0&&this.issueDate.length!==0&&this.expiryDate.length!==0){
-        router.pushUrl({
-          url: 'pages/kitchenStaff',  params: {
+        router.back({
+          url: 'pages/kitchenStaff_test',  params: {
             token: this.receivedToken,
             tenantId: this.tenantId,
-            man : this.man
+           // man : this.man
           } })
           const result = await this.addStaff();
         }

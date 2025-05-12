@@ -2,7 +2,7 @@
 
 import router from '@ohos.router';
 import http from '@ohos.net.http';
-//import { promptAction } from '@kit.ArkUI';
+import { promptAction } from '@kit.ArkUI';
 //import filePicker from '@ohos.file.picker';
 
 
@@ -128,6 +128,7 @@ struct AddStaff {
 
   private units: Array<SelectOption> = [
     { value: '实训第二学校餐厅', label: '实训第二学校餐厅' },
+    { value: '实训第二学校(库房)', label: '实训第二学校(库房)' },
     { value: '其他单位', label: '其他单位' }
   ];
   private statuses: Array<SelectOption> = [
@@ -305,10 +306,24 @@ struct AddStaff {
       .borderRadius(10)
       .position({x:18, y:'95%'})
       .onClick(async() => {
-        router.pushUrl({
-          url: 'pages/kitchenStaff_test' })
+        if(this.name.length!==0&&this.jobPosition.length!==0&&this.phone.length!==0&&this.status.length!==0&&this.issueDate.length!==0&&this.expiryDate.length!==0)
+        {router.pushUrl({
+          url: 'pages/kitchenStaff_test',
+          params:{
+            token:this.receivedToken,
+            tenantId:this.tenantId,
+          }
+        })
         const result = await this.HouchuEdit();
         // this.unitId = result.token!;
+      }
+        else {
+          promptAction.showToast({
+            message: '求你了你改一些东西吧！',
+            duration: 2000,
+            bottom:670
+          });
+        }
       })
     }
     .width('100%')
