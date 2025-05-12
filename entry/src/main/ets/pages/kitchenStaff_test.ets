@@ -6,7 +6,15 @@ import http from '@ohos.net.http';
 //永久存储token和租户id
 AppStorage.setOrCreate('token', '');
 AppStorage.setOrCreate('tenantId', 0);
-AppStorage.setOrCreate('man', 'fuck');
+//AppStorage.setOrCreate('man', 'fuck');
+
+interface Staff {
+  id: number;
+  name: string;
+  role: string;
+}
+
+
 
 interface Houchu_Delete_Request {
   success: boolean;
@@ -111,7 +119,7 @@ interface kitchenStaffs extends records {
 struct KitchenStaffList {
 
   @State selectedUnit: string = '所属单位';
-  @State units: string[] = ['所属单位', '实训第二学校餐厅', '其他单位'];
+  @State units: string[] = ['所属单位'];
   @State showDropdown: boolean = false;
   @State kitchenStaffs: kitchenStaffs[] = []; // 后厨人员数据
   @State kitchenNumbers: number = 0;
@@ -119,11 +127,10 @@ struct KitchenStaffList {
   @State tenantId: number = 0;//同上
   @State unitId: string ='';
   @State man: string = '';
-
+@State unitName : string = '';
   @State isDeleting: boolean = false;
   //@State Edit_Id: string = ''; // 保持字符串类型时
   //@State ddd:  string[] = [];
-
 
 
 
@@ -142,24 +149,31 @@ struct KitchenStaffList {
       //this.tenantId = params.relTenantIds;
     }
 
-    if (!AppStorage.get('man') && params?.man) {
-      AppStorage.set('man', params.man);
-      //this.tenantId = params.relTenantIds;
-    }
-
     // 同步到组件状态
     this.receivedToken = AppStorage.get('token')??'';
     this.tenantId = AppStorage.get('tenantId')??0;
-    this.man= AppStorage.get('man')??'';
 
     const result = await this.Houchuchaxun();// 调用Houchuchaxun方法这个函数是用来查数据的
 
-    if (result.success && result.records) {
-      this.kitchenStaffs = result.records.map(item => ({
-        //...item,
-        id: item.id||0,
+    //刚才删除的逻辑
+
+
+
+
+
+    //删除的逻辑在上面
+
+    // 新增筛选逻辑
+    const filteredRecords = result.records?.filter(item =>
+    this.selectedUnit === '所属单位' ||  // 显示全部
+      item.unitName === this.selectedUnit // 按选中单位过滤
+    ) ?? [];
+
+    if (result.success && filteredRecords) {
+      this.kitchenStaffs = filteredRecords.map((item: records) => ({
+        id: item.id || 0,
         unitId: item.unitId || '',
-        name: item.userName || '', // 映射姓名
+        name: item.userName || '',
         tel: item.tel || '',
         type: item.type || '未知类型',
         portraitPhoto: item.portraitPhoto || '',
@@ -168,35 +182,65 @@ struct KitchenStaffList {
         inspectionType: item.inspectionType || 0,
         version: item.version || 0,
         canteenId: item.canteenId || '',
-        workplace: item.unitName || '',     // 映射工作单位
+        workplace: item.unitName || '',
         status: item.type_dictText || '未知状态',
         issueTime: item.healthStartTime || '未设置',
         expireTime: item.healthEndTime || '未设置',
         position: item.position || '未设置职位'
       } as kitchenStaffs));
-
-      this.kitchenNumbers = this.kitchenStaffs.length; // 更新数量状态
-    } else {
-      this.kitchenNumbers = 0;
-      console.error('数据加载失败:', result.message);
     }
+    // 在 onPageShow() 的 result 处理逻辑后添加：
+    const unitNames = result.records?.map(item => item.unitName) ?? [];
+    const filteredUnitNames = unitNames.filter(Boolean);
+    const uniqueUnits = Array.from(new Set(filteredUnitNames));
+    this.units = ['所属单位', ...uniqueUnits];
 
 
     if (result.records && result.records.length > 0) {
 
-      this.unitId = result.records?.find(item =>//存放uid
-      item?.unitId && item.unitId.trim() !== '',
-      )?.unitId ?? 'default_unit_id'
+      this.unitName = result.records?.find(item =>//存放uid
+      item?.unitName && item.unitName.trim() !== '',
+      )?.unitName ?? 'default_unit_id'
 
     } else {
       //console.error('未获取到有效数据');
-      this.unitId = ''; // 设置默认值
+      this.unitName = ''; // 设置默认值
     }
-    console.log('当前unitId:', this.unitId)//打印uid
-    console.debug('所有unitIds:',//打印所有uid
-      result.records?.map(item => item.unitId).filter(Boolean)
-    )
+    if (result.success && filteredRecords) {
+      this.kitchenStaffs = filteredRecords.map((item: records) => ({
+        id: item.id || 0,
+        unitId: item.unitId || '',
+        name: item.userName || '',
+        workplace: item.unitName || '',
+        status: item.type_dictText || '未知状态',
+        issueTime: item.healthStartTime || '未设置',
+        expireTime: item.healthEndTime || '未设置',
+        position: item.position || '未设置职位'
+        //...其他字段映射
+      } as kitchenStaffs));
+
+  // 新增数量统计
+  this.kitchenNumbers = this.kitchenStaffs.length;
+} else {
+  this.kitchenNumbers = 0;
+}
+
+
+
+
+
+
+
+    //console.log('当前unitId:', this.unitId)//打印uid
+   // console.debug('所有unitIds:',//打印所有uid
+     // result.records?.map(item => item.unitId).filter(Boolean)
+    //)
     console.log('id',this.kitchenStaffs[0].id)//打印id
+    console.log('kitchenStaffs', this.unitName);
+    console.debug('所有单位:',//打印所有Id
+      result.records?.map(item => item.unitName).filter(Boolean)
+    )
+
     console.debug('所有Id:',//打印所有Id
       result.records?.map(item => item.id).filter(Boolean)
     )
@@ -210,13 +254,25 @@ struct KitchenStaffList {
       Column() {
         Row() {
           Select(this.units.map<SelectOption>((item: string) => ({ value: item })))
-            .value(this.units[0])
+            .value(this.selectedUnit)
             .onSelect((index: number) => {
               this.selectedUnit = this.units[index]
+              this.onPageShow();
+            })
+            .onClick(() => {
+              this.onPageShow();
             })
         }
+
         .align(Alignment.Center)
         .padding({ left: 16, right: 16 });
+if (this.kitchenNumbers === 0 && this.selectedUnit !== '所属单位') {
+  Text(`~ 在 ${this.selectedUnit} 中未找到相关人员 ~`)
+    .fontSize(16)
+    .fontColor(Color.Gray)
+    .padding({ top: 200 })
+    .textAlign(TextAlign.Center);
+}
 
 
         if (this.kitchenNumbers == 0) {
