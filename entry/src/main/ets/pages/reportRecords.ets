@@ -52,13 +52,13 @@ interface SelectOption{
   label: string;
 }
 
-// Page1.ets
+
 @Entry
 @Component
 struct Page1 {
   @State selectedPosition: string = ''
   @State private selectedUnitIndex:string = '实训第二学校餐厅';
-  @State private selectedMealIndex:string = '其他';
+  @State private selectedMealIndex:string = '0';
   @State selectedUnit: string = ''
   @State selectedMeal: string = '' // 新增：选中的餐别
   @State name: string = ''
@@ -158,7 +158,7 @@ struct Page1 {
 
         Select(this.mealOptions)
           .value('请选择')
-          .selected(this.mealOptions.findIndex(item => item.label === this.selectedMealIndex))
+          .selected(this.mealOptions.findIndex(item => item.value === this.selectedMealIndex))
           .onSelect((index: number) => {
             this.selectedMealIndex = this.mealOptions[index].value;
           })
@@ -223,7 +223,7 @@ struct Page1 {
           },
           extraData: JSON.stringify({
             "mealDate": this.dates,
-            "mealCategory": "0",
+            "mealCategory": this.selectedMeal.valueOf(),
             "repastNum": "",
             "withNum": "",
             "xxMealRecordInfoList": [
