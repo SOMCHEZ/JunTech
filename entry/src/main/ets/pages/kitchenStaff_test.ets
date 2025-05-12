@@ -126,6 +126,7 @@ struct KitchenStaffList {
   @State receivedToken: string = '';//参数传递
   @State tenantId: number = 0;//同上
   @State unitId: string ='';
+  @State tel: string = '';
   @State man: string = '';
 @State unitName : string = '';
   @State isDeleting: boolean = false;
@@ -171,6 +172,7 @@ struct KitchenStaffList {
     }
 
 
+
     // 新增筛选逻辑
     const filteredRecords = result.records?.filter(item =>
     this.selectedUnit === '所属单位' ||  // 显示全部
@@ -208,7 +210,7 @@ struct KitchenStaffList {
 
       this.unitName = result.records?.find(item =>//存放uid
       item?.unitName && item.unitName.trim() !== '',
-      )?.unitName ?? 'default_unit_id'
+      )?.unitName ?? 'default_unit_Name'
 
     } else {
       //console.error('未获取到有效数据');
@@ -223,7 +225,8 @@ struct KitchenStaffList {
         status: item.type_dictText || '未知状态',
         issueTime: item.healthStartTime || '未设置',
         expireTime: item.healthEndTime || '未设置',
-        position: item.position || '未设置职位'
+        position: item.position || '未设置职位',
+        tel: item.tel || '',
         //...其他字段映射
       } as kitchenStaffs));
 
@@ -239,7 +242,7 @@ struct KitchenStaffList {
 
 
 
-    //console.log('当前unitId:', this.unitId)//打印uid
+    console.log('当前tel:', this.unitId)//打印uid
    // console.debug('所有unitIds:',//打印所有uid
      // result.records?.map(item => item.unitId).filter(Boolean)
     //)
@@ -249,8 +252,8 @@ struct KitchenStaffList {
       result.records?.map(item => item.unitName).filter(Boolean)
     )
 
-    console.debug('所有Id:',//打印所有Id
-      result.records?.map(item => item.id).filter(Boolean)
+    console.debug('所有tel:',//打印所有Id
+      result.records?.map(item => item.tel).filter(Boolean)
     )
     console.log('man', this.man)
   }
@@ -520,10 +523,24 @@ if (this.kitchenNumbers === 0 && this.selectedUnit !== '所属单位') {
               params: {
                 token: this.receivedToken,
                 relTenantIds: this.tenantId,
+
                 unitId: this.unitId,
-                editId: staff.id?.toString() // 传递编辑ID
+                editId: staff.id?.toString(), // 传递编辑ID
+
+                //传送小卡片的数据
+                name: staff.name?.toString(),
+                status:  staff.status?.toString(),
+                position: staff.position?.toString(),
+                issueTime: staff.issueTime?.toString(),
+                expireTime: staff.expireTime?.toString(),
+                workplace: staff.workplace?.toString(),
+                tel: staff.tel?.toString(),
+
+
               }
             });
+             //console.log('Name',staff.name)
+             console.log('status',staff.tel)
                // if() {
                //   this.onPageShow();
                 //}

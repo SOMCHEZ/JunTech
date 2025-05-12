@@ -1,4 +1,4 @@
-//最终版本
+//最终版本封装
 
 import router from '@ohos.router';
 import http from '@ohos.net.http';
@@ -111,6 +111,7 @@ struct AddStaff {
   private units: Array<SelectOption> = [
     { value: '实训第二学校餐厅', label: '实训第二学校餐厅' },
     { value: '实训第二学校(库房)', label: '实训第二学校(库房)' },
+   { value: '实训第二学校(床上)', label: '实训第二学校(床上)' },
     { value: '其他单位', label: '其他单位' }
   ];
   private statuses: Array<SelectOption> = [
