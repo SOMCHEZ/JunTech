@@ -222,7 +222,7 @@ struct KitchenStaffList {
         if (this.kitchenNumbers == 0) {
           Text('~ 暂无相关数据 ~')
             .fontSize(16)
-            .fontColor(Color.Gray)
+            .fontColor(Color.Black)
             .padding({ top: 200 })
             .onClick(async() => {//这里藏了一个接口，点击后调取接口是查询的哦,但是我不用
               // const result = await this.Houchuchaxun();
@@ -410,29 +410,34 @@ struct KitchenStaffList {
         Row({space:20}) {
           Text(`人员状态: ${staff.status}`)
             .fontSize(16)
-            .fontColor(Color.Gray)
+            .fontColor(Color.Black)
           Text(`人员岗位: ${staff.position}`)
             .fontSize(16)
-            .fontColor(Color.Gray);
+            .fontColor(Color.Black);
         }
+        .width('85%')
         .margin({ left: 16 });
 
         Text(`发证日期: ${staff.issueTime}`)
+          .width('85%')
           .fontSize(16)
-          .fontColor(Color.Gray)
-          .margin({ left: 16 });
+          .fontColor(Color.Black)
+          .margin({ left: 16 })
+          .align(Alignment.TopStart)
         Text(`到期日期: ${staff.expireTime}`)
+          .width('85%')
           .fontSize(16)
-          .fontColor(Color.Gray)
-          .margin({ left: 16 });
+          .fontColor(Color.Black)
+          .margin({ left: 16 })
         Text(`所属单位: ${staff.workplace}`)
+          .width('85%')
           .fontSize(16)
-          .fontColor(Color.Gray)
+          .fontColor(Color.Black)
           .margin({ left: 16, bottom: 16 });
 
         Divider()
           .width('85%')
-          .height(2)
+          .height(3)
           .color(Color.Gray)
           .margin({ left: 'auto', right: 'auto' });
 
@@ -538,7 +543,7 @@ struct DropdownSelector {
       .zIndex(100)
       .width('90%')
       .padding(10)
-      .border({ width: 1, color: Color.Gray, radius: 8 })
+      .border({ width: 1, color: Color.Black, radius: 8 })
 
       if (this.showDropdown) {
         Scroll() {
@@ -560,7 +565,7 @@ struct DropdownSelector {
         .scrollBarWidth(0)
         .width('100%')
         .backgroundColor(Color.White)
-        .border({ width: 1, color: Color.Gray, radius: 8 })
+        .border({ width: 1, color: Color.Black, radius: 8 })
         .position({ x: 0, y: 48 }) // 设置位置
         .zIndex(200) // 设置 z-index
       }
