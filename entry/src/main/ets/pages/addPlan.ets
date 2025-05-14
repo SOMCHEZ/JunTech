@@ -363,8 +363,12 @@ struct DatePickerExample {
                       .fontSize(25)
                       .fontWeight(FontWeight.Bold)
                       .fontColor(Color.Black)
-                      .margin({ left: 10, top: -65}) // 与图片保持相对位置
-                      .margin({ left: 100, top: -120 }) // 右侧固定位置
+                      //.margin({ left: 10, top: -65}) // 与图片保持相对位置
+                      .margin({ left: 10, top: -70 }) // 右侧固定位置
+                    Image($r('app.media.del'))
+                      .width(30)
+                      .fillColor(Color.Red)
+                      .position({ x: 270, y: -25 })
                   }
                   .width('100%')
                   .height(80)
@@ -384,7 +388,7 @@ struct DatePickerExample {
                     ]
                   })
                   .zIndex(1)
-                // 采购价信息 (精确像素级调整)
+                // 采购价信息
                 Column() {
                   // 采购价信息
                   Row() {
@@ -593,7 +597,12 @@ struct DatePickerExample {
         }
         // 底部按钮部分
         Column() {
+          Divider()
+          .strokeWidth(1)
+          .color('#ffb1afaf')
+          .margin({ top: 0, bottom: 7 })
           Row() {
+
             Text('总计：*元')
               .fontColor('#8A96A2')
               .fontSize(16)
@@ -642,9 +651,9 @@ struct DatePickerExample {
           .justifyContent(FlexAlign.SpaceBetween)
           .margin({ top: 20 })
         }
+        .height(55)
         .padding(10)
         .zIndex(4)
-
       }
     }
   }
