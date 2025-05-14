@@ -1,4 +1,4 @@
-//最终版本封装
+//最终版本
 
 import router from '@ohos.router';
 import http from '@ohos.net.http';
@@ -111,6 +111,7 @@ struct AddStaff {
   private units: Array<SelectOption> = [
     { value: '实训第二学校餐厅', label: '实训第二学校餐厅' },
     { value: '实训第二学校(库房)', label: '实训第二学校(库房)' },
+    { value: '实训第二学校(床上)', label: '实训第二学校(床上)' },
     { value: '其他单位', label: '其他单位' }
   ];
   private statuses: Array<SelectOption> = [
@@ -288,7 +289,7 @@ struct AddStaff {
       .onClick(async() => {
         if(this.name.length!==0&&this.jobPosition.length!==0&&this.phone.length!==0&&this.status.length!==0&&this.issueDate.length!==0&&this.expiryDate.length!==0){
           router.back({
-            url: 'pages/kitchenStaff_test',  params: {
+            url: 'pages/kitchenStaff',  params: {
               token: this.receivedToken,
               tenantId: this.tenantId,
               // man : this.man
