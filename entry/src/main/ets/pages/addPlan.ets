@@ -117,9 +117,10 @@ struct DatePickerExample {
   @State selectedText: string[] = ['请选择','请选择','请选择','请选择','请选择','请选择','请输入摘要']
   @State private showMealType: boolean = false // 控制是否显示用餐类型
 
+
   private unitOptions = ['实验第二学校（库房）', '实验第二学校餐厅']
   private selectedTime = ['上午', '下午']
-  private demandOptions = ['学生餐', '老师餐']
+  private demandOptions = ['学生餐', '教师餐']
   private mealTypeOptions = ['其他','营养餐']
   private mealOptions = ['其他', '早餐', '午餐', '晚餐']
 
@@ -128,7 +129,7 @@ struct DatePickerExample {
     '上午': 'forenoon',
     '下午': 'afternoon',
     '学生餐': '1',
-    '老师餐': '2',
+    '教师餐': '2',
     '其他': '1',
     '营养餐': '2',
     '早餐': '1',
@@ -141,7 +142,7 @@ struct DatePickerExample {
       const text = this.selectedText[index];
       return this.mapping[text] || text;
     }
-    return this.selectedText.map(text => this.mapping[text] || text);
+    return this.selectedText.map(text => this.mapping[text] || '');
   }
 
   private handleLogMapping(): void {
@@ -261,7 +262,6 @@ struct DatePickerExample {
           // 添加其他错误处理逻辑
         };
       }
-
       const jsonData = JSON.parse(response.result as string) as addResponse;
       //console.log('', response.responseCode);
       //console.log('',jsonData.code);
@@ -281,75 +281,251 @@ struct DatePickerExample {
       };
     }
   }
-
   build() {
     Stack(){
       Column() {
-        Column(){
-          Column({ space: 10 }) {
-            this.buildLabelRow($r("app.media.unitName"), "需求单位", true, 0)
-            this.buildLabelRow($r("app.media.supplyDate"), "供应日期", true, 1)
-            this.buildLabelRow($r("app.media.supplyTime"), "供应时间", false, 2)
-            this.buildLabelRow($r("app.media.demand"), "需求类型", true, 3)
+        Scroll(){
 
-            // 条件用餐类型行
-            if (this.showMealType) {
-              this.buildLabelRow($r("app.media.requirementType"), "用餐类型", true, 4)
+          Column(){
+
+            Column({ space: 10 }) {
+              this.buildLabelRow($r("app.media.unitName"), "需求单位", true, 0)
+              this.buildLabelRow($r("app.media.supplyDate"), "供应日期", true, 1)
+              this.buildLabelRow($r("app.media.supplyTime"), "供应时间", false, 2)
+              this.buildLabelRow($r("app.media.demand"), "需求类型", true, 3)
+
+              // 条件用餐类型行
+              if (this.showMealType) {
+                this.buildLabelRow($r("app.media.requirementType"), "用餐类型", true, 4)
+              }
+
+              this.buildLabelRow($r("app.media.mealCategory"), "餐别", true, 5)
+              this.buildLabelRow($r("app.media.remarks"), "摘要", false, 6)
+
             }
-
-            this.buildLabelRow($r("app.media.mealCategory"), "餐别", true, 5)
-            this.buildLabelRow($r("app.media.remarks"), "摘要", false, 6)
-
-          }
-          .width('100%')
-          .padding(10)
-
-          // 添加食材按钮
-          Row() {
-            Button({type: ButtonType.Normal}) {
-              Text('+添加食材')
-                .fontSize(16)
-                .fontColor(Color.White)
-                .padding({
-                  left: 16,
-                  right: 16,
-                  top: 8,
-                  bottom: 8
-                })
-                .borderRadius(8)
-                .onClick(() => {
-                  // 跳转到 chuku 页面
-                  router.pushUrl({
-                    url: 'pages/renew'
-                  });
-
-                });
-            }
-
-            .width('80%')
-            .height(35)
-            .backgroundColor('#02BC65')
-            .fontColor(Color.White)
-            .borderRadius(8)
-            .width('auto')
-            .padding({ left: 15, right: 15 })
-
-            Text('已选中*种食材')
-              .fontColor('#8A96A2')
-              .position({ x: 137, y: 15 })
-          }
-
-          Column()//渐变框
-            .linearGradient({
-              angle: 180,
-              colors: [['#93D0B1', 0.1],['#FDFDFD',1]],
-            })
-            .margin({top: 10})
             .width('100%')
-            .height(20)
-        }
-        .layoutWeight(1)
+            .padding(10)
 
+            // 添加食材按钮
+            Row() {
+              Button({type: ButtonType.Normal}) {
+                Text('+添加食材')
+                  .fontSize(16)
+                  .fontColor(Color.White)
+                  .padding({
+                    left: 16,
+                    right: 16,
+                    top: 8,
+                    bottom: 8
+                  })
+                  .borderRadius(8)
+                  .onClick(() => {
+                    // 跳转到 chuku 页面
+                    router.pushUrl({
+                      url: 'pages/renew'
+                    });
+
+                  });
+              }
+
+              .width('80%')
+              .height(35)
+              .backgroundColor('#02BC65')
+              .fontColor(Color.White)
+              .borderRadius(8)
+              .width('auto')
+              .padding({ left: 15, right: 15 })
+
+              Text('已选中*种食材')
+                .fontColor('#8A96A2')
+                .position({ x: 137, y: 15 })
+            }
+
+            Column()//渐变框
+              .linearGradient({
+                angle: 180,
+                colors: [['#93D0B1', 0.1],['#FDFDFD',1]],
+              })
+              .margin({top: 10})
+              .width('100%')
+              .height(20)
+            //中间卡片部分
+            Column() {
+              Stack() {
+                // 主内容区域
+                Column() {
+                  // 第一行：图片、名称和收藏按钮
+                  Row({ space: 10 }) {
+                    Image($r('app.media.food'))
+                      .width(70)
+                      .borderRadius(0)
+                      .margin({ left: 5, top: -115 }) // 原position x:-150 → 计算实际左边距
+                    Text('绿豆')
+                      .fontSize(25)
+                      .fontWeight(FontWeight.Bold)
+                      .fontColor(Color.Black)
+                      .margin({ left: 10, top: -65}) // 与图片保持相对位置
+                      .margin({ left: 100, top: -120 }) // 右侧固定位置
+                  }
+                  .width('100%')
+                  .height(80)
+                  .padding({ left: 20 })
+                }
+                // 渐变分割线 (精确匹配原位置)
+                Row()
+                  .width('86%')
+                  .height(1)
+                  .margin({ top: -10, left: 8 })
+                  .linearGradient({
+                    angle: 90,
+                    colors: [
+                      ['#FCE4CF', 0],
+                      ['#F5A35F', 0.5],
+                      ['#FCE4CF', 1]
+                    ]
+                  })
+                  .zIndex(1)
+                // 采购价信息 (精确像素级调整)
+                Column() {
+                  // 采购价信息
+                  Row() {
+                    Text('采  购  价：')
+                      .fontWeight(600)
+                    Text('12.96')
+                      .fontSize(21)
+                      .fontWeight(FontWeight.Bold)
+                      .fontColor(Color.Red)
+                    Text('元/Kg')
+                      .fontWeight(600)
+                      .fontColor(Color.Red)
+                  }
+                  .margin({ top: 10 })
+                  .zIndex(2)
+                  // 供应商信息
+                  Row() {
+                    Text('供  应  商：')
+                      .fontWeight(600)
+                    Text('彦红粮油有限公司')
+                      .fontWeight(600)
+                  }
+                  .margin({ top: 10 })
+                  // 学校库存
+                  Row() {
+                    Text('学校库存：')
+                      .fontWeight(600)
+                    Text('1')
+                      .fontSize(21)
+                      .fontWeight(FontWeight.Bold)
+                    Text('Kg')
+                      .fontWeight(600)
+                  }
+                  .margin({ top: 10 })
+                  // 规格
+                  // 需求量
+                  Row({ space: 10 }) {
+                    Text('需 求  量：')
+                      .fontWeight(600)
+                    TextInput({ placeholder: '请输入需求量' })
+                      .fontColor('#000') // 输入文字颜色
+                      .fontSize(16)
+                      .width('40%') // 设置输入框宽度
+                      .border({
+                        width: { bottom: 1 }, // 只设置底部边框
+                        color: '#ccc'
+                      })
+                      .onChange((value: string) => {
+                        // 可以在这里处理输入变化
+                        console.log('输入的需求量为:', value)
+                      })
+                    Text('斤')
+                      .fontWeight(600)
+                  }
+                  // 需求量
+                  Row({ space: 10 }) {
+                    Text('需 求  量：')
+                      .fontWeight(600)
+                    TextInput({ placeholder: '请输入需求量' })
+                      .fontColor('#000') // 输入文字颜色
+                      .fontSize(16)
+                      .width('40%') // 设置输入框宽度
+                      .border({
+                        width: { bottom: 1 }, // 只设置底部边框
+                        color: '#ccc'
+                      })
+                      .onChange((value: string) => {
+                        // 可以在这里处理输入变化
+                        console.log('输入的需求量为:', value)
+                      })
+                    Text('kg')
+                      .fontWeight(600)
+                  }
+                  // 合计
+                  Row() {
+                    Text('合       计：')
+                      .fontWeight(600)
+                    Text('元')
+                      .fontWeight(600)
+                      .fontColor(Color.Red)
+                  }
+                  .margin({ top: 10 })
+                  // 备注
+                  Row() {
+                    Text('备       注：')
+                      .fontWeight(600)
+                    TextInput({ placeholder: '请输入备注' })
+                      .fontColor('#000') // 输入文字颜色
+                      .fontSize(16)
+                      .width('70%') // 设置输入框宽度
+                      .border({
+                        width: { bottom: 1 }, // 只设置底部边框
+                        color: '#ccc'
+                      })
+                      .onChange((value: string) => {
+                        // 可以在这里处理输入变化
+                        console.log('输入的备注为:', value)
+                      })
+                  }
+                  .margin({ top: 10 })
+                }
+                .alignItems(HorizontalAlign.Start) // 关键：统一左对齐
+                .margin({ top: 100 })
+                // 左上角三角形标签 (精确匹配)
+                Path()
+                  .width(40)
+                  .height(40)
+                  .commands('M0 0 L180 0 L0 180 Z')
+                  .fill('#FFA500')
+                  .margin({ left: -301, top: -190 })
+                  .stroke('#FFA500') // 无边框
+                  .shadow({ radius: 0 }) // 确保无阴影
+                Text('称重')
+                  .fontSize(15)
+                  .fontColor(Color.White)
+                  .rotate({ angle: -45 })
+                  .margin({ left: -300, top: -190 })
+                // 右下角三角形 (精确匹配)
+              }
+              .width('100%')
+              .height(220)
+            }
+            .borderWidth(2)
+            .borderColor(Color.Orange)
+            .width('96%')
+            .height(390)
+            .padding(5)
+            .shadow({
+              radius: 10,
+              color: '#fffabc85',
+              offsetX: 20,
+              offsetY: 20
+            })
+            .margin({ left: '2%', right: '2%' })
+          }
+          .layoutWeight(1)
+
+        }
+        .width('100%')
+        .layoutWeight(1)
         if (this.showDialog) {
           // 半透明背景层
           Column()
@@ -371,7 +547,6 @@ struct DatePickerExample {
               }, 300)
             })
             .zIndex(2)
-
           // 对话框内容
           Column() {
             Text('摘要')
@@ -441,8 +616,6 @@ struct DatePickerExample {
               Text('保存上报')
                 .fontSize(16)
                 .fontColor(Color.White)
-
-
             }
 
             .onClick(async() => {
@@ -457,6 +630,8 @@ struct DatePickerExample {
               const singleValue = this.getMappedValues(2); // 获取 日期 对应的映射值
               console.log('Single Mapped Value:', singleValue);
               //this.submitForm();
+              if(this.selectedText[2]==='请选择')
+                this.selectedText[2] = ''
             })
             .height(35)
             .backgroundColor('#02BC65')
@@ -470,12 +645,14 @@ struct DatePickerExample {
           .margin({ top: 20 })
         }
         .padding(10)
-        .zIndex(1)
-      }}
+        .zIndex(4)
 
+      }
+    }
   }
 
   @Builder
+
   buildLabelRow(iconResource: Resource, label: string, showAsterisk: boolean, index: number) {
     Column() {
       Row() {
@@ -530,7 +707,6 @@ struct DatePickerExample {
             .margin({ left: 5 })
             .fillColor('#8A96A2')
         }
-
         .justifyContent(FlexAlign.End) // 确保文本和箭头靠右对齐
 
         .onClick(() => {
@@ -544,8 +720,6 @@ struct DatePickerExample {
               break;
             case "供应时间":
               this.showTextDialog(this.selectedTime,2)
-              if(this.selectedText[2]==='请选择')
-                this.selectedText[2] = ''
 
               break;
             case "需求类型":
