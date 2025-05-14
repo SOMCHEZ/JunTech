@@ -122,7 +122,103 @@ struct DatePickerExample {
   private mealTypeOptions = ['其他','营养餐']
   private mealOptions = ['其他', '早餐', '午餐', '晚餐']
 
+/*
+  为了满足你的需求，可以将 [selectedText](file://D:\DevEcoStudioProjects\MyApplication3\entry\.preview\default\cache\default\default@PreviewArkTS\esmodule\debug\entry\src\main\ets\pages\c.ts#L154-L156) 中的文本选项（如“请选择”、“请输入摘要”）和最终选择值（如“实验第二学校（库房）”）映射为对应的数组类型字符串 `1,2,3`。以下是实现步骤：
 
+### 1. 定义映射关系
+首先定义一个映射对象，将每个选项的标签对应到其实际值。
+
+```ts
+private mapping = {
+  '实验第二学校（库房）': '1',
+  '实验第二学校餐厅': '2',
+  'forenoon': '1',
+  'afternoon': '2',
+  '学生餐': '1',
+  '老师餐': '2',
+  '其他': '1',
+  '营养餐': '2',
+  '早餐': '1',
+  '午餐': '2',
+  '晚餐': '3'
+};
+```
+
+
+### 2. 获取映射后的数据
+在需要获取数组类型的字符串时，可以通过遍历 [selectedText](file://D:\DevEcoStudioProjects\MyApplication3\entry\.preview\default\cache\default\default@PreviewArkTS\esmodule\debug\entry\src\main\ets\pages\c.ts#L154-L156) 数组并使用映射对象进行转换。
+
+```ts
+private getMappedValues(): string[] {
+  return this.selectedText.map(text => this.mapping[text] || text); // 如果没有匹配项，则保留原值
+}
+```
+
+
+### 3. 使用映射后的数据
+当需要提交表单或执行其他操作时，调用 `getMappedValues()` 方法来获取映射后的数据。
+
+```ts
+let mappedValues = this.getMappedValues();
+console.log('Mapped Values:', mappedValues); // 输出：["1", "2", ...]
+```
+
+
+### 4. 显示原始选项
+在 UI 显示时，仍然使用 [selectedText](file://D:\DevEcoStudioProjects\MyApplication3\entry\.preview\default\cache\default\default@PreviewArkTS\esmodule\debug\entry\src\main\ets\pages\c.ts#L154-L156) 数组中的原始值，以确保用户看到的是可读性更强的文本。
+
+### 5. 示例代码整合
+以下是如何整合到代码中的示例：
+
+```ts
+@Entry
+@Component
+struct DatePickerExample {
+  @State selectedText: string[] = ['请选择', '请选择', '请选择', '请选择', '请选择', '请选择', '请输入摘要'];
+  @State private showMealType: boolean = false;
+  private unitOptions = ['实验第二学校（库房）', '实验第二学校餐厅'];
+  private selectedTime = ['forenoon', 'afternoon'];
+  private demandOptions = ['学生餐', '老师餐'];
+  private mealTypeOptions = ['其他', '营养餐'];
+  private mealOptions = ['其他', '早餐', '午餐', '晚餐'];
+
+  // 映射关系
+  private mapping = {
+    '实验第二学校（库房）': '1',
+    '实验第二学校餐厅': '2',
+    'forenoon': '1',
+    'afternoon': '2',
+    '学生餐': '1',
+    '老师餐': '2',
+    '其他': '1',
+    '营养餐': '2',
+    '早餐': '1',
+    '午餐': '2',
+    '晚餐': '3'
+  };
+
+  // 获取映射后的值
+  private getMappedValues(): string[] {
+    return this.selectedText.map(text => this.mapping[text] || text);
+  }
+
+  build() {
+    Column() {
+      Button('显示映射值') {
+        let mappedValues = this.getMappedValues();
+        console.log('Mapped Values:', mappedValues);
+      }
+    }
+  }
+}
+```
+
+
+### 总结
+- **保持 UI 可读性**：`selectedText` 仍使用原始文本（如“请选择”、“实验第二学校（库房）”），以便用户理解。
+- **数据处理**：通过 `mapping` 对象将文本映射为数字字符串（如 `1`, `2`, `3`），方便后续逻辑处理或提交给后端。
+- **灵活性**：如果某些值不需要映射，可以直接保留在 `selectedText` 中。
+ */
   async onPageShow() {
     const params = router.getParams() as RouteParams;
     //console.log('houchu', params?.token);// 打印接收到的参数
@@ -157,6 +253,7 @@ struct DatePickerExample {
   private async addStaff(): Promise<addHandlerResult> {
     try {
       const httpRequest = http.createHttp();
+     // let a:string = '1'
       const response = await httpRequest.request(
         'https://api.suoeryun.com/ifood/jeecg-school/school/xxDemandPlanning/addOrUpdate',
         {
@@ -169,7 +266,7 @@ struct DatePickerExample {
             "unitId": this.unitId,
             "supplyDate": this.selectedText[1],
             "supplyTime": this.selectedText[2],
-            "requirementType": "1",
+            //"requirementType": a,
             "planningFoodList": [
               {
                 "id": "",
