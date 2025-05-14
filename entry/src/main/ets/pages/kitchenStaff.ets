@@ -581,14 +581,16 @@ struct KitchenStaffList {
         }
         .margin({ left: 'auto', right: 'auto', bottom: 16 });
       }
-      .padding({ top: 16, bottom: 16 });
+      .padding({ top: 16, bottom: 16 })
     }
-    .width('90%')
-    .height("40%")
+    .width('95%')
+    .height("38%")
     .margin({ top: 16, left: 'auto', right: 'auto' })
     .backgroundColor(Color.White)
     .border({ width: 2, color: Color.Green, radius: 8})
+    .shadow({ radius: 20, color: '#07C160', offsetX: 20, offsetY: 10 })
     .zIndex(0)
+
   }
 }
 
