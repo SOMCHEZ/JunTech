@@ -11,7 +11,14 @@ AppStorage.setOrCreate('token', '');
 AppStorage.setOrCreate('tenantId', 0);
 AppStorage.setOrCreate('unitId', '');
 AppStorage.setOrCreate('editId', '');
-
+//小卡片里的东西
+AppStorage.setOrCreate('Name', '');
+AppStorage.setOrCreate('status', '');
+AppStorage.setOrCreate('position', '');
+AppStorage.setOrCreate('issueTime', '');
+AppStorage.setOrCreate('expireTime', '');
+AppStorage.setOrCreate('workplace', '');
+AppStorage.setOrCreate('tel', '');
 // 明确定义所有接口类型
 interface Houchu_Edit_Request {
   success: boolean;
@@ -61,6 +68,13 @@ interface RouteParams {//接口传递参数定义
   relTenantIds?: number;
   unitId?: string;
   editId:string;
+  name: string;
+  status: string;
+  position: string
+  issueTime: string
+  expireTime: string
+  workplace: string
+  tel:string
 }
 
 interface SelectOption {
@@ -98,18 +112,36 @@ struct AddStaff {
       AppStorage.set('token', params.token);
       //this.receivedToken = params.token;
     }
-
     if (!AppStorage.get('tenantId') && params?.relTenantIds) {
       AppStorage.set('tenantId', params.relTenantIds);
-      //this.tenantId = params.relTenantIds;
     }
 
     if (!AppStorage.get('unitId') && params?.unitId) {
       AppStorage.set('unitId', params.unitId);
-      //this.UnitId = params.unitId;
     }
     if (!AppStorage.get('editId') && params?.editId){
       AppStorage.set('editId', params.editId);
+    }
+    if (!AppStorage.get('Name') && params?.name){
+      AppStorage.set('Name', params.name);
+    }
+    if (!AppStorage.get('status') && params?.status){
+      AppStorage.set('status', params.status);
+    }
+    if (!AppStorage.get('position') && params?.position){
+      AppStorage.set('position', params.position);
+    }
+    if (!AppStorage.get('issueTime') && params?.issueTime){
+      AppStorage.set('issueTime', params.issueTime);
+    }
+    if (!AppStorage.get('expireTime') && params?.expireTime){
+      AppStorage.set('expireTime', params.expireTime);
+    }
+    if (!AppStorage.get('workplace') && params?.workplace){
+      AppStorage.set('workplace', params.workplace);
+    }
+    if (!AppStorage.get('tel') && params?.tel){
+      AppStorage.set('tel', params.tel);
     }
 
     // 同步到组件状态
@@ -117,9 +149,20 @@ struct AddStaff {
     this.tenantId = AppStorage.get('tenantId')??0;
     this.UnitId = AppStorage.get('unitId') ?? '';
     this.Edit_id = AppStorage.get('editId')??'';
+    this.name= AppStorage.get('Name')??'';
+    this.status= AppStorage.get('status')??'';
+    this.jobPosition= AppStorage.get('position')??'';
+    //this.issueDate= AppStorage.get('issueTime')??'';
+    //this.expiryDate= AppStorage.get('expireTime')??'';
+    this.selectedUnitIndex= AppStorage.get('workplace')??'';
+    this.phone= AppStorage.get('tel')??'';
+
     console.log('editId',this.Edit_id);
     console.log('rel',this.UnitId);
     console.log('UID', params?.unitId);
+    console.log('Name1',params?.tel);
+    console.log('Name2',this.phone);
+    console.log('position',this.jobPosition);
     //const result = await this.Houchuchaxun();// 调用Houchuchaxun方法这个函数是用来查数据的
     //console.log('houchu1', result); // 打印返回结果
   }
@@ -308,7 +351,7 @@ struct AddStaff {
       .onClick(async() => {
         if(this.name.length!==0&&this.jobPosition.length!==0&&this.phone.length!==0&&this.status.length!==0&&this.issueDate.length!==0&&this.expiryDate.length!==0)
         {router.pushUrl({
-          url: 'pages/kitchenStaff_test',
+          url: 'pages/kitchenStaff',
           params:{
             token:this.receivedToken,
             tenantId:this.tenantId,

@@ -15,7 +15,7 @@ interface RecipeFormData {
   photoUri?: string;
 }
 
-interface  records{//定义接口返回类型
+interface records{//定义接口返回类型
   id?: number;
   schoolId: string;
   schoolName:  string;
@@ -120,12 +120,11 @@ struct ReportPlanPage {
     this.receivedToken = AppStorage.get('token')??'';
     this.tenantId = AppStorage.get('tenantId')??0;
     this.unitId = AppStorage.get('unitId') ?? '';
-    console.log('rel',this.unitId);
-    console.log('UID', params?.unitId);
 
     const result = await this.Houchuchaxun();
     //const result = await this.Houchuchaxun();// 调用Houchuchaxun方法这个函数是用来查数据的
     //console.log('houchu1', result); // 打印返回结果
+
 
     if (result.records && result.records.length > 0) {
 
@@ -137,6 +136,17 @@ struct ReportPlanPage {
       //console.error('未获取到有效数据');
       this.unitId = ''; // 设置默认值
     }
+    console.log('rel',this.unitId);
+
+    // console.log('id',this.kitchenStaffs[0].id)//打印id
+    // console.log('kitchenStaffs', this.unitName);
+    console.debug('所有单位:',//打印所有Id
+      result.records?.map(item => item.unitName).filter(Boolean)
+    )
+
+    console.debug('所有Id:',//打印所有Id
+      result.records?.map(item => item.id).filter(Boolean)
+    )
 
     //   let params = router.getParams()
     //   if (params && params.toString()) {
@@ -459,7 +469,10 @@ struct ReportPlanPage {
               params: {
                 token: this.receivedToken,
                 tenantId: this.tenantId,
+                unitId: this.unitId
+
               }})
+            console.log('rel111',this.unitId);
           })
       }
 

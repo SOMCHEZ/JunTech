@@ -6,7 +6,7 @@
     "mainElement": "EntryAbility",
     "requestPermissions": [
       {
-        "name": "ohos.permission.READ_MEDIA",
+        "name": "ohos.permission.INTERNET",
         "reason": "$string:module_desc",
         "usedScene": {
           "abilities": [
