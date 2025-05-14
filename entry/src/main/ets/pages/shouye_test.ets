@@ -9,6 +9,7 @@ interface RouteParams {
   relTenantIds?: number;
 }
 
+
 interface ImageCount{
   url:string
   count:number
@@ -53,9 +54,8 @@ struct Index1 {
     {url1:'app.media.home_12',count1:0,text1:'实时库存',route1:'pages/shishikucun'},
   ]
 
-
   @State selectedTab: number = 0
-  private tabs: Array<string> = ['今日', '本周', '本月', '本年']
+  private tabs: Array<string> = ['今日','本周','本月','本年']
 
   // 每个tab对应的数据
   @State tabData:TabData[]= [
@@ -64,6 +64,7 @@ struct Index1 {
     { pinfen: 8, baifenbi: 70, fenxian: '中风' },  // 本月
     { pinfen: 9, baifenbi: 95, fenxian: '高风险' }     // 本年
   ]
+
 
   @State receivedToken: string = '';//参数传递
   @State tenantId: number = 0;//同上
