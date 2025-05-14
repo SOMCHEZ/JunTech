@@ -9,6 +9,7 @@ interface RouteParams {
   relTenantIds?: number;
 }
 
+
 interface ImageCount{
   url:string
   count:number
@@ -37,25 +38,24 @@ interface TabData  {
 @Component
 struct Index1 {
   @State image: ImageCount[] = [
-    { url: 'app.media.education_3', count: 0, text: '每日工作' ,route:'pages/kitchenStaff_test'},
+    { url: 'app.media.education_3', count: 0, text: '每日工作' ,route:'pages/kitchenStaff'},
     { url: 'app.media.home_1', count: 0, text: '上报计划' ,route:'pages/uploadPlan'},
     { url: 'app.media.home_2', count: 0, text: '需求审批' ,route:'pages/ApprovalPage'},
     { url: 'app.media.home_4', count: 0, text: '新品审批' ,route:'pages/addStaff_test'},
     { url: 'app.media.home_recipe_reporting', count: 0, text: '今日菜品' ,route:'pages/food_day'},
-    { url: 'app.media.education_6', count: 0, text: '后厨人员',route:'pages/kitchenStaff_test' },
+    { url: 'app.media.education_6', count: 0, text: '后厨人员',route:'pages/kitchenStaff' },
     { url: 'app.media.education_4', count: 0, text: '每日留样' ,route:'pages/remain_day'},
     { url: 'app.media.home_9', count: 0, text: '晨检记录' ,route:'pages/chenjianjilu'},
     { url: 'app.media.home_3', count: 0, text: '陪餐记录' ,route:'pages/peicanRecords'},
-    { url: 'app.media.home_13', count: 0, text: '陪餐评价' ,route:'pages/addStaff_test'},
+    { url: 'app.media.home_13', count: 0, text: '陪餐评价' ,route:'pages/addStaff'},
   ];
   @State image1:cuku[]=[
     {url1:'app.media.home_6',count1:0,text1:'供应出库',route1:'pages/kucun' },
     {url1:'app.media.home_12',count1:0,text1:'实时库存',route1:'pages/shishikucun'},
   ]
 
-
   @State selectedTab: number = 0
-  private tabs: Array<string> = ['今日', '本周', '本月', '本年']
+  private tabs: Array<string> = ['今日','本周','本月','本年']
 
   // 每个tab对应的数据
   @State tabData:TabData[]= [
@@ -64,6 +64,7 @@ struct Index1 {
     { pinfen: 8, baifenbi: 70, fenxian: '中风' },  // 本月
     { pinfen: 9, baifenbi: 95, fenxian: '高风险' }     // 本年
   ]
+
 
   @State receivedToken: string = '';//参数传递
   @State tenantId: number = 0;//同上
