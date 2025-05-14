@@ -39,13 +39,15 @@ interface LoginHandlerResult {
 @Component
 struct Index {
   @State typeid: string = '';
-  @State userUsername: string = '';
-  @State userPassword: string = '';
+  @State userUsername: string = '15502933673';//15502933673
+  @State userPassword: string = '123456';//123456
 
   // 状态管理
   @State private responseCode: number = 0;
   @State private authToken: string = '';
   @State private currentUser: UserInfo | null = null;
+
+
 
   build() {
     Stack() {
@@ -194,11 +196,7 @@ struct Index {
           params:{
           token:this.authToken,
             relTenantIds:this.currentUser?.relTenantIds
-
           }
-
-
-
         });
         break;
 
@@ -208,7 +206,6 @@ struct Index {
           params:{
             token:this.authToken,
             relTenantIds:this.currentUser?.relTenantIds
-
           }
         });
 

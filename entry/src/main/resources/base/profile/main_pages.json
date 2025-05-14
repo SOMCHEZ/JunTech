@@ -3,14 +3,13 @@
     "pages/shouye",
     "pages/shouye_test",
     "pages/addStaff",
-    "pages/addStaff_test",
     "pages/kitchenStaff",
-    "pages/kitchenStaff_test",
     "pages/login",
     "pages/login_test",
     "pages/Today_VEG",
     "pages/uploadPlan",
     "pages/reportRecords",
+    "pages/peicanRecords",
     "pages/gerenxinxi",
     "pages/wentijieda",
     "pages/mima",
@@ -30,7 +29,9 @@
     "pages/chenjianjilu",
     "pages/shishikucun",
     "pages/renew",
-    "pages/gonggao"
+    "pages/gonggao",
+    "pages/EditStaff",
+    "pages/kucun"
 
   ]
 }

@@ -1,8 +1,8 @@
-//最终版本
+//最终版本,封装，请勿修改
 
 import router from '@ohos.router';
 import http from '@ohos.net.http';
-//import { promptAction } from '@kit.ArkUI';
+import { promptAction } from '@kit.ArkUI';
 //import filePicker from '@ohos.file.picker';
 
 
@@ -10,8 +10,24 @@ import http from '@ohos.net.http';
 AppStorage.setOrCreate('token', '');
 AppStorage.setOrCreate('tenantId', 0);
 AppStorage.setOrCreate('unitId', '');
-
+AppStorage.setOrCreate('editId', '');
+//小卡片里的东西
+AppStorage.setOrCreate('Name', '');
+AppStorage.setOrCreate('status', '');
+AppStorage.setOrCreate('position', '');
+AppStorage.setOrCreate('issueTime', '');
+AppStorage.setOrCreate('expireTime', '');
+AppStorage.setOrCreate('workplace', '');
+AppStorage.setOrCreate('tel', '');
 // 明确定义所有接口类型
+interface Houchu_Edit_Request {
+  success: boolean;
+  code?: number;
+  result: string;
+  message?: string;
+}
+
+
 interface UserInfo {
   id: string;
   username: string;
@@ -51,6 +67,14 @@ interface RouteParams {//接口传递参数定义
   token?: string;
   relTenantIds?: number;
   unitId?: string;
+  editId:string;
+  name: string;
+  status: string;
+  position: string
+  issueTime: string
+  expireTime: string
+  workplace: string
+  tel:string
 }
 
 interface SelectOption {
@@ -73,6 +97,7 @@ struct AddStaff {
   @State receivedToken: string = '';//参数传递
   @State tenantId: number = 0;//同上
   @State UnitId: string  ="";
+  @State Edit_id:string = '';
 
 
 
@@ -87,23 +112,57 @@ struct AddStaff {
       AppStorage.set('token', params.token);
       //this.receivedToken = params.token;
     }
-
     if (!AppStorage.get('tenantId') && params?.relTenantIds) {
       AppStorage.set('tenantId', params.relTenantIds);
-      //this.tenantId = params.relTenantIds;
     }
 
     if (!AppStorage.get('unitId') && params?.unitId) {
       AppStorage.set('unitId', params.unitId);
-      //this.UnitId = params.unitId;
+    }
+    if (!AppStorage.get('editId') && params?.editId){
+      AppStorage.set('editId', params.editId);
+    }
+    if (!AppStorage.get('Name') && params?.name){
+      AppStorage.set('Name', params.name);
+    }
+    if (!AppStorage.get('status') && params?.status){
+      AppStorage.set('status', params.status);
+    }
+    if (!AppStorage.get('position') && params?.position){
+      AppStorage.set('position', params.position);
+    }
+    if (!AppStorage.get('issueTime') && params?.issueTime){
+      AppStorage.set('issueTime', params.issueTime);
+    }
+    if (!AppStorage.get('expireTime') && params?.expireTime){
+      AppStorage.set('expireTime', params.expireTime);
+    }
+    if (!AppStorage.get('workplace') && params?.workplace){
+      AppStorage.set('workplace', params.workplace);
+    }
+    if (!AppStorage.get('tel') && params?.tel){
+      AppStorage.set('tel', params.tel);
     }
 
     // 同步到组件状态
     this.receivedToken = AppStorage.get('token')??'';
     this.tenantId = AppStorage.get('tenantId')??0;
     this.UnitId = AppStorage.get('unitId') ?? '';
+    this.Edit_id = AppStorage.get('editId')??'';
+    this.name= AppStorage.get('Name')??'';
+    this.status= AppStorage.get('status')??'';
+    this.jobPosition= AppStorage.get('position')??'';
+    //this.issueDate= AppStorage.get('issueTime')??'';
+    //this.expiryDate= AppStorage.get('expireTime')??'';
+    this.selectedUnitIndex= AppStorage.get('workplace')??'';
+    this.phone= AppStorage.get('tel')??'';
+
+    console.log('editId',this.Edit_id);
     console.log('rel',this.UnitId);
     console.log('UID', params?.unitId);
+    console.log('Name1',params?.tel);
+    console.log('Name2',this.phone);
+    console.log('position',this.jobPosition);
     //const result = await this.Houchuchaxun();// 调用Houchuchaxun方法这个函数是用来查数据的
     //console.log('houchu1', result); // 打印返回结果
   }
@@ -112,6 +171,7 @@ struct AddStaff {
 
   private units: Array<SelectOption> = [
     { value: '实训第二学校餐厅', label: '实训第二学校餐厅' },
+    { value: '实训第二学校(库房)', label: '实训第二学校(库房)' },
     { value: '其他单位', label: '其他单位' }
   ];
   private statuses: Array<SelectOption> = [
@@ -215,9 +275,9 @@ struct AddStaff {
             Text("请选择")
           }
         }
-          .onClick(() => {
-            this.showIssueDateDialog()
-          })
+        .onClick(() => {
+          this.showIssueDateDialog()
+        })
         .margin({left:175})
         .backgroundColor(Color.White)
       }
@@ -289,13 +349,24 @@ struct AddStaff {
       .borderRadius(10)
       .position({x:18, y:'95%'})
       .onClick(async() => {
-        router.pushUrl({
-          url: 'pages/kitchenStaff_test',  params: {
-            token: this.receivedToken,
-            tenantId: this.tenantId
-          } })
-        const result = await this.addStaff();
-       // this.unitId = result.token!;
+        if(this.name.length!==0&&this.jobPosition.length!==0&&this.phone.length!==0&&this.status.length!==0&&this.issueDate.length!==0&&this.expiryDate.length!==0)
+        {router.pushUrl({
+          url: 'pages/kitchenStaff',
+          params:{
+            token:this.receivedToken,
+            tenantId:this.tenantId,
+          }
+        })
+        const result = await this.HouchuEdit();
+        // this.unitId = result.token!;
+      }
+        else {
+          promptAction.showToast({
+            message: '求你了你改一些东西吧！',
+            duration: 2000,
+            bottom:670
+          });
+        }
       })
     }
     .width('100%')
@@ -330,6 +401,75 @@ struct AddStaff {
     };
     DatePickerDialog.show(dialog);
   }
+
+
+  private async HouchuEdit(): Promise<Houchu_Edit_Request> {//这个请求是针对编辑后厨人员列表的
+
+    try {
+      const httpRequest = http.createHttp();
+
+      const response = await httpRequest.request(
+        'https://api.suoeryun.com/ifood/jeecg-school/school/xxUnitUser/edit',
+        {
+          method: http.RequestMethod.POST,
+          header: { 'Content-Type': 'application/json',
+            'Tenant-Id':this.tenantId.toString(),
+            'X-Access-Token':this.receivedToken
+          },
+          extraData: JSON.stringify({
+            "unitName":this.selectedUnitIndex,
+            "unitId":this.UnitId,
+            "userName": this.name,
+            "position": this.jobPosition,
+            "tel": this.phone,
+            "type": "1",
+            "healthStartTime":this.issueDate,
+            "healthEndTime": this.expiryDate,
+            "portraitPhoto": null,
+            "healthUrl": "https://admin.suoeryun.com/pcUpload/043015131332-32.png",
+            "remark": "123",
+            "inspectionType": 0,
+            "version": 0,
+            "canteenId": null,
+            "id": this.Edit_id
+          })
+
+        }
+
+      );
+
+      if (response.responseCode !== 200) {
+        //console.error('Login Error:'+response.responseCode);
+        return {
+          success: false,
+          result: '删除失败', // 新增默认值
+          message: `HTTP Error: ${response.responseCode}`
+          // 添加其他错误处理逻辑
+        };
+      }
+      console.log('slfj'+response.result.toString())
+      const jsonData = JSON.parse(response.result as string) as Houchu_Edit_Request;
+      console.log('11',jsonData.result);
+      return {
+        success: jsonData.code === 200,
+        code: jsonData.code,
+        result: jsonData.result,
+        message: jsonData.message,
+        //relTenantIds:jsonData.result.userInfo.relTenantIds
+      };
+
+    } catch (error) {
+      console.error('Login Error:', JSON.stringify(error));
+      return {
+        success: false,
+        result: '删除失败', // 新增默认值
+        message: '服务器繁忙'
+      };
+    }
+  }
+
+
+
 
 
 
@@ -394,7 +534,7 @@ struct AddStaff {
         relTenantIds:jsonData.result.userInfo.relTenantIds
       };
     } catch (error) {
-     //console.error('Login Error:', JSON.stringify(error));
+      // console.error('Login Error:', JSON.stringify(error));
       return {
         success: false,
         message: 'fuck u!'
