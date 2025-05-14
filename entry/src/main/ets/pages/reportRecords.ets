@@ -76,7 +76,8 @@ interface GeneratedObjectLiteralInterface_1 {
 struct Page1 {
   @State selectedPosition: string = ''
   @State private selectedUnitIndex:string = '实训第二学校餐厅';
-  @State private selectedMealIndex:string = '其他';
+  @State private selectedMealIndex:string = '0';
+  @State private selectedMealValue:string = '其他'
   @State selectedUnit: string = ''
   @State selectedMeal: string = '' // 新增：选中的餐别
   @State name: string = ''
@@ -92,29 +93,31 @@ struct Page1 {
 
   private unitOptions: Array<SelectOption> = [
     { value: '实训第二学校餐厅', label: '实训第二学校餐厅' },
-    { value: '其他单位', label: '其他单位' }
   ];
 
   // 新增：餐别选项列表
   private mealOptions: Array<SelectOption> = [
-    { value: '0', label: '其他' },
-    { value: '1', label: '早餐' }
+    { value: '其他', label: '0' },
+    { value: '早餐', label: '1' },
+    { value: '午餐', label: '2' },
+    { value: '晚餐', label: '3' }
   ];
   async onPageShow() {//这是一个接收传递参数的方法
     // 使用接口类型断言
     const params = router.getParams() as RouteParams;
-    console.log('report', params?.token);// 打印接收到的参数
-    console.log('report', params?.relTenantIds);//  打印接收到的参数
+
+    console.log('report1', params?.token);// 打印接收到的参数
+    console.log('report1', params?.relTenantIds);//  打印接收到的参数
 
     // 安全取值如果返回值空，则使用appsetcreat中所预保存的token和id
     if (!AppStorage.get('token') && params?.token) {
       AppStorage.set('token', params.token);
-      //this.receivedToken = params.token;
+      this.receivedToken = params.token;
     }
 
     if (!AppStorage.get('tenantId') && params?.relTenantIds) {
       AppStorage.set('tenantId', params.relTenantIds);
-      //this.tenantId = params.relTenantIds;
+      this.tenantId = params.relTenantIds;
     }
 
     if (!AppStorage.get('unitId') && params?.unitId) {
@@ -159,10 +162,10 @@ struct Page1 {
           .fontSize(16)
         Select(this.unitOptions)
           .value('请选择')
-          .selected(this.unitOptions.findIndex(item => item.label === this.selectedUnitIndex))
+          // .selected(this.unitOptions.findIndex(item => item.label === this.selectedUnitIndex))
           .onSelect((index: number) => {
-            //this.selectedUnitIndex = index;
-            this.selectedUnitIndex = this.unitOptions[index].value;
+            this.selectedUnitIndex = this.unitOptions[index].label;
+            // this.selectedUnitIndex = this.unitOptions[index].value;
           })
           .margin(10)
           .width('70%')
@@ -176,9 +179,10 @@ struct Page1 {
 
         Select(this.mealOptions)
           .value('请选择')
-          .selected(this.mealOptions.findIndex(item => item.label === this.selectedMealIndex))
+          // .selected(this.mealOptions.findIndex(item => item.label === this.selectedMealIndex))
           .onSelect((index: number) => {
-            this.selectedMealIndex = this.mealOptions[index].value;
+            this.selectedMealIndex = this.mealOptions[index].label;
+            this.selectedMealValue  = this.mealOptions[index].value;
           })
           .margin(10)
           .width('70%')
@@ -187,10 +191,10 @@ struct Page1 {
       }
       // 陪餐人姓名
       Row() {
-        Text("陪餐人姓名")
+        Text("陪餐人职务")
           .fontSize(16)
           .margin({ left: 20, right: 10 })
-        TextInput({ placeholder: '请输入姓名' }) // ArkTS 中推荐的写法
+        TextInput({ placeholder: '请输入职务' }) // ArkTS 中推荐的写法
           .onChange((value: string) => {
             this.name = value;
           })// 输入变化更新 @State name
@@ -198,29 +202,29 @@ struct Page1 {
           .margin({ right: 20 })
       }
       // 陪餐评价
-      Row() {
-        Text("陪餐评价")
-          .fontSize(16)
-          .margin({ left: 20, right: 10 })
-        TextArea({ placeholder: '请输入评价（200字以内）' })
-          .onChange((value: string) => {
-            this.evaluation = value
-            this.charCount = value.length
-          })
-          .height(50)
-          .layoutWeight(1)
-          .maxLength(200)
-          .onChange((value: string) => {
-            this.evaluation = value
-            this.charCount = value.length
-          })
-          .height(38)
-          .layoutWeight(1)
-          .margin({ right: 20 })
-
-
-
-      }
+      // Row() {
+      //   Text("陪餐评价")
+      //     .fontSize(16)
+      //     .margin({ left: 20, right: 10 })
+      //   TextArea({ placeholder: '请输入评价（200字以内）' })
+      //     .onChange((value: string) => {
+      //       this.evaluation = value
+      //       this.charCount = value.length
+      //     })
+      //     .height(50)
+      //     .layoutWeight(1)
+      //     .maxLength(200)
+      //     .onChange((value: string) => {
+      //       this.evaluation = value
+      //       this.charCount = value.length
+      //     })
+      //     .height(38)
+      //     .layoutWeight(1)
+      //     .margin({ right: 20 })
+      //
+      //
+      //
+      // }
 
 
       Button({type: ButtonType.Normal})
@@ -241,7 +245,7 @@ struct Page1 {
         // 构造要传递的数据
         const formData: ReportFormData = {
           unit: this.selectedUnitIndex,
-          meal: this.selectedMealIndex,
+          meal: this.selectedMealValue,
           position: '教师', // 可以根据业务动态获取或固定值
           name: this.name,
           evaluation: this.evaluation,
@@ -287,31 +291,27 @@ struct Page1 {
         {
           method: http.RequestMethod.POST,
           header: { 'Content-Type': 'application/json',
-            'Tenant-Id':this.tenantId.toString(),
-            'X-Access-Token':this.receivedToken
+            'Tenant-Id':this.tenantId,
+            'X-Access-Token':this.receivedToken,
           },
           extraData: JSON.stringify({
             "mealDate": this.dates,
-            "mealCategory": "0",
+            "mealCategory": this.selectedMealIndex,
             "repastNum": "",
             "withNum": "",
             "xxMealRecordInfoList": [
               {
-                "position": "测试",
+                "position": this.name,
                 "images": "https://admin.suoeryun.com/pcUpload/32-32-0430180520.png"
-              },
-              {
-                "position": "测试",
-                "images": "https://admin.suoeryun.com/pcUpload/32-32-0430180526.png"
               }
             ] as Array<MealRecordInfo>,
-            "demandUnit": "1910528462460329985",
+            "demandUnit": "",
             "demandUnitName": this.selectedUnitIndex
           }
           )
         }
       );
-
+      console.log(response.result.toString())
       if (response.responseCode !== 200) {
         return {
           success: false,
