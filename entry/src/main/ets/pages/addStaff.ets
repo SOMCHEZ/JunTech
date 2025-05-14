@@ -1,8 +1,8 @@
-//最终版本,封装，请勿修改
+//最终版本
 
 import router from '@ohos.router';
 import http from '@ohos.net.http';
-//import { promptAction } from '@kit.ArkUI';
+import { promptAction } from '@kit.ArkUI';
 //import filePicker from '@ohos.file.picker';
 
 
@@ -44,9 +44,6 @@ interface addHandlerResult {
 }
 
 
-
-
-
 interface RouteParams {//接口传递参数定义
   token?: string;
   relTenantIds?: number;
@@ -73,6 +70,7 @@ struct AddStaff {
   @State receivedToken: string = '';//参数传递
   @State tenantId: number = 0;//同上
   @State UnitId: string  ="";
+  // @State  man: string = 'Love';
 
 
 
@@ -112,6 +110,8 @@ struct AddStaff {
 
   private units: Array<SelectOption> = [
     { value: '实训第二学校餐厅', label: '实训第二学校餐厅' },
+    { value: '实训第二学校(库房)', label: '实训第二学校(库房)' },
+    { value: '实训第二学校(床上)', label: '实训第二学校(床上)' },
     { value: '其他单位', label: '其他单位' }
   ];
   private statuses: Array<SelectOption> = [
@@ -129,8 +129,6 @@ struct AddStaff {
           .onSelect((index: number) => {
             //this.selectedUnitIndex = index;
             this.selectedUnitIndex = this.units[index].value;
-
-
           })
           .backgroundColor(Color.White)
           .width('70%')
@@ -289,9 +287,23 @@ struct AddStaff {
       .borderRadius(10)
       .position({x:18, y:'95%'})
       .onClick(async() => {
-        router.pushUrl({
-          url: 'pages/kitchenStaff_test' })
-        const result = await this.addStaff();
+        if(this.name.length!==0&&this.jobPosition.length!==0&&this.phone.length!==0&&this.status.length!==0&&this.issueDate.length!==0&&this.expiryDate.length!==0){
+          router.back({
+            url: 'pages/kitchenStaff',  params: {
+              token: this.receivedToken,
+              tenantId: this.tenantId,
+              // man : this.man
+            } })
+          const result = await this.addStaff();
+        }
+        else {
+          promptAction.showToast({
+            message: '请填写所有必填项',
+            duration: 2000,
+            bottom:670
+          });
+        }
+
         // this.unitId = result.token!;
       })
     }
@@ -391,7 +403,7 @@ struct AddStaff {
         relTenantIds:jsonData.result.userInfo.relTenantIds
       };
     } catch (error) {
-      // console.error('Login Error:', JSON.stringify(error));
+      //console.error('Login Error:', JSON.stringify(error));
       return {
         success: false,
         message: 'fuck u!'
