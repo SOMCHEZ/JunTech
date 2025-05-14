@@ -1,6 +1,7 @@
 import { promptAction } from '@kit.ArkUI'
 import { image } from '@kit.ImageKit'
 import router from '@ohos.router';
+import http from '@ohos.net.http';
 @Entry
 @Component
 struct DatePickerExample {
@@ -46,7 +47,7 @@ struct DatePickerExample {
               Text('+添加食材')
                 .onClick(() => {
                   router.pushUrl({
-                    url: 'pages/' })
+                    url: 'pages/addfood' })
                 })
                 .fontSize(16)
                 .fontColor(Color.White)
@@ -178,7 +179,7 @@ struct DatePickerExample {
             }
             .onClick(() => {
               router.pushUrl({
-                url: 'pages/' })
+                url: 'pages/addfood' })
             })
 
             .height(35)
