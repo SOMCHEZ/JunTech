@@ -103,18 +103,19 @@ struct Page1 {
   async onPageShow() {//这是一个接收传递参数的方法
     // 使用接口类型断言
     const params = router.getParams() as RouteParams;
-    console.log('report', params?.token);// 打印接收到的参数
-    console.log('report', params?.relTenantIds);//  打印接收到的参数
+
+    console.log('report1', params?.token);// 打印接收到的参数
+    console.log('report1', params?.relTenantIds);//  打印接收到的参数
 
     // 安全取值如果返回值空，则使用appsetcreat中所预保存的token和id
     if (!AppStorage.get('token') && params?.token) {
       AppStorage.set('token', params.token);
-      //this.receivedToken = params.token;
+      this.receivedToken = params.token;
     }
 
     if (!AppStorage.get('tenantId') && params?.relTenantIds) {
       AppStorage.set('tenantId', params.relTenantIds);
-      //this.tenantId = params.relTenantIds;
+      this.tenantId = params.relTenantIds;
     }
 
     if (!AppStorage.get('unitId') && params?.unitId) {
@@ -281,14 +282,17 @@ struct Page1 {
 
   private async report(): Promise<reportHandlerResult> {
     try {
+      console.log('to:',this.receivedToken)
+      console.log('id:',this.tenantId.toString())
+
       const httpRequest = http.createHttp();
       const response = await httpRequest.request(
         'https://api.suoeryun.com/ifood/jeecg-school/school/xxMealRecord/add',
         {
           method: http.RequestMethod.POST,
           header: { 'Content-Type': 'application/json',
-            'Tenant-Id':this.tenantId.toString(),
-            'X-Access-Token':this.receivedToken
+            'Tenant-Id':this.tenantId,
+            'X-Access-Token':this.receivedToken,
           },
           extraData: JSON.stringify({
             "mealDate": this.dates,
@@ -297,11 +301,11 @@ struct Page1 {
             "withNum": "",
             "xxMealRecordInfoList": [
               {
-                "position": "测试",
+                "position": "美国总统",
                 "images": "https://admin.suoeryun.com/pcUpload/32-32-0430180520.png"
               },
               {
-                "position": "测试",
+                "position": "日本首相",
                 "images": "https://admin.suoeryun.com/pcUpload/32-32-0430180526.png"
               }
             ] as Array<MealRecordInfo>,
@@ -311,7 +315,7 @@ struct Page1 {
           )
         }
       );
-
+      console.log(response.result.toString())
       if (response.responseCode !== 200) {
         return {
           success: false,

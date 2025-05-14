@@ -115,6 +115,9 @@ struct CalendarPage {
     this.receivedToken = AppStorage.get('token') ?? '';
     this.tenantId = AppStorage.get('tenantId') ?? 0;
 
+    console.log('pctoken', this.receivedToken)
+    console.log('pctenantId', this.tenantId)
+
     const result = await this.peicanQuest(); // 调用Houchuchaxun方法这个函数是用来查数据的
 
 
@@ -144,6 +147,7 @@ struct CalendarPage {
           },
         }
       );
+      //console.log('teneanId',this.tenantId);
 
       if (response.responseCode !== 200) {
         //console.error('Login Error:'+response.responseCode);
@@ -318,7 +322,13 @@ struct CalendarPage {
         .onClick(() => {
           router.pushUrl({
             url: 'pages/reportRecords',
+            params:{
+              token:this.receivedToken,
+              relTenantIds:this.tenantId
+
+            }
           });
+          console.log('jinitaimei'+this.records);
         })
 
       if (this.records.length === 0) {
