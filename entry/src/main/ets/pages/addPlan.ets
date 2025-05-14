@@ -248,7 +248,7 @@ struct DatePickerExample {
             "summary": "",
             "mealType": this.getMappedValues(3),
             "mealCategory": this.getMappedValues(5),
-            "unitName": "实训第二学校(库房)",
+            "unitName": this.getMappedValues(0),
             "unitType": "1",
             "planningStatus": "1"
           })
