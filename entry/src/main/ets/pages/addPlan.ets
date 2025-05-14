@@ -106,6 +106,7 @@ struct DatePickerExample {
   @State selectedDate: string = ''
   @State selectDate: Date = new Date()
   @State showDialog: boolean = false
+  @State adddal: boolean = true
   @State opacityValue: number = 0
   @State scaleValue: number = 0.8
   @State receivedToken: string = '';//参数传递
@@ -247,7 +248,7 @@ struct DatePickerExample {
             "summary": "",
             "mealType": this.getMappedValues(3),
             "mealCategory": this.getMappedValues(5),
-            "unitName": "实训第二学校(库房)",
+            "unitName": this.getMappedValues(0),
             "unitType": "1",
             "planningStatus": "1"
           })
@@ -348,181 +349,194 @@ struct DatePickerExample {
               .margin({top: 10})
               .width('100%')
               .height(20)
-            //中间卡片部分
-            Column() {
-              Stack() {
-                // 主内容区域
-                Column() {
-                  // 第一行：图片、名称和收藏按钮
-                  Row({ space: 10 }) {
-                    Image($r('app.media.food'))
-                      .width(70)
-                      .borderRadius(0)
-                      .margin({ left: 5, top: -115 }) // 原position x:-150 → 计算实际左边距
-                    Text('绿豆')
-                      .fontSize(25)
-                      .fontWeight(FontWeight.Bold)
-                      .fontColor(Color.Black)
-                      .margin({ left: 10, top: -65}) // 与图片保持相对位置
-                      .margin({ left: 100, top: -120 }) // 右侧固定位置
+            if (this.adddal) {
+              // 显示条件用餐类型行
+              Column() {
+                Stack() {
+                  // 主内容区域
+                  Column() {
+                    // 第一行：图片、名称和收藏按钮
+                    Row({ space: 10 }) {
+                      Image($r('app.media.food'))
+                        .width(70)
+                        .borderRadius(0)
+                        .margin({ left: 5, top: -115 }) // 原position x:-150 → 计算实际左边距
+                      Text('绿豆')
+                        .fontSize(25)
+                        .fontWeight(FontWeight.Bold)
+                        .fontColor(Color.Black)
+                          //.margin({ left: 10, top: -65}) // 与图片保持相对位置
+                        .margin({ left: 10, top: -70 }) // 右侧固定位置
+                      Image($r('app.media.del'))
+                        .width(30)
+                        .fillColor(Color.Red)
+                        .position({ x: 270, y: -25 })
+                        .onClick(() => {
+                          this.adddal = false
+                        })
+                    }
+                    .width('100%')
+                    .height(80)
+                    .padding({ left: 20 })
                   }
-                  .width('100%')
-                  .height(80)
-                  .padding({ left: 20 })
-                }
-                // 渐变分割线 (精确匹配原位置)
-                Row()
-                  .width('86%')
-                  .height(1)
-                  .margin({ top: -10, left: 8 })
-                  .linearGradient({
-                    angle: 90,
-                    colors: [
-                      ['#FCE4CF', 0],
-                      ['#F5A35F', 0.5],
-                      ['#FCE4CF', 1]
-                    ]
-                  })
-                  .zIndex(1)
-                // 采购价信息 (精确像素级调整)
-                Column() {
+                  // 渐变分割线 (精确匹配原位置)
+                  Row()
+                    .width('86%')
+                    .height(1)
+                    .margin({ top: -10, left: 8 })
+                    .linearGradient({
+                      angle: 90,
+                      colors: [
+                        ['#FCE4CF', 0],
+                        ['#F5A35F', 0.5],
+                        ['#FCE4CF', 1]
+                      ]
+                    })
+                    .zIndex(1)
                   // 采购价信息
-                  Row() {
-                    Text('采  购  价：')
-                      .fontWeight(600)
-                    Text('12.96')
-                      .fontSize(21)
-                      .fontWeight(FontWeight.Bold)
-                      .fontColor(Color.Red)
-                    Text('元/Kg')
-                      .fontWeight(600)
-                      .fontColor(Color.Red)
+                  Column() {
+                    // 采购价信息
+                    Row() {
+                      Text('采  购  价：')
+                        .fontWeight(600)
+                      Text('12.96')
+                        .fontSize(21)
+                        .fontWeight(FontWeight.Bold)
+                        .fontColor(Color.Red)
+                      Text('元/Kg')
+                        .fontWeight(600)
+                        .fontColor(Color.Red)
+                    }
+                    .margin({ top: 10 })
+                    .zIndex(2)
+                    // 供应商信息
+                    Row() {
+                      Text('供  应  商：')
+                        .fontWeight(600)
+                      Text('彦红粮油有限公司')
+                        .fontWeight(600)
+                    }
+                    .margin({ top: 10 })
+                    // 学校库存
+                    Row() {
+                      Text('学校库存：')
+                        .fontWeight(600)
+                      Text('1')
+                        .fontSize(21)
+                        .fontWeight(FontWeight.Bold)
+                      Text('Kg')
+                        .fontWeight(600)
+                    }
+                    .margin({ top: 10 })
+                    // 规格
+                    // 需求量
+                    Row({ space: 10 }) {
+                      Text('需 求  量：')
+                        .fontWeight(600)
+                      TextInput({ placeholder: '请输入需求量' })
+                        .fontColor('#000') // 输入文字颜色
+                        .fontSize(16)
+                        .width('40%') // 设置输入框宽度
+                        .border({
+                          width: { bottom: 1 }, // 只设置底部边框
+                          color: '#ccc'
+                        })
+                        .onChange((value: string) => {
+                          // 可以在这里处理输入变化
+                          console.log('输入的需求量为:', value)
+                        })
+                      Text('斤')
+                        .fontWeight(600)
+                    }
+                    // 需求量
+                    Row({ space: 10 }) {
+                      Text('需 求  量：')
+                        .fontWeight(600)
+                      TextInput({ placeholder: '请输入需求量' })
+                        .fontColor('#000') // 输入文字颜色
+                        .fontSize(16)
+                        .width('40%') // 设置输入框宽度
+                        .border({
+                          width: { bottom: 1 }, // 只设置底部边框
+                          color: '#ccc'
+                        })
+                        .onChange((value: string) => {
+                          // 可以在这里处理输入变化
+                          console.log('输入的需求量为:', value)
+                        })
+                      Text('kg')
+                        .fontWeight(600)
+                    }
+                    // 合计
+                    Row() {
+                      Text('合       计：')
+                        .fontWeight(600)
+                      Text('元')
+                        .fontWeight(600)
+                        .fontColor(Color.Red)
+                    }
+                    .margin({ top: 10 })
+                    // 备注
+                    Row() {
+                      Text('备       注：')
+                        .fontWeight(600)
+                      TextInput({ placeholder: '请输入备注' })
+                        .fontColor('#000') // 输入文字颜色
+                        .fontSize(16)
+                        .width('70%') // 设置输入框宽度
+                        .border({
+                          width: { bottom: 1 }, // 只设置底部边框
+                          color: '#ccc'
+                        })
+                        .onChange((value: string) => {
+                          // 可以在这里处理输入变化
+                          console.log('输入的备注为:', value)
+                        })
+                    }
+                    .margin({ top: 10 })
                   }
-                  .margin({ top: 10 })
-                  .zIndex(2)
-                  // 供应商信息
-                  Row() {
-                    Text('供  应  商：')
-                      .fontWeight(600)
-                    Text('彦红粮油有限公司')
-                      .fontWeight(600)
-                  }
-                  .margin({ top: 10 })
-                  // 学校库存
-                  Row() {
-                    Text('学校库存：')
-                      .fontWeight(600)
-                    Text('1')
-                      .fontSize(21)
-                      .fontWeight(FontWeight.Bold)
-                    Text('Kg')
-                      .fontWeight(600)
-                  }
-                  .margin({ top: 10 })
-                  // 规格
-                  // 需求量
-                  Row({ space: 10 }) {
-                    Text('需 求  量：')
-                      .fontWeight(600)
-                    TextInput({ placeholder: '请输入需求量' })
-                      .fontColor('#000') // 输入文字颜色
-                      .fontSize(16)
-                      .width('40%') // 设置输入框宽度
-                      .border({
-                        width: { bottom: 1 }, // 只设置底部边框
-                        color: '#ccc'
-                      })
-                      .onChange((value: string) => {
-                        // 可以在这里处理输入变化
-                        console.log('输入的需求量为:', value)
-                      })
-                    Text('斤')
-                      .fontWeight(600)
-                  }
-                  // 需求量
-                  Row({ space: 10 }) {
-                    Text('需 求  量：')
-                      .fontWeight(600)
-                    TextInput({ placeholder: '请输入需求量' })
-                      .fontColor('#000') // 输入文字颜色
-                      .fontSize(16)
-                      .width('40%') // 设置输入框宽度
-                      .border({
-                        width: { bottom: 1 }, // 只设置底部边框
-                        color: '#ccc'
-                      })
-                      .onChange((value: string) => {
-                        // 可以在这里处理输入变化
-                        console.log('输入的需求量为:', value)
-                      })
-                    Text('kg')
-                      .fontWeight(600)
-                  }
-                  // 合计
-                  Row() {
-                    Text('合       计：')
-                      .fontWeight(600)
-                    Text('元')
-                      .fontWeight(600)
-                      .fontColor(Color.Red)
-                  }
-                  .margin({ top: 10 })
-                  // 备注
-                  Row() {
-                    Text('备       注：')
-                      .fontWeight(600)
-                    TextInput({ placeholder: '请输入备注' })
-                      .fontColor('#000') // 输入文字颜色
-                      .fontSize(16)
-                      .width('70%') // 设置输入框宽度
-                      .border({
-                        width: { bottom: 1 }, // 只设置底部边框
-                        color: '#ccc'
-                      })
-                      .onChange((value: string) => {
-                        // 可以在这里处理输入变化
-                        console.log('输入的备注为:', value)
-                      })
-                  }
-                  .margin({ top: 10 })
+                  .alignItems(HorizontalAlign.Start) // 关键：统一左对齐
+                  .margin({ top: 100 })
+                  // 左上角三角形标签 (精确匹配)
+                  Path()
+                    .width(40)
+                    .height(40)
+                    .commands('M0 0 L180 0 L0 180 Z')
+                    .fill('#FFA500')
+                    .margin({ left: -301, top: -190 })
+                    .stroke('#FFA500') // 无边框
+                    .shadow({ radius: 0 }) // 确保无阴影
+                  Text('称重')
+                    .fontSize(15)
+                    .fontColor(Color.White)
+                    .rotate({ angle: -45 })
+                    .margin({ left: -300, top: -190 })
+                  // 右下角三角形 (精确匹配)
                 }
-                .alignItems(HorizontalAlign.Start) // 关键：统一左对齐
-                .margin({ top: 100 })
-                // 左上角三角形标签 (精确匹配)
-                Path()
-                  .width(40)
-                  .height(40)
-                  .commands('M0 0 L180 0 L0 180 Z')
-                  .fill('#FFA500')
-                  .margin({ left: -301, top: -190 })
-                  .stroke('#FFA500') // 无边框
-                  .shadow({ radius: 0 }) // 确保无阴影
-                Text('称重')
-                  .fontSize(15)
-                  .fontColor(Color.White)
-                  .rotate({ angle: -45 })
-                  .margin({ left: -300, top: -190 })
-                // 右下角三角形 (精确匹配)
+                .width('100%')
+                .height(220)
               }
-              .width('100%')
-              .height(220)
+              .borderWidth(2)
+              .borderColor(Color.Orange)
+              .width('96%')
+              .height(390)
+              .padding(5)
+              .shadow({
+                radius: 10,
+                color: '#fffabc85',
+                offsetX: 20,
+                offsetY: 20
+              })
+              .margin({ left: '2%', right: '2%' })
             }
-            .borderWidth(2)
-            .borderColor(Color.Orange)
-            .width('96%')
-            .height(390)
-            .padding(5)
-            .shadow({
-              radius: 10,
-              color: '#fffabc85',
-              offsetX: 20,
-              offsetY: 20
-            })
-            .margin({ left: '2%', right: '2%' })
+            //中间卡片部分
+
           }
+      .backgroundColor(Color.Red)
           .layoutWeight(1)
 
         }
+        .backgroundColor(Color.Blue)
         .width('100%')
         .layoutWeight(1)
         if (this.showDialog) {
@@ -545,7 +559,7 @@ struct DatePickerExample {
                 this.showDialog = false
               }, 300)
             })
-            .zIndex(2)
+            .zIndex(6)
           // 对话框内容
           Column() {
             Text('摘要')
@@ -589,11 +603,16 @@ struct DatePickerExample {
             duration: 300,
             curve: Curve.EaseOut
           })
-          .zIndex(2)
+          .zIndex(7)
         }
         // 底部按钮部分
         Column() {
+          Divider()
+          .strokeWidth(1)
+          .color('#ffb1afaf')
+          .margin({ top: 0, bottom: 7 })
           Row() {
+
             Text('总计：*元')
               .fontColor('#8A96A2')
               .fontSize(16)
@@ -642,9 +661,9 @@ struct DatePickerExample {
           .justifyContent(FlexAlign.SpaceBetween)
           .margin({ top: 20 })
         }
+        .height(55)
         .padding(10)
         .zIndex(4)
-
       }
     }
   }

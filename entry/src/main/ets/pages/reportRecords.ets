@@ -243,24 +243,25 @@ struct Page1 {
       .backgroundColor(Color.Green)
       .onClick(async () => {
         // 构造要传递的数据
-        const formData: ReportFormData = {
-          unit: this.selectedUnitIndex,
-          meal: this.selectedMealValue,
-          position: '教师', // 可以根据业务动态获取或固定值
-          name: this.name,
-          evaluation: this.evaluation,
-          date: this.dates
-        };
-
-        // 跳转页面并携带数据
-        router.pushUrl({
-          url: 'pages/peicanRecords',
-          params: {
-            token: this.receivedToken,
-            tenantId: this.tenantId,
-            record: JSON.stringify(formData) // 关键：传递 record 数据
-          }
-        });
+        // const formData: ReportFormData = {
+        //   unit: this.selectedUnitIndex,
+        //   meal: this.selectedMealValue,
+        //   position: '教师', // 可以根据业务动态获取或固定值
+        //   name: this.name,
+        //   evaluation: this.evaluation,
+        //   date: this.dates
+        // };
+        //
+        // // 跳转页面并携带数据
+        // router.back({
+        //   url: 'pages/peicanRecords',
+        //   params: {
+        //     token: this.receivedToken,
+        //     tenantId: this.tenantId,
+        //     record: JSON.stringify(formData) // 关键：传递 record 数据
+        //   }
+        // });
+        router.back()
 
         const result = await this.report();
       })
@@ -285,6 +286,7 @@ struct Page1 {
 
   private async report(): Promise<reportHandlerResult> {
     try {
+      console.log(this.selectedUnitIndex)
       const httpRequest = http.createHttp();
       const response = await httpRequest.request(
         'https://api.suoeryun.com/ifood/jeecg-school/school/xxMealRecord/add',
@@ -306,7 +308,7 @@ struct Page1 {
               }
             ] as Array<MealRecordInfo>,
             "demandUnit": "",
-            "demandUnitName": this.selectedUnitIndex
+            "demandUnitName": '实训第二学校餐厅'
           }
           )
         }
