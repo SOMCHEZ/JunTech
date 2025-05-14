@@ -5,6 +5,7 @@ import promptAction from '@ohos.promptAction';
 
 // 接口响应数据类型定义
 interface OutboundOrder {
+  id: string;
   accountingDate: string;
   approvalTime: string;
   approvalUser: string;
@@ -341,11 +342,12 @@ struct PurchaseInventory {
                 router.pushUrl({
                   url: 'pages/yishenpi',
                   params: {
-                    orderId: item.documentNo,
+                    orderId: item.id,
                     token: this.token,
                     relTenantIds: this.tenantId
                   }
                 });
+                console.log('IDDDDD',item.id);
               });
             });
 
