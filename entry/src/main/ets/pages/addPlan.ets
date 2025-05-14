@@ -103,7 +103,6 @@ interface GeneratedObjectLiteralInterface_1 {
 @Entry
 @Component
 struct DatePickerExample {
-
   @State selectedDate: string = ''
   @State selectDate: Date = new Date()
   @State showDialog: boolean = false
@@ -116,8 +115,6 @@ struct DatePickerExample {
   @State summary: string = ''// 摘要内容
   @State selectedText: string[] = ['请选择','请选择','请选择','请选择','请选择','请选择','请输入摘要']
   @State private showMealType: boolean = false // 控制是否显示用餐类型
-
-
   private unitOptions = ['实验第二学校（库房）', '实验第二学校餐厅']
   private selectedTime = ['上午', '下午']
   private demandOptions = ['学生餐', '教师餐']
@@ -130,8 +127,9 @@ struct DatePickerExample {
     '下午': 'afternoon',
     '学生餐': '1',
     '教师餐': '2',
-    '其他': '1',
-    '营养餐': '2',
+    '非营养餐': '2',
+    '营养餐': '1',
+    '其他': '0',
     '早餐': '1',
     '午餐': '2',
     '晚餐': '3'
@@ -140,6 +138,7 @@ struct DatePickerExample {
   private getMappedValues(index?: number): string | string[] {
     if (index !== undefined) {
       const text = this.selectedText[index];
+      console.log('')
       return this.mapping[text] || text;
     }
     return this.selectedText.map(text => this.mapping[text] || '');
@@ -197,8 +196,8 @@ struct DatePickerExample {
           extraData: JSON.stringify({
             "unitId": this.unitId,
             "supplyDate": this.selectedText[1],
-            "supplyTime": this.selectedText[2],
-            //"requirementType": a,
+            "supplyTime": this.getMappedValues(2),
+            "requirementType": this.getMappedValues(4),
             "planningFoodList": [
               {
                 "id": "",
@@ -246,8 +245,8 @@ struct DatePickerExample {
               }
             ] as  Array<PlanningFoodItem>,
             "summary": "",
-            "mealType": "1",
-            "mealCategory": "1",
+            "mealType": this.getMappedValues(3),
+            "mealCategory": this.getMappedValues(5),
             "unitName": "实训第二学校(库房)",
             "unitType": "1",
             "planningStatus": "1"
@@ -617,7 +616,6 @@ struct DatePickerExample {
                 .fontSize(16)
                 .fontColor(Color.White)
             }
-
             .onClick(async() => {
               router.pushUrl({
                 url: 'pages/uploadPlan',
@@ -713,14 +711,12 @@ struct DatePickerExample {
           switch (label){
             case "需求单位":
               this.showTextDialog(this.unitOptions,0)
-
               break;
             case "供应日期":
               this.showDateDialog()
               break;
             case "供应时间":
               this.showTextDialog(this.selectedTime,2)
-
               break;
             case "需求类型":
               this.showTextDialog(this.demandOptions,3)
