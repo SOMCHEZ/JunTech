@@ -116,78 +116,17 @@ struct DatePickerExample {
   @State summary: string = ''// 摘要内容
   @State selectedText: string[] = ['请选择','请选择','请选择','请选择','请选择','请选择','请输入摘要']
   @State private showMealType: boolean = false // 控制是否显示用餐类型
+
   private unitOptions = ['实验第二学校（库房）', '实验第二学校餐厅']
-  private selectedTime = ['forenoon', 'afternoon']
+  private selectedTime = ['上午', '下午']
   private demandOptions = ['学生餐', '老师餐']
   private mealTypeOptions = ['其他','营养餐']
   private mealOptions = ['其他', '早餐', '午餐', '晚餐']
 
-/*
-  为了满足你的需求，可以将 [selectedText](file://D:\DevEcoStudioProjects\MyApplication3\entry\.preview\default\cache\default\default@PreviewArkTS\esmodule\debug\entry\src\main\ets\pages\c.ts#L154-L156) 中的文本选项（如“请选择”、“请输入摘要”）和最终选择值（如“实验第二学校（库房）”）映射为对应的数组类型字符串 `1,2,3`。以下是实现步骤：
-
-### 1. 定义映射关系
-首先定义一个映射对象，将每个选项的标签对应到其实际值。
-
-```ts
-private mapping = {
-  '实验第二学校（库房）': '1',
-  '实验第二学校餐厅': '2',
-  'forenoon': '1',
-  'afternoon': '2',
-  '学生餐': '1',
-  '老师餐': '2',
-  '其他': '1',
-  '营养餐': '2',
-  '早餐': '1',
-  '午餐': '2',
-  '晚餐': '3'
-};
-```
-
-
-### 2. 获取映射后的数据
-在需要获取数组类型的字符串时，可以通过遍历 [selectedText](file://D:\DevEcoStudioProjects\MyApplication3\entry\.preview\default\cache\default\default@PreviewArkTS\esmodule\debug\entry\src\main\ets\pages\c.ts#L154-L156) 数组并使用映射对象进行转换。
-
-```ts
-private getMappedValues(): string[] {
-  return this.selectedText.map(text => this.mapping[text] || text); // 如果没有匹配项，则保留原值
-}
-```
-
-
-### 3. 使用映射后的数据
-当需要提交表单或执行其他操作时，调用 `getMappedValues()` 方法来获取映射后的数据。
-
-```ts
-let mappedValues = this.getMappedValues();
-console.log('Mapped Values:', mappedValues); // 输出：["1", "2", ...]
-```
-
-
-### 4. 显示原始选项
-在 UI 显示时，仍然使用 [selectedText](file://D:\DevEcoStudioProjects\MyApplication3\entry\.preview\default\cache\default\default@PreviewArkTS\esmodule\debug\entry\src\main\ets\pages\c.ts#L154-L156) 数组中的原始值，以确保用户看到的是可读性更强的文本。
-
-### 5. 示例代码整合
-以下是如何整合到代码中的示例：
-
-```ts
-@Entry
-@Component
-struct DatePickerExample {
-  @State selectedText: string[] = ['请选择', '请选择', '请选择', '请选择', '请选择', '请选择', '请输入摘要'];
-  @State private showMealType: boolean = false;
-  private unitOptions = ['实验第二学校（库房）', '实验第二学校餐厅'];
-  private selectedTime = ['forenoon', 'afternoon'];
-  private demandOptions = ['学生餐', '老师餐'];
-  private mealTypeOptions = ['其他', '营养餐'];
-  private mealOptions = ['其他', '早餐', '午餐', '晚餐'];
-
-  // 映射关系
-  private mapping = {
-    '实验第二学校（库房）': '1',
-    '实验第二学校餐厅': '2',
-    'forenoon': '1',
-    'afternoon': '2',
+  // 修改 getMappedValues 函数：显式声明返回类型
+  private mapping: Record<string, string> = {
+    '上午': 'forenoon',
+    '下午': 'afternoon',
     '学生餐': '1',
     '老师餐': '2',
     '其他': '1',
@@ -197,28 +136,20 @@ struct DatePickerExample {
     '晚餐': '3'
   };
 
-  // 获取映射后的值
-  private getMappedValues(): string[] {
+  private getMappedValues(index?: number): string | string[] {
+    if (index !== undefined) {
+      const text = this.selectedText[index];
+      return this.mapping[text] || text;
+    }
     return this.selectedText.map(text => this.mapping[text] || text);
   }
 
-  build() {
-    Column() {
-      Button('显示映射值') {
-        let mappedValues = this.getMappedValues();
-        console.log('Mapped Values:', mappedValues);
-      }
-    }
+  private handleLogMapping(): void {
+    const mappedValues = this.getMappedValues();
+    console.log('Mapped Values:', mappedValues);
+    // 可以在此添加更多逻辑
   }
-}
-```
 
-
-### 总结
-- **保持 UI 可读性**：`selectedText` 仍使用原始文本（如“请选择”、“实验第二学校（库房）”），以便用户理解。
-- **数据处理**：通过 `mapping` 对象将文本映射为数字字符串（如 `1`, `2`, `3`），方便后续逻辑处理或提交给后端。
-- **灵活性**：如果某些值不需要映射，可以直接保留在 `selectedText` 中。
- */
   async onPageShow() {
     const params = router.getParams() as RouteParams;
     //console.log('houchu', params?.token);// 打印接收到的参数
@@ -368,6 +299,7 @@ struct DatePickerExample {
 
             this.buildLabelRow($r("app.media.mealCategory"), "餐别", true, 5)
             this.buildLabelRow($r("app.media.remarks"), "摘要", false, 6)
+
           }
           .width('100%')
           .padding(10)
@@ -393,6 +325,7 @@ struct DatePickerExample {
 
                 });
             }
+
             .width('80%')
             .height(35)
             .backgroundColor('#02BC65')
@@ -508,7 +441,10 @@ struct DatePickerExample {
               Text('保存上报')
                 .fontSize(16)
                 .fontColor(Color.White)
+
+
             }
+
             .onClick(async() => {
               router.pushUrl({
                 url: 'pages/uploadPlan',
@@ -516,9 +452,10 @@ struct DatePickerExample {
                   token: this.receivedToken,
                   tenantId: this.tenantId,
                 } })
-              console.log('meal',this.selectedText[2]);
               const result = await this.addStaff()
-
+           // 获取 selectedText[1] 对应的映射值
+              const singleValue = this.getMappedValues(2); // 获取 日期 对应的映射值
+              console.log('Single Mapped Value:', singleValue);
               //this.submitForm();
             })
             .height(35)
@@ -600,6 +537,7 @@ struct DatePickerExample {
           switch (label){
             case "需求单位":
               this.showTextDialog(this.unitOptions,0)
+
               break;
             case "供应日期":
               this.showDateDialog()
