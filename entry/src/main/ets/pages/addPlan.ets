@@ -544,6 +544,9 @@ struct DatePickerExample {
               break;
             case "供应时间":
               this.showTextDialog(this.selectedTime,2)
+              if(this.selectedText[2]==='请选择')
+                this.selectedText[2] = ''
+
               break;
             case "需求类型":
               this.showTextDialog(this.demandOptions,3)
