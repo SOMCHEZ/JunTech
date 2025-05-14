@@ -248,15 +248,15 @@ struct CalendarPage {
           }
         }
       } else {
-        this.message = '网络请求失败'
+        this.message = '暂无数据'
         promptAction.showToast({
           message: this.message,
           duration: 2000
         })
       }
     } catch (error) {
-      this.message = '网络请求失败'
-      console.error('Fetch records failed:', error)
+      this.message = '未查询到相关数据'
+     // console.error('Fetch records failed:', error)
       promptAction.showToast({
         message: this.message,
         duration: 2000
