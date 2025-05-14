@@ -32,7 +32,8 @@
     "pages/shishikucun",
     "pages/renew",
     "pages/gonggao",
-    "pages/kucun",
-    "pages/EditStaff"
+    "pages/EditStaff",
+    "pages/kucun"
+
   ]
 }
