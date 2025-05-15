@@ -317,16 +317,55 @@ struct PurchaseInventory {
           } else {
             ForEach(this.orderList, (item: OutboundOrder, index: number) => {
               Column() {
-                Text(item.demandUnitName || '实训第一学校餐厅')
-                  .fontSize(20)
-                  .fontWeight(FontWeight.Bold)
-                  .margin({ bottom: 8 });
-                Text(`单据号：${item.documentNo}`).fontSize(16).margin({ bottom: 2 });
-                Text(`出库日期：${item.accountingDate}`).fontSize(16).margin({ bottom: 2 });
-                Text(`出库类型：${item.mealType_dictText}`).fontSize(16).margin({ bottom: 2 });
-                Text(`用餐类型：${item.requirementType_dictText}`).fontSize(16).margin({ bottom: 2 });
-                Text(`餐    别：${item.mealCategory_dictText}`).fontSize(16).margin({ bottom: 2 });
-                Text(`制单时间：${item.createTime}`).fontSize(16).margin({ bottom: 2 });
+                // 添加一个 Row 来包含标题和删除按钮
+                Row() {
+                  Text(item.demandUnitName || '实训第一学校餐厅')
+                    .fontSize(20)
+                    .fontWeight(FontWeight.Bold)
+                    .layoutWeight(1) // 让文本占据剩余空间
+
+                  if (this.activeTab === 0) { // 只在待审批状态显示删除按钮
+                    Image($r('app.media.about')) // 确保有删除图标资源
+                      .width(24)
+                      .height(24)
+                      .margin({ left: 8 })
+                      .onClick((event: ClickEvent) => {
+                         // 阻止事件冒泡，避免触发卡片点击
+                        promptAction.showDialog({
+                          title: '确认删除',
+                          message: '是否确认删除该出库单？',
+                          buttons: [
+                            {
+                              text: '取消',
+                              color: '#666666'
+                            },
+                            {
+                              text: '确认',
+                              color: '#E84335'
+                            }
+                          ]
+                        }).then(result => {
+                          if (result.index === 1) {
+                            // TODO: 调用删除接口
+                            promptAction.showToast({
+                              message: '删除成功',
+                              duration: 2000
+                            })
+                          }
+                        })
+                      })
+                  }
+                }
+                .width('100%')
+                .margin({ bottom: 8 })
+
+                // 其他信息保持不变
+                Text(`单据号：${item.documentNo}`).fontSize(16).margin({ bottom: 2 })
+                Text(`出库日期：${item.accountingDate}`).fontSize(16).margin({ bottom: 2 })
+                Text(`出库类型：${item.mealType_dictText}`).fontSize(16).margin({ bottom: 2 })
+                Text(`用餐类型：${item.requirementType_dictText}`).fontSize(16).margin({ bottom: 2 })
+                Text(`餐    别：${item.mealCategory_dictText}`).fontSize(16).margin({ bottom: 2 })
+                Text(`制单时间：${item.createTime}`).fontSize(16).margin({ bottom: 2 })
               }
               .key(index.toString()) // 确保每个项有唯一的 key
               .padding(16)
