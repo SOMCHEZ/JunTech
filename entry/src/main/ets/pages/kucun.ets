@@ -138,8 +138,6 @@ struct PurchaseInventory {
             return acc;
           }, [{ value: '领用单位' }] as SelectOption[]);
 
-
-
           // 获取完单位列表后加载订单数据
           this.loadData();
         } else {
@@ -339,14 +337,25 @@ struct PurchaseInventory {
               .margin({ top: 20, bottom: 20 })
               .shadow({ radius: 8, color: '#07C160', offsetX: 0, offsetY: 4 })
               .onClick(() => {
-                router.pushUrl({
-                  url: 'pages/yishenpi',
-                  params: {
-                    orderId: item.id,
-                    token: this.token,
-                    relTenantIds: this.tenantId
-                  }
-                });
+                if (this.activeTab === 0) { // 待审批
+                  router.pushUrl({
+                    url: 'pages/daishenpi',
+                    params: {
+                      orderId: item.id,
+                      token: this.token,
+                      relTenantIds: this.tenantId
+                    }
+                  });
+                } else { // 已审批
+                  router.replaceUrl({
+                    url: 'pages/yishenpi',
+                    params: {
+                      orderId: item.id,
+                      token: this.token,
+                      relTenantIds: this.tenantId
+                    }
+                  });
+                }
                 console.log('IDDDDD',item.id);
               });
             });
