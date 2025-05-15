@@ -611,47 +611,44 @@ struct DatePickerExample {
             .strokeWidth(1)
             .color('#ffb1afaf')
             .margin({ top: 0, bottom: 7 })
-          Row() {
-
-            Text('总计：*元')
-              .fontColor('#8A96A2')
-              .fontSize(16)
-              .margin({ right: 10 })
-
-            Button({type: ButtonType.Normal}){
+          Text('总计：*元')
+            .fontColor('#8A96A2')
+            .fontSize(16)
+            .margin({ right: -250 })
+          Row({space:10}) {
+            Button({ type: ButtonType.Normal }) {
               Text('保存')
                 .fontSize(16)
                 .fontColor(Color.White)
+
             }
             .height(35)
-            .backgroundColor('#02BC65')
+            .backgroundColor('#3282FF')
             .fontColor(Color.White)
             .borderRadius(8)
-            .width('auto')
+            .width('30%') // 固定宽度
             .padding({ left: 15, right: 15 })
 
-            Button({type: ButtonType.Normal}){
-              Text('保存上报')
-                .fontSize(16)
+            Button({ type: ButtonType.Normal }) {
+              Text('保存并审核')
+                .fontSize(14)
                 .fontColor(Color.White)
             }
-            .onClick(async() => {
+            .onClick(async () => {
               this.submitForm();
               const result = await this.addStaff()
-              // 获取 selectedText[1] 对应的映射值
-              const singleValue = this.getMappedValues(2); // 获取 日期 对应的映射值
+              const singleValue = this.getMappedValues(2);
               console.log('Single Mapped Value:', singleValue);
-
             })
             .height(35)
             .backgroundColor('#02BC65')
             .fontColor(Color.White)
             .borderRadius(8)
-            .width('auto')
+            .width('30%') // 固定宽度，与第一个按钮一致
             .padding({ left: 15, right: 15 })
           }
           .width('100%')
-          .justifyContent(FlexAlign.SpaceBetween)
+          .justifyContent(FlexAlign.End) // 右侧对齐
           .margin({ top: 20 })
         }
         .height(55)
