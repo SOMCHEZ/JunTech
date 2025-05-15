@@ -327,12 +327,12 @@ struct PurchaseInventory {
                     .layoutWeight(1) // 让文本占据剩余空间
 
                   if (this.activeTab === 0) { // 只在待审批状态显示删除按钮
-                    Image($r('app.media.about')) // 确保有删除图标资源
+                    Image($r('app.media.del')) // 确保有删除图标资源
                       .width(24)
                       .height(24)
                       .margin({ left: 8 })
                       .onClick((event: ClickEvent) => {
-                        // 阻止事件冒泡，避免触发卡片点击
+                         // 阻止事件冒泡，避免触发卡片点击
                         promptAction.showDialog({
                           title: '确认删除',
                           message: '是否确认删除该出库单？',
