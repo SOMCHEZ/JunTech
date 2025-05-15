@@ -135,7 +135,7 @@ struct KitchenStaffList {
   async onPageShow() {//这是一个接收传递参数的方法
     // 使用接口类型断言
     const params = router.getParams() as RouteParams;
-    console.log('houch11u', params?.token);// 打印接收到的参数
+    //console.log('houch11u', params?.token);// 打印接收到的参数
     // 安全取值如果返回值空，则使用appsetcreat中所预保存的token和id
     if (!AppStorage.get('token') && params?.token) {
       AppStorage.set('token', params.token);
@@ -150,8 +150,8 @@ struct KitchenStaffList {
     // 同步到组件状态
     this.receivedToken = AppStorage.get('token')??'';
     this.tenantId = AppStorage.get('tenantId')??0;
-    console.log('houchu1', this.receivedToken);
-    console.log('houchu2', this.tenantId);
+    // console.log('houchu1', this.receivedToken);
+    // console.log('houchu2', this.tenantId);
 
     const result = await this.Houchuchaxun();// 调用Houchuchaxun方法这个函数是用来查数据的
 
@@ -573,7 +573,7 @@ struct KitchenStaffList {
                   console.log(staff.id?.toString())
                   const deleteResult = await this.HouchuDelete(staff.id)
                   console.log("牢莩是神")
-                  console.log("牢俊内裤",deleteResult)
+                  console.log("牢俊nk",deleteResult)
                   if (deleteResult.success) {
                     // 删除成功后刷新列表
                     this.onPageShow();
