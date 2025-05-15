@@ -139,7 +139,7 @@ struct KitchenStaffList {
     // 安全取值如果返回值空，则使用appsetcreat中所预保存的token和id
     if (!AppStorage.get('token') && params?.token) {
       AppStorage.set('token', params.token);
-      console.log('houchu', AppStorage.get('token'));
+      //console.log('houchu', AppStorage.get('token'));
       //this.receivedToken = params.token;
     }
     if (!AppStorage.get('tenantId') && params?.relTenantIds) {
