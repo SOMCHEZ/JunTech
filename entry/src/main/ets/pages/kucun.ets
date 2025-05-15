@@ -1,3 +1,4 @@
+
 import router from '@ohos.router';
 import http from '@ohos.net.http';
 import { BusinessError } from '@ohos.base';
@@ -93,6 +94,7 @@ struct PurchaseInventory {
   // 领用单位列表
   @State unitList: AuthUnitVo[] = [];
   @State options: SelectOption[] = [];
+
 
   aboutToAppear() {
     try {
@@ -378,11 +380,9 @@ struct PurchaseInventory {
               .onClick(() => {
                 if (this.activeTab === 0) { // 待审批
                   router.pushUrl({
-                    url: 'pages/daishenpi',
+                    url: 'pages/kucun',
                     params: {
-                      orderId: item.id,
-                      token: this.token,
-                      relTenantIds: this.tenantId
+                      tab: this.activeTab // 传递当前 tab 值作为参数
                     }
                   });
                 } else { // 已审批
