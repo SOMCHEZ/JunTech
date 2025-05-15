@@ -29,10 +29,7 @@ struct SignaturePage {
             .fontSize(22)
             .fontWeight(FontWeight.Bold)
             .textAlign(TextAlign.Center);
-          Text('phone.suoeryun.com')
-            .fontSize(14)
-            .fontColor('#888')
-            .textAlign(TextAlign.Center);
+
         }
         .layoutWeight(1);
         // 更多按钮

@@ -31,7 +31,9 @@
     "pages/renew",
     "pages/gonggao",
     "pages/EditStaff",
-    "pages/kucun"
+    "pages/kucun",
+    "pages/addfood",
+    "pages/daishenpi"
 
 
 
