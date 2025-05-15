@@ -75,18 +75,22 @@ struct Index1 {
 
   onPageShow() {//这是一个接收传递参数的方法
     // 使用接口类型断言
-    const params = router.getParams() as RouteParams;
-    console.log('shouye', params?.token);// 打印接收到的参数
-    console.log('shouye', params?.relTenantIds);//  打印接收到的参数
-
-    // 安全取值
-    if (params?.token) {
-      this.receivedToken = params.token;
-    }
-
-    if (params?.relTenantIds) {
-      this.tenantId = params.relTenantIds;
-    }
+    // const params = router.getParams() as RouteParams;
+    // console.log('shouye', params?.token);// 打印接收到的参数
+    // console.log('shouye', params?.relTenantIds);//  打印接收到的参数
+    //
+    // // 安全取值
+    // if (params?.token) {
+    //   this.receivedToken = params.token;
+    // }
+    //
+    // if (params?.relTenantIds) {
+    //   this.tenantId = params.relTenantIds;
+    // }
+    // console.log('shouye', this.storageToken);
+    // console.log('shouye', this.storageTenantId.toString());
+    this.receivedToken  = this.storageToken;
+    this.tenantId = this.storageTenantId;
   }
 
 
@@ -125,8 +129,7 @@ struct Index1 {
               ,
                 params:{
                   token:this.receivedToken,
-                  relTenantIds:this.tenantId
-
+                  relTenantIds:this.tenantId,
                 }
               })
             })
@@ -229,6 +232,11 @@ struct Index1 {
                         .onClick(() => {
                           router.pushUrl({          // 使用push入栈一个新页面
                             url: item.route // 通过url指定新打开的页面
+                            ,
+                            params:{
+                              token:this.receivedToken,
+                              relTenantIds:this.tenantId,
+                            }
                           })
                         })
                     }
