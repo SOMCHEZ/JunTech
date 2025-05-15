@@ -138,45 +138,48 @@ struct OutboundOrderDetailPage {
 
     try {
       this.httpRequest = http.createHttp();
-      let url = 'https://api.suoeryun.com/ifood/jeecg-school/school/xxSupplyOutManagement/queryById';
+
+      // 修改URL路径，移除 jeecg-school
+      let url = `https://api.suoeryun.com/ifood/school/xxSupplyOutManagement/queryById?id=${encodeURIComponent(this.orderId)}`;
 
       console.info('Requesting URL:', url);
-      console.info('Request params:', {
-        id: this.orderId,
-        token: this.token,
-        tenantId: this.tenantId
-      });
 
-      let response = await this.httpRequest.request(
-        url,
-        {
-          method: http.RequestMethod.GET,
-          header: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-            'tenant-id': this.tenantId.toString(),
-            'X-Access-Token': this.token
-          },
-          extraData: {
-            id: this.orderId
-          },
-          connectTimeout: 60000,
-          readTimeout: 60000,
-          expectDataType: http.HttpDataType.STRING
-        }
-      );
+      let requestOptions: http.HttpRequestOptions = {
+        method: http.RequestMethod.GET,
+        header: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'tenant-id': this.tenantId.toString(),
+          'X-Access-Token': this.token,
+          'Accept': 'application/json, text/plain, */*'  // 添加Accept头
+        },
+        readTimeout: 30000,
+        connectTimeout: 30000,
+        expectDataType: http.HttpDataType.STRING
+      }
+
+      console.info('Request options:', JSON.stringify({
+        url: url,
+        method: requestOptions.method,
+        headers: requestOptions.header
+      }));
+
+      let response = await this.httpRequest.request(url, requestOptions);
 
       console.info('Response code:', response.responseCode);
       console.info('Response result:', response.result);
 
       if (response.responseCode === http.ResponseCode.OK) {
-        const responseData = JSON.parse(response.result.toString()) as ApiResponse;
+        let responseData: ApiResponse = JSON.parse(response.result as string) as ApiResponse;
+
         console.info('Parsed response:', JSON.stringify(responseData));
 
         if (responseData.code === 200 && responseData.success) {
           this.orderDetail = responseData.result;
-          if (!this.orderDetail || !this.orderDetail.foods || this.orderDetail.foods.length === 0) {
-            this.message = '暂无相关数据';
-            console.info('No data found in response');
+          if (this.orderDetail && this.orderDetail.foods && this.orderDetail.foods.length > 0) {
+            this.loading = false;
+          } else {
+            this.message = '暂无食材数据';
+            console.info('No foods data found in response');
           }
         } else {
           this.message = responseData.message || '获取订单详情失败';
@@ -194,7 +197,7 @@ struct OutboundOrderDetailPage {
         });
       }
     } catch (error) {
-      const err = error as BusinessError;
+      let err = error as BusinessError;
       this.message = '网络请求失败: ' + err.message;
       console.error('Request failed:', err.message);
       promptAction.showToast({
@@ -209,7 +212,6 @@ struct OutboundOrderDetailPage {
       }
     }
   }
-
   @Builder
   FoodItemBuilder(item: FoodDetail) {
     Stack() {

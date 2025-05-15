@@ -3,6 +3,7 @@ import router from '@ohos.router';
 import http from '@ohos.net.http';
 import { promptAction, Router } from '@kit.ArkUI';
 import { PrintExtensionAbility } from '@kit.BasicServicesKit';
+import { AppKeys } from '../common/Constants';
 
 interface RouteParams {
   token?: string;
@@ -54,6 +55,9 @@ struct Index1 {
     {url1:'app.media.home_12',count1:0,text1:'实时库存',route1:'pages/shishikucun'},
   ]
 
+  // 直接通过 AppStorage 获取
+  @StorageLink(AppKeys.TOKEN) storageToken: string = '';
+  @StorageLink(AppKeys.TENANT_ID) storageTenantId: number = 0;
   @State selectedTab: number = 0
   private tabs: Array<string> = ['今日','本周','本月','本年']
 
@@ -225,12 +229,6 @@ struct Index1 {
                         .onClick(() => {
                           router.pushUrl({          // 使用push入栈一个新页面
                             url: item.route // 通过url指定新打开的页面
-                          ,
-                            params:{
-                              token:this.receivedToken,
-                              relTenantIds:this.tenantId
-
-                            }
                           })
                         })
                     }
@@ -273,12 +271,6 @@ struct Index1 {
                         .onClick(() => {
                           router.pushUrl({          // 使用push入栈一个新页面
                             url: item1.route1 // 通过url指定新打开的页面
-                          ,
-                            params:{
-                              token:this.receivedToken,
-                              relTenantIds:this.tenantId
-
-                            }
                           })
                         })
                     }
@@ -344,12 +336,6 @@ struct Index1 {
             .onClick(() => {
               router.pushUrl({          // 使用push入栈一个新页面
                 url: 'pages/gerenxinxi' // 通过url指定新打开的页面
-              ,
-                params:{
-                  token:this.receivedToken,
-                  relTenantIds:this.tenantId
-
-                }
               })
             })
 
@@ -370,12 +356,6 @@ struct Index1 {
             .onClick(() => {
               router.pushUrl({          // 使用push入栈一个新页面
                 url: 'pages/mima' // 通过url指定新打开的页面
-              ,
-                params:{
-                  token:this.receivedToken,
-                  relTenantIds:this.tenantId
-
-                }
               })
             })
 
@@ -396,12 +376,6 @@ struct Index1 {
             .onClick(() => {
               router.pushUrl({          // 使用push入栈一个新页面
                 url: 'pages/wentijieda' // 通过url指定新打开的页面
-              ,
-                params:{
-                  token:this.receivedToken,
-                  relTenantIds:this.tenantId
-
-                }
               })
             })
 
