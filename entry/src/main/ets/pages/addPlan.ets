@@ -99,7 +99,6 @@ interface GeneratedObjectLiteralInterface_1 {
   photoUri: string;
 }
 
-
 @Entry
 @Component
 struct DatePickerExample {
@@ -245,7 +244,7 @@ struct DatePickerExample {
                 "marketWeight": null
               }
             ] as  Array<PlanningFoodItem>,
-            "summary": "",
+            "summary": this.selectedText[6],
             "mealType": this.getMappedValues(3),
             "mealCategory": this.getMappedValues(5),
             "unitName": this.getMappedValues(0),

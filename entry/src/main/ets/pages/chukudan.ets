@@ -10,49 +10,35 @@ AppStorage.setOrCreate('token', '');
 AppStorage.setOrCreate('tenantId', 0);
 AppStorage.setOrCreate('unitId', '');
 
-interface PlanningFoodItem {
-  id: string;
-  storehouseId: number | null;
-  foodAndSupplierId: string;
+interface FoodItem {
+  schoolId: string;
+  demandUnit: string;
   foodId: string;
-  supplyWay: string;
-  superiorLimit: number | null;
-  lowerLimit: number | null;
-  storageLocation: number | null;
-  stock: number | null;
-  storehouseStatus: number | null;
-  izCollect: string;
+  foodName: string;
   encoding: string;
   groupId: string;
   groupName: string;
-  foodName: string;
-  forShort: string;
-  internationalCode: number | null;
-  pinyinCode: string;
-  specification: string;
-  expirationDay: number | null;
-  brandLevel: string;
-  minDeclare: number | null;
   unit: string;
-  packageQuantity: number | null;
-  procurementPricing: number | null;
-  supplyPricing: number | null;
-  marketPrice: number | null;
-  modifyPrice: number | null;
-  supplyNames: string;
-  supplyName: string;
+  specification: string;
+  modifyPrice: number;
+  supplyPricing: number;
+  totalNum: number;
+  totalWeight: number;
+  supplyWay: string;
   supplierId: string;
-  aggregatePurchasePrice: number | null;
+  supplierName: string;
+  batch: string;
   images: string;
-  izConvert: number | null;
-  realSpecification: string;
-  placeOrigin: string;
-  remarks: number | null;
-  remark: number | null;
-  testReport: number | null;
-  supplyWay_dictText: string;
-  quantitySupplied: string;
-  marketWeight: number | null;
+  requirementType: string;
+  mealType: string;
+  mealCategory: string;
+  accountingDate: string;
+  requirementType_dictText: string;
+  mealType_dictText: string;
+  mealCategory_dictText: string;
+  num: string;
+  selectId: string;
+  marketWeight: number;
 }
 interface addHandlerResult {
   success: boolean;
@@ -116,7 +102,7 @@ struct DatePickerExample {
   @State summary: string = ''// 摘要内容
   @State selectedText: string[] = ['请选择','请选择','请选择','其他','其他','请输入摘要']
   @State private showMealType: boolean = false // 控制是否显示用餐类型
-  private unitOptions = ['实验第二学校（库房）', '实验第二学校餐厅']
+  private unitOptions = ['实验第二学校餐厅']
   private selectedTime = ['上午', '下午']
   private demandOptions = ['学生餐', '教师餐']
   private mealTypeOptions = ['其他','营养餐']
@@ -187,7 +173,7 @@ struct DatePickerExample {
       const httpRequest = http.createHttp();
       // let a:string = '1'
       const response = await httpRequest.request(
-        'https://api.suoeryun.com/ifood/jeecg-school/school/xxDemandPlanning/addOrUpdate',
+        'https://api.suoeryun.com/ifood/school/xxSupplyOutManagement/add',
         {
           method: http.RequestMethod.POST,
           header: { 'Content-Type': 'application/json',
@@ -195,63 +181,49 @@ struct DatePickerExample {
             'X-Access-Token':this.receivedToken
           },
           extraData: JSON.stringify({
-            "unitId": this.unitId,
-            "supplyDate": this.selectedText[1],
-            "supplyTime": this.getMappedValues(2),
-            "requirementType": this.getMappedValues(4),
-            "planningFoodList": [
+            "id":"",
+            "demandUnit": "1917168448072851458",
+            "demandUnitName": "实训第二学校餐厅",
+            "accountingDate": this.selectedText[1],
+            "digest": this.selectedText[5],
+            "mealType": this.getMappedValues(2),
+            "requirementType": this.getMappedValues(3),
+            "mealCategory": this.getMappedValues(4),
+            "stockStatus": "0", // 0为保存、1为保存并审核
+            "foods": [
               {
-                "id": "",
-                "storehouseId": null,
-                "foodAndSupplierId": "",
-                "foodId": "",
-                "supplyWay": "",
-                "superiorLimit": null,
-                "lowerLimit": null,
-                "storageLocation": null,
-                "stock": null,
-                "storehouseStatus": null,
-                "izCollect": "",
-                "encoding": "",
-                "groupId": "",
-                "groupName": "",
-                "foodName": "",
-                "forShort": "",
-                "internationalCode": null,
-                "pinyinCode": "",
-                "specification": "",
-                "expirationDay": null,
-                "brandLevel": "",
-                "minDeclare": null,
-                "unit": "",
-                "packageQuantity": null,
-                "procurementPricing": null,
-                "supplyPricing": null,
-                "marketPrice": null,
-                "modifyPrice": null,
-                "supplyNames": "",
-                "supplyName": "",
-                "supplierId": "",
-                "aggregatePurchasePrice": null,
+                "schoolId": "1650064161880203265",
+                "demandUnit": "1917168448072851458",
+                "foodId": "1664464263113670658",
+                "foodName": "牛骨",
+                "encoding": "126",
+                "groupId": "1656552701476487169",
+                "groupName": "其他",
+                "unit": "Kg",
+                "specification": "称重",
+                "modifyPrice": 20,
+                "supplyPricing": 20,
+                "totalNum": 0.25,
+                "totalWeight": 0,
+                "supplyWay": "1",
+                "supplierId": "1650750930200121346",
+                "supplierName": "小韩食品批发",
+                "batch": "20240816004",
                 "images": "",
-                "izConvert": null,
-                "realSpecification": "",
-                "placeOrigin": "",
-                "remarks": null,
-                "remark": null,
-                "testReport": null,
-                "supplyWay_dictText": "",
-                "quantitySupplied": "",
-                "marketWeight": null
+                "requirementType": "2",
+                "mealType": "1",
+                "mealCategory": "0",
+                "accountingDate": "2024-08-21",
+                "requirementType_dictText": "其他",
+                "mealType_dictText": "学生餐",
+                "mealCategory_dictText": "其他",
+                "num": "0.25",
+                "selectId": "1826078209368182788",
+                "marketWeight": 0.5
               }
-            ] as  Array<PlanningFoodItem>,
-            "summary": "",
-            "mealType": this.getMappedValues(3),
-            "mealCategory": this.getMappedValues(5),
-            "unitName": this.getMappedValues(0),
-            "unitType": "1",
-            "planningStatus": "1"
-          })
+            ]as Array<FoodItem>
+          }
+          )
         }
       );
 
@@ -620,7 +592,6 @@ struct DatePickerExample {
               Text('保存')
                 .fontSize(16)
                 .fontColor(Color.White)
-
             }
             .height(35)
             .backgroundColor('#3282FF')
@@ -638,7 +609,7 @@ struct DatePickerExample {
               this.submitForm();
               const result = await this.addStaff()
               const singleValue = this.getMappedValues(2);
-              console.log('Single Mapped Value:', singleValue);
+              console.log('Single Mapped Value:', this.selectedText);
             })
             .height(35)
             .backgroundColor('#02BC65')
@@ -809,22 +780,22 @@ struct DatePickerExample {
     // 验证必填项
     const isStudentMeal = this.selectedText[2] === '学生餐';
 
-    if (this.selectedText[0] === '请选择' ||  // 领用单位
-      this.selectedText[1] === '请选择' ||  // 出库日期
-      this.selectedText[2] === '请选择'   // 出库类型
-    ) {
-      prompt.showToast({
-        message: '请填写所有必填项',
-        duration: 2000
-      });
-      return;
-    }
+    // if (this.selectedText[0] === '请选择' ||  // 领用单位
+    //   this.selectedText[1] === '请选择' ||  // 出库日期
+    //   this.selectedText[2] === '请选择'   // 出库类型
+    // ) {
+    //   prompt.showToast({
+    //     message: '请填写所有必填项',
+    //     duration: 2000
+    //   });
+    //   return;
+    // }
     prompt.showToast({
       message: '保存成功',
       duration: 2000
     });
     router.pushUrl({
-      url: 'pages/uploadPlan',
+      url: 'pages/kucun',
       params: {
         token: this.receivedToken,
         tenantId: this.tenantId,

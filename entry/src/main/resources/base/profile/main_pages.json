@@ -15,7 +15,6 @@
     "pages/mima",
     "pages/food_day",
     "pages/food_day_new",
-    "pages/stock2",
     "pages/remain_day",
     "pages/remain",
     "pages/ApprovalPage",
@@ -33,7 +32,8 @@
     "pages/EditStaff",
     "pages/kucun",
     "pages/addfood",
-    "pages/daishenpi"
+    "pages/daishenpi",
+    "pages/easterEgg"
 
 
 
