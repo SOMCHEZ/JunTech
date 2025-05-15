@@ -570,6 +570,7 @@ struct KitchenStaffList {
                   console.log(staff.id?.toString())
                   const deleteResult = await this.HouchuDelete(staff.id)
                   console.log("牢莩是神")
+                  console.log("牢俊内裤",deleteResult)
                   if (deleteResult.success) {
                     // 删除成功后刷新列表
                     this.onPageShow();
