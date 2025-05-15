@@ -11,6 +11,12 @@
     {
       "name": "EntryAbility_label",
       "value": "label"
+    },
+    {
+      "name": "internet_reason",
+      "value": "访问服务器图片资源"
     }
+
+
   ]
 }
