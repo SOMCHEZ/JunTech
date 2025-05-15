@@ -285,9 +285,7 @@ struct DatePickerExample {
     Stack(){
       Column() {
         Scroll(){
-
           Column(){
-
             Column({ space: 10 }) {
               this.buildLabelRow($r("app.media.unitName"), "需求单位", true, 0)
               this.buildLabelRow($r("app.media.supplyDate"), "供应日期", true, 1)
@@ -303,9 +301,9 @@ struct DatePickerExample {
               this.buildLabelRow($r("app.media.remarks"), "摘要", false, 6)
 
             }
+
             .width('100%')
             .padding(10)
-
             // 添加食材按钮
             Row() {
               Button({type: ButtonType.Normal}) {
@@ -530,14 +528,15 @@ struct DatePickerExample {
               .margin({ left: '2%', right: '2%' })
             }
             //中间卡片部分
-
           }
-      .backgroundColor(Color.Red)
+          .width('100%')
           .layoutWeight(1)
 
         }
-        .backgroundColor(Color.Blue)
+        .align(Alignment.Top)
+        .scrollBarWidth(0)
         .width('100%')
+        .height('100%')
         .layoutWeight(1)
         if (this.showDialog) {
           // 半透明背景层
