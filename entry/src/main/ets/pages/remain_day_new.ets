@@ -66,7 +66,6 @@ struct SampleFormPage {
   private unitOptions: string[] = ['实训第二学校餐厅', '其他']
   private typeOptions: string[] = ['不区分', '教师餐', '学生餐']
   private mealOptions: string[] = ['早餐', '午餐', '晚餐','早点','午点','晚点','其他','营养改善计划']
-  private destroyTimeOptions: string[] = ['上午', '下午', '晚上']
 
   build() {
     Column() {
@@ -254,7 +253,7 @@ struct SampleFormPage {
     try {
       const httpRequest = http.createHttp();
       const response = await httpRequest.request(
-        `https://api.suoeryun.com/ifood/jeecg-school/school/xxReservedSample/list`, // 示例接口地址
+        `https://api.suoeryun.com/ifood/jeecg-school/school/xxReservedSample/add`, // 示例接口地址
         {
           method: http.RequestMethod.GET,
           header: {
@@ -394,20 +393,9 @@ struct SampleFormPage {
     })
   }
 
+
   // 数据返回
   private async submit(): Promise<void> {
-    console.log('11',this.submitUnit)
-    console.log('2',this.sampleDate)
-    console.log('3',this.sampleType)
-    console.log('4',this.mealType)
-    console.log('5',this.fridgeTemp)
-    console.log('6',this.dishName)
-    console.log('7',this.sampleWeight)
-    console.log('8',this.destroyPerson)
-    console.log('9',this.destroyTime)
-    console.log('10',this.sampleImages[0])
-    console.log('111',this.fridgeImages[0])
-
 
     try {
       const httpRequest = http.createHttp();
@@ -421,30 +409,33 @@ struct SampleFormPage {
             'X-Access-Token': this.receivedToken
           },
           extraData: JSON.stringify({
-            // unitName: this.submitUnit,
-            // date: this.sampleDate,
-            // sampleType: this.sampleType,
-            // mealType: this.mealType,
-            // fridgeTemp: this.fridgeTemp,
-            // dishName: this.dishName,
-            // sampleWeight: this.sampleWeight,
-            // destroyPerson: this.destroyPerson,
-            // destroyTime: this.destroyTime,
-            // sampleImages: this.sampleImages,
-            // fridgeImages: this.fridgeImages,
-            // remark: this.remark
+            //
+            "demandUnit":"",
+            // 需求单位名称
+            "demandUnitName": this.submitUnit,
+            // 留样日期
+            "reservedSampleDate": this.sampleDate,
+            // 餐别
+            "mealCategory":  "0",
 
-            unitName: this.submitUnit,
-            date: this.sampleDate,
-            sampleType: this.sampleType,
-            mealType: this.mealType,
-            fridgeTemp: this.fridgeTemp,
-            dishName: this.dishName,
-            sampleWeight: parseFloat(this.sampleWeight) || 0,
-            destroyPerson: this.destroyPerson,
-            destroyTime: this.destroyTime !== '请选择销毁时间' ? this.destroyTime : '',
-            sampleImages: ["https://admin.suoeryun.com/pcUpload/1917474932601933825_1745996623568.png"],
-            fridgeImages: ["https://admin.suoeryun.com/pcUpload/1917474946438942721_1745996626850.png"]
+            // 食谱名称
+            "dishName": this.dishName,
+            // 备注
+            "remark": this.remark,
+            // 温度
+            "cabinetTemperatur": this.fridgeTemp,
+            // 销毁人员
+            "destroyPerson": this.destroyPerson,
+            // 销毁时间
+            "destroyTime": this.destroyTime !== '请选择销毁时间' ? this.destroyTime : '',
+            // 留样类型
+            "sampleType": this.sampleType,
+            // 留样重量
+            "putWeight": parseFloat(this.sampleWeight) || 0,
+            // 留样图片
+            "reservedSampleImages": ["https://admin.suoeryun.com/pcUpload/1917474932601933825_1745996623568.png"],
+            // 留样柜子图片
+            "cabinetPhoto": ["https://admin.suoeryun.com/pcUpload/1917474946438942721_1745996626850.png"]
 
           })
         }
