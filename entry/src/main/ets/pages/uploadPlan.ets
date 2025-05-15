@@ -22,7 +22,6 @@ interface records{//定义接口返回类型
   unitId: string;
   unitName: string;
   userName: string;// 后端返回的姓名
-  //realname: string;
   idCard?: string;
   portraitPhoto?:string;
   position:  string;//  后端返回的职位
@@ -469,8 +468,7 @@ struct ReportPlanPage {
               params: {
                 token: this.receivedToken,
                 tenantId: this.tenantId,
-                unitId: this.unitId
-
+                unitId: this.unitId,
               }})
             console.log('rel111',this.unitId);
           })
