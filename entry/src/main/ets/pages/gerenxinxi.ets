@@ -5,6 +5,8 @@ struct gerenxinxi {
   @State  phoneNumber: string = ''
   @State  gender: string = '女' // 添加性别状态
   @State  name: string = ''
+  private genders: Array<string> = ['男', '女']
+
   build() {
     Column() {
       Row() {
@@ -23,26 +25,24 @@ struct gerenxinxi {
 
       Row() {
         Text('性别')
-          .width(200)
+          .width(60)
           .padding(10)
+          .margin({right: 140})
         Row() {
-          Radio({ value: '男', group: 'genderGroup' })
-            .onChange((isSelect: boolean) => {
-              if (isSelect) {
-                this.gender = '男'
-              }
-            })
-          Text('男').padding(10)
-
-          Radio({ value: '女', group: 'genderGroup' })
-            .onChange((isSelect: boolean) => {
-              if (isSelect) {
-                this.gender = '女'
-              }
-            })
-          Text('女').padding(10)
+          ForEach(this.genders, (item: string) => {
+            Row() {
+              Radio({ value: item, group: 'genderGroup' })
+                .checked(this.gender === item)
+                .onChange((isSelect: boolean) => {
+                  if (isSelect) {
+                    this.gender = item
+                  }
+                })
+              Text(item)
+                .padding({ left: 6, right: 16 })
+            }
+          })
         }
-        .width(240)
         .padding(10)
       }
       .width('100%')

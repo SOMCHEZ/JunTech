@@ -6,7 +6,7 @@
     "mainElement": "EntryAbility",
     "requestPermissions": [
       {
-        "name": "ohos.permission.READ_MEDIA",
+        "name": "ohos.permission.INTERNET",
         "reason": "$string:module_desc",
         "usedScene": {
           "abilities": [
@@ -25,6 +25,8 @@
       "tablet",
       "2in1"
     ],
+
+
     "deliveryWithInstall": true,
     "installationFree": false,
     "pages": "$profile:main_pages",
@@ -50,6 +52,7 @@
         ]
       }
     ],
+
     "extensionAbilities": [
       {
         "name": "EntryBackupAbility",

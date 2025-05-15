@@ -1,6 +1,8 @@
+//最终版本
+
 import router from '@ohos.router';
 import http from '@ohos.net.http';
-//import { promptAction } from '@kit.ArkUI';
+import { promptAction } from '@kit.ArkUI';
 //import filePicker from '@ohos.file.picker';
 
 
@@ -42,9 +44,6 @@ interface addHandlerResult {
 }
 
 
-
-
-
 interface RouteParams {//接口传递参数定义
   token?: string;
   relTenantIds?: number;
@@ -59,7 +58,7 @@ interface SelectOption {
 @Entry
 @Component
 struct AddStaff {
-  @State private selectedUnitIndex: number = 0; // 默认选中第一个单位
+  @State private selectedUnitIndex:string = '实训第二学校餐厅'; // 默认选中第一个单位
   @State private name: string = '';
   @State private jobPosition: string = '';
   @State private phone: string = '';
@@ -71,6 +70,7 @@ struct AddStaff {
   @State receivedToken: string = '';//参数传递
   @State tenantId: number = 0;//同上
   @State UnitId: string  ="";
+  // @State  man: string = 'Love';
 
 
 
@@ -110,6 +110,8 @@ struct AddStaff {
 
   private units: Array<SelectOption> = [
     { value: '实训第二学校餐厅', label: '实训第二学校餐厅' },
+    { value: '实训第二学校(库房)', label: '实训第二学校(库房)' },
+    { value: '实训第二学校(床上)', label: '实训第二学校(床上)' },
     { value: '其他单位', label: '其他单位' }
   ];
   private statuses: Array<SelectOption> = [
@@ -123,9 +125,10 @@ struct AddStaff {
           .fontSize(16)
           .width('30%')
         Select(this.units)
-          .selected(this.selectedUnitIndex)
+          .selected(this.units.findIndex(item => item.value === this.selectedUnitIndex))
           .onSelect((index: number) => {
-            this.selectedUnitIndex = index;
+            //this.selectedUnitIndex = index;
+            this.selectedUnitIndex = this.units[index].value;
           })
           .backgroundColor(Color.White)
           .width('70%')
@@ -139,7 +142,7 @@ struct AddStaff {
         Text("人员姓名 *")
           .fontSize(16)
           .width('30%')
-        TextInput({ placeholder: '请输入人员姓名' })
+        TextInput({ text:this.name,placeholder: '请输入人员姓名' })
           .onChange((value: string) => {
             this.name = value
           })
@@ -155,7 +158,7 @@ struct AddStaff {
         Text("人员岗位 *")
           .fontSize(16)
           .width('30%')
-        TextInput({ placeholder: '请输入人员岗位' })
+        TextInput({ text:this.jobPosition,placeholder: '请输入人员岗位' })
           .onChange((value: string) => {
             this.jobPosition = value
           })
@@ -171,7 +174,7 @@ struct AddStaff {
         Text("联系电话 *")
           .fontSize(16)
           .width('30%')
-        TextInput({ placeholder: '请输入员联系电话' })
+        TextInput({ text:this.phone,placeholder: '请输入员联系电话' })
           .onChange((value: string) => {
             this.phone = value
           })
@@ -182,7 +185,7 @@ struct AddStaff {
       }
       .margin({ bottom: 10 })
 
-      // 人员状态
+      // 人员状态F
       Row({ space: 10 }) {
         Text("人员状态 *")
           .fontSize(16)
@@ -277,24 +280,38 @@ struct AddStaff {
         Text("提交")
           .fontColor(Color.White)
           .fontSize(18)
-
       }
       .width('90%')
-      .height(40)
+      .height(45)
       .backgroundColor('#4CAF50')
       .borderRadius(10)
+      .position({x:18, y:'95%'})
       .onClick(async() => {
-        router.pushUrl({
-          url: 'pages/kitchenStaff' })
-        const result = await this.addStaff();
+        if(this.name.length!==0&&this.jobPosition.length!==0&&this.phone.length!==0&&this.status.length!==0&&this.issueDate.length!==0&&this.expiryDate.length!==0){
+          router.back({
+            url: 'pages/kitchenStaff',  params: {
+              token: this.receivedToken,
+              tenantId: this.tenantId,
+              // man : this.man
+            } })
+          const result = await this.addStaff();
+        }
+        else {
+          promptAction.showToast({
+            message: '请填写所有必填项',
+            duration: 2000,
+            bottom:670
+          });
+        }
+
         // this.unitId = result.token!;
       })
-      .margin({top:120})
     }
     .width('100%')
     .height('100%')
     .backgroundColor(Color.White)
     .padding({ top: 0, left: 10, right: 10 })
+
   }
 
   private showIssueDateDialog() {
@@ -342,19 +359,19 @@ struct AddStaff {
             //username: this.userUsername,
             //password: this.userPassword
             "unitId":this.UnitId,
-            "unitName":"实训第二学校餐厅",
-            "userName":"lei gu ya",
+            "unitName":this.selectedUnitIndex,
+            "userName":this.name,
             "idCard":null,
             "portraitPhoto":"",
-            "position":"略略略",
-            "tel":"13468633899",
+            "position":this.jobPosition,
+            "tel":this.phone,
             "type":"1",
-            "type_dictText":"在职",
+            "type_dictText":this.status,
             "licenceIssuing":"",
             "healthNumber":"",
             "healthUrl":"",
-            "healthStartTime":"2025-05-09",
-            "healthEndTime":"2025-05-09",
+            "healthStartTime":this.issueDate,
+            "healthEndTime":this.expiryDate,
             "photoQualification":null,
             "remark":"",
             "inspectionType":0,
@@ -386,7 +403,7 @@ struct AddStaff {
         relTenantIds:jsonData.result.userInfo.relTenantIds
       };
     } catch (error) {
-      console.error('Login Error:', JSON.stringify(error));
+      //console.error('Login Error:', JSON.stringify(error));
       return {
         success: false,
         message: 'fuck u!'
