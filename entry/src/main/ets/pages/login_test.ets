@@ -1,4 +1,4 @@
-import { PrintExtensionAbility } from '@kit.BasicServicesKit';
+import { AppKeys } from '../common/Constants'
 import router from '@ohos.router';
 import http from '@ohos.net.http';
 import { promptAction } from '@kit.ArkUI';
@@ -42,10 +42,6 @@ struct Index {
   @State userUsername: string = '15502933673';
   @State userPassword: string = '123456';
 
-  // 状态管理
-  @State private responseCode: number = 0;
-  @State private authToken: string = '';
-  @State private currentUser: UserInfo | null = null;
 
   build() {
     Stack() {
@@ -101,9 +97,8 @@ struct Index {
             const result = await this.executeLogin();
 
             if (result.success) {
-              // 数据存储
-              this.currentUser = result.userInfo!;
-              this.authToken = result.token!;
+              AppStorage.setOrCreate<string>(AppKeys.TOKEN, result.token!)
+              AppStorage.setOrCreate<number>(AppKeys.TENANT_ID, result.relTenantIds!)
 
               // 路由逻辑
               this.handleUserRedirection(result.userInfo?.clientType);
@@ -179,28 +174,11 @@ struct Index {
   private handleUserRedirection(clientType?: string) {
     switch(clientType) {
       case "2"://跳学校的首页，夹带token等私货
-        router.pushUrl({ url: 'pages/shouye_test',
-          params:{
-          token:this.authToken,
-            relTenantIds:this.currentUser?.relTenantIds
-
-          }
-
-
-
-        });
+        router.pushUrl({ url: 'pages/shouye_test'});
         break;
 
-
       case "3"://跳供应商的首页页面夹带token等私货
-        router.pushUrl({ url: 'pages/Today_VEG',
-          params:{
-            token:this.authToken,
-            relTenantIds:this.currentUser?.relTenantIds
-
-          }
-        });
-
+        router.pushUrl({ url: 'pages/Today_VEG'});
         break;
       default:
         console.error("未定义的用户类型:", clientType);

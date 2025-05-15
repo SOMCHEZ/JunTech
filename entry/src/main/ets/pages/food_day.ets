@@ -1,14 +1,107 @@
 import router from '@ohos.router';
+import { AppKeys } from '../common/Constants';
+import http from '@ohos.net.http';
+
 
 // 定义接收的参数类型
 interface RecipeFormData {
-  date?: string;
-  recipeName?: string;
-  mealType?: string;
-  diningType?: string;
-  place?: string;
-  photoUri?: string;
+  // 食品id
+  id?: string;
+
+  // 食谱日期
+  recipeDate?: string;
+
+  // 食谱名称
+  dishName?: string;
+
+  // 餐别
+  mealCategory_dictText?: string;
+
+  // 用餐类型
+  sampleType_dictText?: string;
+
+  // 餐厅
+  demandUnitName?: string;
+
+  // 图片地址
+  recipeImg?: string;
 }
+
+
+
+interface Data {
+  records: RecipeFormData[];
+  total: number;
+}
+
+interface ResponseData {
+  success:  boolean;
+  message: string;
+  code:number
+  result:Data|null
+}
+
+async function SearchFood(TenantId:string, Token:string): Promise<ResponseData>{
+  try {
+    const httpRequest = http.createHttp()
+    const response = await httpRequest.request(
+      `https://api.suoeryun.com/ifood/jeecg-school/school/xxRecipeReported/list`,
+      {
+        method: http.RequestMethod.GET,
+        header: { 'Content-Type': 'application/json',
+          'Tenant-Id':TenantId,
+          'X-Access-Token':Token
+        }
+      }
+    )
+    if (response.responseCode !== 200) {
+      console.log('HTTP Error12:', response.responseCode)
+      return {
+        success: false,
+        message: `HTTP Error: ${response.responseCode}`,
+        code:response.responseCode,
+        result:null
+      }
+    }
+    const Data = JSON.parse(response.result as string) as ResponseData;
+    return Data;
+
+  }catch (e){
+    return {
+      success: false,
+      message: `HTTP Error1: ${e}`,
+      code:0,
+      result:null
+    }
+  }
+}
+
+async function DeleteById(TenantId:string, Token:string, Id?:string): Promise<void> {
+  try {
+    const httpRequest = http.createHttp()
+    const response = await httpRequest.request(
+      'https://api.suoeryun.com/ifood/jeecg-school/school/xxRecipeReported/delete',
+      {
+        method: http.RequestMethod.DELETE,
+        header: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'Tenant-Id': TenantId,
+          'X-Access-Token': Token
+        },
+        extraData: `id=${Id}`
+      }
+    )
+
+    if (response.responseCode !== 200) {
+      console.log('HTTP Error:', response.responseCode)
+    }
+  } catch (e) {
+    console.log('HTTP Error:', e)
+  }
+}
+
+
+
 
 @Entry
 @Component
@@ -16,16 +109,30 @@ struct food_day {
   private selectDate: Date = new Date()
   @State selectedMeal: string = '请选择餐别'
   @State selectedDate: string = '请选择筛选日期'
-  private unitOptions = [
-    '其他', '早餐', '午餐', '晚餐'
-  ]
+  private unitOptions = ['其他', '早餐', '午餐', '晚餐']
+  private mealCategory :string = '0'
   @State formDataList: RecipeFormData[] = [] // 改为数组存储多条数据
+  @State TempFormDataList: RecipeFormData[] = [] // 改为数组存储多条数据
 
-  aboutToAppear() {
-    let params = router.getParams()
-    if (params && params.toString()) {
-      this.formDataList.push(params as RecipeFormData)
+  @StorageLink(AppKeys.TOKEN) storageToken: string = '';
+  @StorageLink(AppKeys.TENANT_ID) storageTenantId: number = 0;
+
+  async onPageShow() {
+
+    const data = await SearchFood(this.storageTenantId.toString(), this.storageToken)
+    if(data.result){
+      this.formDataList = data.result.records
+      this.TempFormDataList = this.formDataList
+
+      if(this.selectedMeal != '请选择餐别' && this.selectedDate != '请选择筛选日期')//两个条件都选了
+        this.formDataList = this.formDataList.filter((item:RecipeFormData) => item.mealCategory_dictText == this.selectedMeal && item.recipeDate == this.selectedDate)
+      else if(this.selectedMeal != '请选择餐别' && this.selectedDate == '请选择筛选日期')//餐别条件选了
+        this.formDataList = this.formDataList.filter((item:RecipeFormData) => item.mealCategory_dictText == this.selectedMeal)
+      else if(this.selectedMeal == '请选择餐别' && this.selectedDate != '请选择筛选日期')//日期条件选了
+        this.formDataList = this.formDataList.filter((item:RecipeFormData) => item.recipeDate == this.selectedDate)
+
     }
+
   }
 
   build() {
@@ -34,10 +141,20 @@ struct food_day {
       Column() {
         Row() {
           Select(this.unitOptions.map<SelectOption>((item: string) => ({ value: item })))
-            .selected(0)
-            .value(this.unitOptions[0])
-            .onSelect((index: number) => {
+            .value(this.selectedMeal)
+            .onSelect(async (index: number) => {
+              this.formDataList = this.TempFormDataList
+
               this.selectedMeal = this.unitOptions[index]
+
+              if(this.selectedDate!= '请选择筛选日期'){
+                console.log(this.selectedDate)
+                this.formDataList = this.formDataList.filter((item:RecipeFormData) => item.mealCategory_dictText == this.selectedMeal && item.recipeDate == this.selectedDate)
+              }
+              else{
+                this.formDataList = this.formDataList.filter((item:RecipeFormData) => item.mealCategory_dictText == this.selectedMeal)
+              }
+
             })
             .margin(10)
             .width('40%')
@@ -64,28 +181,28 @@ struct food_day {
             ForEach(this.formDataList, (formData: RecipeFormData) => {
               ListItem() {
                 Column() {
-                  Text(`食谱日期：${formData.date}`)
+                  Text(`食谱日期：${formData.recipeDate}`)
                     .width('50%')
                     .fontSize(20)
                     .margin({ top: 10, bottom: 10 })
-                  Text(`食谱名称：${formData.recipeName}`)
+                  Text(`食谱名称：${formData.dishName}`)
                     .fontSize(20)
                     .width('50%')
                     .margin({ bottom: 10 })
-                  Text(`餐    别：${formData.mealType}`)
+                  Text(`餐    别：${formData.mealCategory_dictText}`)
                     .fontSize(20)
                     .width('50%')
                     .margin({ bottom: 10 })
-                  Text(`用餐类型：${formData.diningType}`)
+                  Text(`用餐类型：${formData.sampleType_dictText}`)
                     .fontSize(20)
                     .width('50%')
                     .margin({ bottom: 10 })
-                  Text(`餐    厅：${formData.place}`)
+                  Text(`餐    厅：${formData.demandUnitName}`)
                     .fontSize(20)
                     .width('50%')
                     .margin({ bottom: 10 })
-                  if (formData.photoUri) {
-                    Image(formData.photoUri)
+                  if (formData.recipeImg) {
+                    Image(formData.recipeImg)
                       .width('80%')
                       .height(120)
                       .margin({ top: 10, bottom: 10 })
@@ -112,8 +229,12 @@ struct food_day {
                       .borderWidth(2)
                       .borderColor('#07C160')
                       .backgroundColor('#fff')
-                      .onClick(() => {
-                        this.formDataList = this.formDataList.filter(item => item !== formData)
+                      .onClick(async () => {
+                        DeleteById(this.storageTenantId.toString(), this.storageToken, formData.id)
+                        const newData = await SearchFood(this.storageTenantId.toString(), this.storageToken)
+                        if(newData.result){
+                          this.formDataList = newData.result.records
+                        }
                       })
                   }
                   .margin({ top: 30 })
@@ -165,14 +286,27 @@ struct food_day {
       start: new Date('2000-1-1'),
       end: new Date('2100-1-1'),
       selected: this.selectDate,
-      onAccept: (value: DatePickerResult) => {
+      onAccept: async (value: DatePickerResult) => {
         const year = value.year ?? new Date().getFullYear()
         const month = value.month ?? new Date().getMonth() + 1
         const day = value.day ?? new Date().getDate()
 
         this.selectDate = new Date(year, month - 1, day)
-        this.selectedDate = `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`
+        this.selectedDate = `${year}-${(month+1).toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`
+
+        this.formDataList = this.TempFormDataList
+
+        if(this.selectedMeal != '请选择餐别'){
+          console.log(this.selectedMeal)
+          this.formDataList = this.formDataList.filter((item:RecipeFormData) => item.mealCategory_dictText == this.selectedMeal && item.recipeDate == this.selectedDate)
+        }
+        else{
+          this.formDataList = this.formDataList.filter((item:RecipeFormData) => item.recipeDate == this.selectedDate)
+        }
       }
+
     })
   }
 }
+
+

@@ -2,40 +2,65 @@ import prompt from '@ohos.prompt';
 import router from '@ohos.router';
 import { Router } from '@kit.ArkUI';
 import picker from '@ohos.file.picker';
+import http from '@ohos.net.http';
+import { AppKeys } from '../common/Constants';
+
 
 interface GeneratedObjectLiteralInterface_1 {
-  date: string;
-  recipeName: string;
-  mealType: string;
-  diningType: string;
-  place: string;
-  photoUri: string;
+  id?:string;
+
+  recipeDate?: string;
+
+  // 食谱名称
+  dishName?: string;
+
+  // 餐别
+  mealCategory_dictText?: string;
+
+  // 用餐类型
+  sampleType_dictText?: string;
+
+  // 餐厅
+  demandUnitName?: string;
+
+  // 图片地址
+  recipeImg?: string;
 }
+
+
 
 @Entry
 @Component
 struct food_day_new {
 
-
-  private selectDate: Date = new Date()
-  @State date:string ='选择日期'
-  @State selectedDate: string = '请选择筛选日期';
-  @State recipeName: string = '';
-  @State mealType: string = '';
-  @State diningType: string = '';
-  @State photoUri: string = '';
-  private time =[]
   private photoCount: number = 0
   private unitOptions = [
-     '早餐', '午餐', '晚餐','早点','午点','晚点','其他','营养改善计划'
+    '早餐', '午餐', '晚餐','早点','午点','晚点','其他','营养改善计划'
   ]
   private classify=['不区分', '教师餐', '学生餐']
-  private place=['实训第二学校餐厅']
+  private place =['实训第二学校餐厅']
   private photoPicker = new picker.PhotoViewPicker();
+
+  @StorageLink(AppKeys.TOKEN) storageToken: string = '';
+  @StorageLink(AppKeys.TENANT_ID) storageTenantId: number = 0;
+
+
+  private selectDate: Date = new Date()
+  private Id?:string;
+  @State selectedDate?: string = '请选择日期';
+  @State recipeName?: string = '';
+  @State mealType?: string = '请选择餐别';
+  @State diningType?: string = '请选择用餐类型';
+  @State Place?:string = this.place[0];
+  @State photoUri?: string = '';
+  @State private PageType : string = '新建食谱'
+
+
+
   build() {
     Column() {
       // 表单容器
-      Text("新建食谱")
+      Text(this.PageType)
         .fontSize(16)
         .margin({ bottom: 5 })
       Column() {
@@ -64,7 +89,7 @@ struct food_day_new {
             Text('食谱名称 *')
               .fontSize(16)
               .width('30%')
-            TextInput({ placeholder: '请输入食谱名称' })
+            TextInput({text: this.recipeName, placeholder: '请输入食谱名称' })
               .width('60%')
               .height(40)
               .textAlign(TextAlign.Start)
@@ -82,8 +107,7 @@ struct food_day_new {
               .fontSize(16)
               .width('30%')
             Select(this.unitOptions.map<SelectOption>((item: string) => ({ value: item })))
-              .selected(0)
-              .value('请选择餐别')
+              .value(this.mealType)
               .onSelect((index: number) => {
                 this.mealType = this.unitOptions[index]
               })
@@ -98,9 +122,9 @@ struct food_day_new {
               .width('30%')
             Select(this.classify.map<SelectOption>((item: string) => ({ value: item })))
               .selected(0)
-              .value('请选择用餐类型')
+              .value(this.diningType)
               .onSelect((index: number) => {
-                this.diningType = this.unitOptions[index]
+                this.diningType = this.classify[index]
               })
               .width('70%')
             FormItem('用餐类型', true)
@@ -113,9 +137,9 @@ struct food_day_new {
               .width('30%')
             Select(this.place.map<SelectOption>((item: string) => ({ value: item })))
               .selected(0)
-              .value(this.place[0])
+              .value(this.Place)
               .onSelect((index: number) => {
-                this.mealType = this.place[index]
+                this.Place = this.place[index]
               })
               .width('70%')
             FormItem('提交单位',true)
@@ -170,7 +194,7 @@ struct food_day_new {
         const day = value.day ?? new Date().getDate()
 
         this.selectDate = new Date(year, month - 1, day)
-        this.selectedDate = `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`
+        this.selectedDate = `${year}-${(month+1).toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`
       }
     })
   }
@@ -220,18 +244,44 @@ struct food_day_new {
       message: '保存成功',
       duration: 2000
     });
+
+
     let formData: GeneratedObjectLiteralInterface_1 = {
-    date: this.selectedDate,
-    recipeName: this.recipeName,
-    mealType: this.mealType,
-    diningType: this.diningType,
-    place: this.place[0],
-      photoUri: this.photoUri
-  };
-    router.replaceUrl({
-    url: 'pages/food_day',
-    params: formData
-  });
+      id:this.Id,
+      recipeDate: this.selectedDate,
+      dishName: this.recipeName,
+      mealCategory_dictText: this.mealType,
+      sampleType_dictText: this.diningType,
+      demandUnitName: this.place[0],
+      recipeImg: this.photoUri
+    };
+
+    if(this.PageType === '新建食谱')
+      AddFood(this.storageTenantId.toString(), this.storageToken,formData)
+    else
+      ModifyFood(this.storageTenantId.toString(), this.storageToken,formData)
+    router.back({url: 'pages/food_day'});
+  }
+
+  onPageShow(): void {
+    const params = router.getParams() as GeneratedObjectLiteralInterface_1;
+    if (params) {
+      this.PageType = '上报'
+
+      this.Id = params.id
+
+      this.selectedDate = params.recipeDate
+
+      this.recipeName = params.dishName
+
+      this.mealType = params.mealCategory_dictText
+
+      this.diningType = params.sampleType_dictText
+
+      this.Place = params.demandUnitName
+
+      this.photoUri = params.recipeImg
+    }
   }
 
 }
@@ -260,5 +310,192 @@ struct FormItem {
     .margin({ top: 15, bottom: 8 })
     .width('100%')
     .justifyContent(FlexAlign.Start)
+  }
+}
+
+
+interface ResponseResult {
+  success: boolean;
+  message: string;
+  code: number;
+  result: string;
+}
+
+async function AddFood(TenantId:string, Token:string,  formData: GeneratedObjectLiteralInterface_1): Promise<ResponseResult>{
+  try {
+    const httpRequest = http.createHttp()
+
+    let  mealCategory:string = ''
+    let sampleType:string = ''
+    switch (formData.mealCategory_dictText){
+      case '其他':
+        mealCategory = '0'; break;
+      case '早餐':
+        mealCategory = '1' ;break;
+      case '午餐':
+        mealCategory = '2'; break;
+      case '晚餐':
+        mealCategory = '3'; break;
+      case '早点':
+        mealCategory = '4'; break;
+      case '午点':
+        mealCategory = '5'; break;
+      case '晚点':
+        mealCategory = '6'; break;
+      case '营养改善计划':
+        mealCategory = '7'; break;
+    }
+    switch (formData.sampleType_dictText){
+      case '不区分':
+        sampleType = '0';break;
+      case '教师餐':
+        sampleType = '1';break;
+      case '学生餐':
+        sampleType = '2';break;
+    }
+
+
+    const response = await httpRequest.request(
+      'https://api.suoeryun.com/ifood/jeecg-school/school/xxRecipeReported/add',
+      {
+        method: http.RequestMethod.POST,
+        header: { 'Content-Type': 'application/json',
+          'Tenant-Id':TenantId,
+          'X-Access-Token':Token
+        },
+        extraData:JSON.stringify({
+          // 食谱日期
+          "recipeDate": formData.recipeDate,
+
+          // 餐别名称
+          "dishName": formData.dishName,
+
+          // 餐别
+          // "mealCategory": formData.mealType.valueOf(),
+          "mealCategory": mealCategory,
+
+          // 用餐类型
+          // "sampleType": formData.diningType,
+          "sampleType": sampleType,
+
+          // 餐厅 对应提交单位
+          "demandUnitName": formData.demandUnitName,
+          "recipeImg": "https://admin.suoeryun.com/pcUpload/1917469119841849345_1745995237687.png",
+
+          // 状态
+          "recipeStatus": "1"
+        })
+      }
+    )
+    const result = response.result as ResponseResult;
+
+    if (response.responseCode !== 200) {
+      console.log('HTTP Error:', response.responseCode)
+      return result
+    }
+    return result;
+
+  }catch (e){
+    return {
+      success: false,
+      message: '网络错误',
+      code: 500,
+      result: ''
+    }
+  }
+}
+
+async function ModifyFood(TenantId:string, Token:string,  formData: GeneratedObjectLiteralInterface_1): Promise<ResponseResult>{
+  try {
+    const httpRequest = http.createHttp()
+
+    let  mealCategory:string = ''
+    let sampleType:string = ''
+    switch (formData.mealCategory_dictText){
+      case '其他':
+        mealCategory = '0'; break;
+      case '早餐':
+        mealCategory = '1' ;break;
+      case '午餐':
+        mealCategory = '2'; break;
+      case '晚餐':
+        mealCategory = '3'; break;
+      case '早点':
+        mealCategory = '4'; break;
+      case '午点':
+        mealCategory = '5'; break;
+      case '晚点':
+        mealCategory = '6'; break;
+      case '营养改善计划':
+        mealCategory = '7'; break;
+    }
+    switch (formData.sampleType_dictText){
+      case '不区分':
+        sampleType = '0';break;
+      case '教师餐':
+        sampleType = '1';break;
+      case '学生餐':
+        sampleType = '2';break;
+    }
+
+    const response = await httpRequest.request(
+      'https://api.suoeryun.com/ifood/jeecg-school/school/xxRecipeReported/edit',
+      {
+        method: http.RequestMethod.POST,
+        header: { 'Content-Type': 'application/json',
+          'Tenant-Id':TenantId,
+          'X-Access-Token':Token
+        },
+        extraData:JSON.stringify({
+
+          "id": formData.id,
+
+          // 食谱日期
+          "recipeDate": formData.recipeDate,
+
+          // 餐别名称
+          "dishName": formData.dishName,
+
+          // 餐别
+          // "mealCategory": formData.mealType.valueOf(),
+          "mealCategory": mealCategory,
+
+          // 用餐类型
+          // "sampleType": formData.diningType,
+          "sampleType": sampleType,
+
+          // 餐厅 对应提交单位
+          "demandUnitName": formData.demandUnitName,
+          "recipeImg": "https://admin.suoeryun.com/pcUpload/1917469119841849345_1745995237687.png",
+
+          // 状态
+          "recipeStatus": "1"
+        })
+      }
+    )
+    console.log(formData.id)
+    console.log(formData.recipeDate)
+    console.log(formData.dishName)
+    console.log(formData.mealCategory_dictText)
+    console.log(formData.sampleType_dictText)
+    console.log(formData.demandUnitName)
+    console.log(formData.recipeImg)
+
+    console.log(response.result.toString())
+    const result = response.result as ResponseResult;
+
+    if (response.responseCode !== 200) {
+      console.log('HTTP Error:', response.responseCode)
+      return result
+    }
+    return result;
+
+  }catch (e){
+    return {
+      success: false,
+      message: '网络错误',
+      code: 500,
+      result: ''
+    }
   }
 }
