@@ -190,15 +190,6 @@ struct DatePickerExample {
             "requirementType": this.getMappedValues(3),
             "mealCategory": this.getMappedValues(4),
             "stockStatus": "0", // 0为保存、1为保存并审核
-            // "id":"",
-            // "demandUnit": "1917168448072851458",
-            // "demandUnitName": this.unitOptions,
-            // "accountingDate": this.selectedText[1],
-            // "digest": this.selectedText[5],
-            // "mealType": this.getMappedValues(2),
-            // "requirementType": this.getMappedValues(3),
-            // "mealCategory": this.getMappedValues(4),
-            // "stockStatus": "0", // 0为保存、1为保存并审核
             "foods": [
               {
                 "schoolId": "1650064161880203265",
