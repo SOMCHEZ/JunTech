@@ -65,8 +65,7 @@ struct AddStaff {
   @State private status: string = '在职';
   @State private issueDate: string = '';
   @State private expiryDate: string = '';
-
-
+  @State easterEgg: number = 0
   @State receivedToken: string = '';//参数传递
   @State tenantId: number = 0;//同上
   @State UnitId: string  ="";
@@ -272,6 +271,18 @@ struct AddStaff {
           .backgroundImageSize(1)
           .width(50)
           .height(50)
+          .onClick(()=>{
+             this.easterEgg = this.easterEgg + 1
+            if (this.easterEgg == 15){
+              promptAction.showToast({
+                message: 'You are about to find the Easter egg ^^',
+                duration: 3000
+              })
+            }else if  (this.easterEgg == 20){
+              router.pushUrl({ url: 'pages/easterEgg' });
+              this.easterEgg = 0
+            }
+          })
       }
       .margin({top:10, bottom: 10 })
       .width('100%')
