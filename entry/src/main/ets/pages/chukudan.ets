@@ -139,9 +139,8 @@ struct DatePickerExample {
 
   async onPageShow() {
     const params = router.getParams() as RouteParams;
-    //console.log('houchu', params?.token);// 打印接收到的参数
+    console.log('houchu', params?.token);// 打印接收到的参数
     //console.log('houchu', params?.relTenantIds);//  打印接收到的参数
-
     // 安全取值如果返回值空，则使用appsetcreat中所预保存的token和id
     if (!AppStorage.get('token') && params?.token) {
       AppStorage.set('token', params.token);
@@ -190,15 +189,6 @@ struct DatePickerExample {
             "requirementType": this.getMappedValues(3),
             "mealCategory": this.getMappedValues(4),
             "stockStatus": "0", // 0为保存、1为保存并审核
-            // "id":"",
-            // "demandUnit": "1917168448072851458",
-            // "demandUnitName": this.unitOptions,
-            // "accountingDate": this.selectedText[1],
-            // "digest": this.selectedText[5],
-            // "mealType": this.getMappedValues(2),
-            // "requirementType": this.getMappedValues(3),
-            // "mealCategory": this.getMappedValues(4),
-            // "stockStatus": "0", // 0为保存、1为保存并审核
             "foods": [
               {
                 "schoolId": "1650064161880203265",
@@ -262,6 +252,7 @@ struct DatePickerExample {
       };
     }
   }
+
   build() {
     Stack(){
       Column() {
@@ -608,6 +599,23 @@ struct DatePickerExample {
             .borderRadius(8)
             .width('30%') // 固定宽度
             .padding({ left: 15, right: 15 })
+
+            Button({ type: ButtonType.Normal }) {
+              Text('电子签')
+                .fontSize(14)
+                .fontColor(Color.White)
+            }
+            .height(35)
+            .backgroundColor('#02BC65')
+            .fontColor(Color.White)
+            .borderRadius(8)
+            .width('30%') // 固定宽度，与第一个按钮一致
+            .padding({ left: 15, right: 15 })
+            .onClick(() => {
+              router.pushUrl({
+                url: 'pages/signature'
+              });
+            })
 
             Button({ type: ButtonType.Normal }) {
               Text('保存并审核')
