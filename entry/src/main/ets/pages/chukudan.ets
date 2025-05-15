@@ -139,9 +139,8 @@ struct DatePickerExample {
 
   async onPageShow() {
     const params = router.getParams() as RouteParams;
-    //console.log('houchu', params?.token);// 打印接收到的参数
+    console.log('houchu', params?.token);// 打印接收到的参数
     //console.log('houchu', params?.relTenantIds);//  打印接收到的参数
-
     // 安全取值如果返回值空，则使用appsetcreat中所预保存的token和id
     if (!AppStorage.get('token') && params?.token) {
       AppStorage.set('token', params.token);
@@ -253,6 +252,7 @@ struct DatePickerExample {
       };
     }
   }
+
   build() {
     Stack(){
       Column() {
@@ -599,6 +599,23 @@ struct DatePickerExample {
             .borderRadius(8)
             .width('30%') // 固定宽度
             .padding({ left: 15, right: 15 })
+
+            Button({ type: ButtonType.Normal }) {
+              Text('电子签')
+                .fontSize(14)
+                .fontColor(Color.White)
+            }
+            .height(35)
+            .backgroundColor('#02BC65')
+            .fontColor(Color.White)
+            .borderRadius(8)
+            .width('30%') // 固定宽度，与第一个按钮一致
+            .padding({ left: 15, right: 15 })
+            .onClick(() => {
+              router.pushUrl({
+                url: 'pages/signature'
+              });
+            })
 
             Button({ type: ButtonType.Normal }) {
               Text('保存并审核')

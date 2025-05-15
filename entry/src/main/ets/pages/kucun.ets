@@ -1,3 +1,4 @@
+
 import router from '@ohos.router';
 import http from '@ohos.net.http';
 import { BusinessError } from '@ohos.base';
@@ -93,6 +94,7 @@ struct PurchaseInventory {
   // 领用单位列表
   @State unitList: AuthUnitVo[] = [];
   @State options: SelectOption[] = [];
+
 
   aboutToAppear() {
     try {
@@ -325,12 +327,12 @@ struct PurchaseInventory {
                     .layoutWeight(1) // 让文本占据剩余空间
 
                   if (this.activeTab === 0) { // 只在待审批状态显示删除按钮
-                    Image($r('app.media.about')) // 确保有删除图标资源
+                    Image($r('app.media.del')) // 确保有删除图标资源
                       .width(24)
                       .height(24)
                       .margin({ left: 8 })
                       .onClick((event: ClickEvent) => {
-                        // 阻止事件冒泡，避免触发卡片点击
+                         // 阻止事件冒泡，避免触发卡片点击
                         promptAction.showDialog({
                           title: '确认删除',
                           message: '是否确认删除该出库单？',
@@ -378,11 +380,9 @@ struct PurchaseInventory {
               .onClick(() => {
                 if (this.activeTab === 0) { // 待审批
                   router.pushUrl({
-                    url: 'pages/daishenpi',
+                    url: 'pages/kucun',
                     params: {
-                      orderId: item.id,
-                      token: this.token,
-                      relTenantIds: this.tenantId
+                      tab: this.activeTab // 传递当前 tab 值作为参数
                     }
                   });
                 } else { // 已审批
