@@ -396,7 +396,7 @@ struct SampleFormPage {
 
   // 数据返回
   private async submit(): Promise<void> {
-
+    //console.log('ResponseResult:', this.tenantId)
     try {
       const httpRequest = http.createHttp();
       const response = await httpRequest.request(
@@ -414,7 +414,7 @@ struct SampleFormPage {
             // 需求单位名称
             "demandUnitName": this.submitUnit,
             // 留样日期
-            "reservedSampleDate": this.sampleDate,
+            "reservedSampleDate": this.sampleDate || new Date().toISOString().split('T')[0],
             // 餐别
             "mealCategory":  "0",
 
@@ -440,6 +440,7 @@ struct SampleFormPage {
           })
         }
       );
+
       console.log('ResponseResult:', response.result)
 
       const responseString = response.result as string;
