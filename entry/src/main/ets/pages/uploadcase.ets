@@ -1,3 +1,4 @@
+import router from '@ohos.router';
 @Entry
 @Component
 struct d {
@@ -10,7 +11,7 @@ struct d {
   build() {
     Column() {
       //中间内容区域
-      Image($r("app.media.infobord"))
+      Image($r("app.media.info_bord"))
         .width('100%')
         .height('1%')
         .objectFit(ImageFit.Cover)
@@ -49,7 +50,7 @@ struct d {
             .fontColor('#333333')
             .fontWeight(FontWeight.Bold)
         }
-        Image($r("app.media.infobord"))
+        Image($r("app.media.info_bord"))
           .width('100%')
           .height('1%')
           .objectFit(ImageFit.Cover)

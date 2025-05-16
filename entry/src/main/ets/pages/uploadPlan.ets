@@ -316,6 +316,7 @@ struct ReportPlanPage {
                 }), (formData: RecipeFormData) => {
                     ListItem()
                     {
+                      //中间卡片部分神中神
                         Column() {
                           Text(formData.photoUri?? 'N/A')
                             .width('100%')
@@ -427,12 +428,10 @@ struct ReportPlanPage {
                                 .fontSize(12)
                                 .fontColor('#666666')
                             }
-
-
-
-                            // 操作按钮
-                            Row({ space: 5 }) {
-                              Button('重新编辑')
+                            //以上报按钮
+                            if (this.upload){
+                              Row({space:83}){
+                                Button('复制订单')
                                 .backgroundColor('#ffffffff')
                                 .fontColor('#4CAF50')
                                 .fontSize(10)
@@ -442,32 +441,58 @@ struct ReportPlanPage {
                                   width: 1
                                 })
                                 .onClick(() => {
-                                  router.pushUrl({
-                                    url: 'pages/addPlan' })
                                 })
-
-                              Button('单据日志')
-                                .backgroundColor('#ffffffff')
-                                .fontColor('#4CAF50')
-                                .fontSize(10)
-                                .borderRadius(12)
-                                .border({
-                                  color: '#4CAF50',
-                                  width: 1
-                                })
-
-                              Button('删除单据')
-                                .backgroundColor('#ffffffff')
-                                .fontColor('#4CAF50')
-                                .fontSize(10)
-                                .borderRadius(12)
-                                .border({
-                                  color: '#4CAF50',
-                                  width: 1
-                                })
-                                .onClick(() => {
-                                  this.RecipeFormData = this.RecipeFormData.filter(item => item !== formData)
-                                })
+                                Button('单据日志')
+                                  .backgroundColor('#ffffffff')
+                                  .fontColor('#4CAF50')
+                                  .fontSize(10)
+                                  .borderRadius(12)
+                                  .border({
+                                    color: '#4CAF50',
+                                    width: 1
+                                  })
+                                  .onClick(() => {
+                                  })
+                              }
+                            }
+                            else {
+                              // 操作按钮
+                              Row({ space: 5 }) {
+                                Button('重新编辑')
+                                  .backgroundColor('#ffffffff')
+                                  .fontColor('#4CAF50')
+                                  .fontSize(10)
+                                  .borderRadius(12)
+                                  .border({
+                                    color: '#4CAF50',
+                                    width: 1
+                                  })
+                                  .onClick(() => {
+                                    router.pushUrl({
+                                      url: 'pages/addPlan' })
+                                  })
+                                Button('单据日志')
+                                  .backgroundColor('#ffffffff')
+                                  .fontColor('#4CAF50')
+                                  .fontSize(10)
+                                  .borderRadius(12)
+                                  .border({
+                                    color: '#4CAF50',
+                                    width: 1
+                                  })
+                                Button('删除单据')
+                                  .backgroundColor('#ffffffff')
+                                  .fontColor('#4CAF50')
+                                  .fontSize(10)
+                                  .borderRadius(12)
+                                  .border({
+                                    color: '#4CAF50',
+                                    width: 1
+                                  })
+                                  .onClick(() => {
+                                    this.RecipeFormData = this.RecipeFormData.filter(item => item !== formData)
+                                  })
+                              }
                             }
                           }
                           .padding({ left: 10, right: 10, top: 5, bottom: 10 })
@@ -485,6 +510,14 @@ struct ReportPlanPage {
                           color: '#4CAF50',
                           radius: 8
                         })
+                      .onClick(() => {
+                        if (this.upload) {
+                          router.pushUrl({
+                            url: 'pages/uploadcase' })
+
+                        }
+
+                      })
                     }
                     .width('100%')
                     .margin({left:10,right: 10, bottom:10 })
