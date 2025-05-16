@@ -27,8 +27,6 @@ interface RecipeFormData {
   recipeImg?: string;
 }
 
-
-
 interface Data {
   records: RecipeFormData[];
   total: number;
@@ -99,9 +97,6 @@ async function DeleteById(TenantId:string, Token:string, Id?:string): Promise<vo
     console.log('HTTP Error:', e)
   }
 }
-
-
-
 
 @Entry
 @Component
@@ -182,40 +177,38 @@ struct food_day {
               ListItem() {
                 Column() {
                   Text(`食谱日期：${formData.recipeDate}`)
-                    .width('50%')
+                    .width('100%')
                     .fontSize(20)
                     .margin({ top: 10, bottom: 10 })
                   Text(`食谱名称：${formData.dishName}`)
                     .fontSize(20)
-                    .width('50%')
+                    .width('100%')
                     .margin({ bottom: 10 })
                   Text(`餐    别：${formData.mealCategory_dictText}`)
                     .fontSize(20)
-                    .width('50%')
+                    .width('100%')
                     .margin({ bottom: 10 })
                   Text(`用餐类型：${formData.sampleType_dictText}`)
                     .fontSize(20)
-                    .width('50%')
+                    .width('100%')
                     .margin({ bottom: 10 })
                   Text(`餐    厅：${formData.demandUnitName}`)
                     .fontSize(20)
-                    .width('50%')
+                    .width('100%')
                     .margin({ bottom: 10 })
                   if (formData.recipeImg) {
                     Image(formData.recipeImg)
                       .width('80%')
                       .height(120)
-                      .margin({ top: 10, bottom: 10 })
+                      .margin({ top: 10, bottom: 10,right:'20%' })
                   }
-                  Row({ space: 30 }) {
+                  Row({ space: 20 }) {
                     Button('重新编辑')
-                      .width('20%')
-                      .fontColor('#07C160')
-                      .borderRadius(30)
-                      .borderWidth(2)
-                      .borderColor('#07C160')
-                      .backgroundColor('#fff')
-                      .margin({left:'40%'})
+                      .margin({left:'35%'})
+                      .backgroundColor(Color.White)
+                      .fontColor('#00C853')
+                      .border({ color: '#00C853', width: 2 })
+                      .width('30%')
                       .onClick(() => {
                         router.pushUrl({
                           url: 'pages/food_day_new',
@@ -223,12 +216,10 @@ struct food_day {
                         })
                       })
                     Button('删除单据')
-                      .width('20%')
-                      .fontColor('#07C160')
-                      .borderRadius(30)
-                      .borderWidth(2)
-                      .borderColor('#07C160')
-                      .backgroundColor('#fff')
+                      .backgroundColor(Color.White)
+                      .fontColor('#00C853')
+                      .border({ color: '#00C853', width: 2 })
+                      .width('30%')
                       .onClick(async () => {
                         DeleteById(this.storageTenantId.toString(), this.storageToken, formData.id)
                         const newData = await SearchFood(this.storageTenantId.toString(), this.storageToken)
@@ -237,6 +228,7 @@ struct food_day {
                         }
                       })
                   }
+                  .width('100%')
                   .margin({ top: 30 })
                 }
                 .backgroundColor('#fff')
@@ -261,6 +253,7 @@ struct food_day {
           }
         }
       }
+
       .layoutWeight(1)
 
 
