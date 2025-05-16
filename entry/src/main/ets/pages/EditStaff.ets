@@ -26,8 +26,6 @@ interface Houchu_Edit_Request {
   result: string;
   message?: string;
 }
-
-
 interface UserInfo {
   id: string;
   username: string;
@@ -37,19 +35,16 @@ interface UserInfo {
   relTenantIds:number;
   // 其他字段根据实际API响应补充...
 }
-
 interface addResult {
   userInfo: UserInfo;
   token: string;
 }
-
 interface addResponse {
   code: number;
   message: string;
   result: addResult;
   timestamp: number;
 }
-
 interface addHandlerResult {
   success: boolean;
   code?: number;
@@ -58,11 +53,6 @@ interface addHandlerResult {
   message?: string;
   relTenantIds?:number;
 }
-
-
-
-
-
 interface RouteParams {//接口传递参数定义
   token?: string;
   relTenantIds?: number;
@@ -76,7 +66,6 @@ interface RouteParams {//接口传递参数定义
   workplace: string
   tel:string
 }
-
 interface SelectOption {
   value: string;
   label: string;
@@ -92,14 +81,10 @@ struct AddStaff {
   @State private status: string = '在职';
   @State private issueDate: string = '';
   @State private expiryDate: string = '';
-
-
   @State receivedToken: string = '';//参数传递
   @State tenantId: number = 0;//同上
   @State UnitId: string  ="";
   @State Edit_id:string = '';
-
-
 
   async onPageShow() {//这是一个接收传递参数的方法
     // 使用接口类型断言
@@ -167,7 +152,138 @@ struct AddStaff {
     //console.log('houchu1', result); // 打印返回结果
   }
 
+  private async HouchuEdit(): Promise<Houchu_Edit_Request> {//这个请求是针对编辑后厨人员列表的
 
+    try {
+      const httpRequest = http.createHttp();
+
+      const response = await httpRequest.request(
+        'https://api.suoeryun.com/ifood/jeecg-school/school/xxUnitUser/edit',
+        {
+          method: http.RequestMethod.POST,
+          header: { 'Content-Type': 'application/json',
+            'Tenant-Id':this.tenantId.toString(),
+            'X-Access-Token':this.receivedToken
+          },
+          extraData: JSON.stringify({
+            "unitName":this.selectedUnitIndex,
+            "unitId":this.UnitId,
+            "userName": this.name,
+            "position": this.jobPosition,
+            "tel": this.phone,
+            "type": "1",
+            "healthStartTime":this.issueDate,
+            "healthEndTime": this.expiryDate,
+            "portraitPhoto": null,
+            "healthUrl": "https://admin.suoeryun.com/pcUpload/043015131332-32.png",
+            "remark": "123",
+            "inspectionType": 0,
+            "version": 0,
+            "canteenId": null,
+            "id": this.Edit_id
+          })
+
+        }
+
+      );
+
+      if (response.responseCode !== 200) {
+        //console.error('Login Error:'+response.responseCode);
+        return {
+          success: false,
+          result: '删除失败', // 新增默认值
+          message: `HTTP Error: ${response.responseCode}`
+          // 添加其他错误处理逻辑
+        };
+      }
+      console.log('slfj'+response.result.toString())
+      const jsonData = JSON.parse(response.result as string) as Houchu_Edit_Request;
+      console.log('11',jsonData.result);
+      return {
+        success: jsonData.code === 200,
+        code: jsonData.code,
+        result: jsonData.result,
+        message: jsonData.message,
+        //relTenantIds:jsonData.result.userInfo.relTenantIds
+      };
+
+    } catch (error) {
+      console.error('Login Error:', JSON.stringify(error));
+      return {
+        success: false,
+        result: '删除失败', // 新增默认值
+        message: '服务器繁忙'
+      };
+    }
+  }
+
+  private async addStaff(): Promise<addHandlerResult> {
+    try {
+      const httpRequest = http.createHttp();
+      const response = await httpRequest.request(
+        'https://api.suoeryun.com/ifood//jeecg-school/school/xxUnitUser/add',
+        {
+          method: http.RequestMethod.POST,
+          header: { 'Content-Type': 'application/json',
+            'Tenant-Id':this.tenantId.toString(),
+            'X-Access-Token':this.receivedToken
+
+          },
+          extraData: JSON.stringify({
+            //username: this.userUsername,
+            //password: this.userPassword
+            "unitId":this.UnitId,
+            "unitName":this.selectedUnitIndex,
+            "userName":this.name,
+            "idCard":null,
+            "portraitPhoto":"",
+            "position":this.jobPosition,
+            "tel":this.phone,
+            "type":"1",
+            "type_dictText":this.status,
+            "licenceIssuing":"",
+            "healthNumber":"",
+            "healthUrl":"",
+            "healthStartTime":this.issueDate,
+            "healthEndTime":this.expiryDate,
+            "photoQualification":null,
+            "remark":"",
+            "inspectionType":0,
+            "version":0,"canteenId":null,
+            "wxopenId":null,
+            "tenantId":"10021011",
+            "demandUnitIds":null
+          })
+        }
+      );
+
+      if (response.responseCode !== 200) {
+        return {
+          success: false,
+          message: `HTTP Error: ${response.responseCode}`
+          // 添加其他错误处理逻辑
+        };
+      }
+
+      const jsonData = JSON.parse(response.result as string) as addResponse;
+      //console.log('', response.responseCode);
+      //console.log('',jsonData.code);
+      return {
+        success: jsonData.code === 200,
+        code: jsonData.code,
+        //userInfo: jsonData.result.userInfo,
+        // token: jsonData.result.token,
+        message: jsonData.message,
+        relTenantIds:jsonData.result.userInfo.relTenantIds
+      };
+    } catch (error) {
+      // console.error('Login Error:', JSON.stringify(error));
+      return {
+        success: false,
+        message: 'fuck u!'
+      };
+    }
+  }
 
   private units: Array<SelectOption> = [
     { value: '实训第二学校餐厅', label: '实训第二学校餐厅' },
@@ -400,145 +516,5 @@ struct AddStaff {
       }
     };
     DatePickerDialog.show(dialog);
-  }
-
-
-  private async HouchuEdit(): Promise<Houchu_Edit_Request> {//这个请求是针对编辑后厨人员列表的
-
-    try {
-      const httpRequest = http.createHttp();
-
-      const response = await httpRequest.request(
-        'https://api.suoeryun.com/ifood/jeecg-school/school/xxUnitUser/edit',
-        {
-          method: http.RequestMethod.POST,
-          header: { 'Content-Type': 'application/json',
-            'Tenant-Id':this.tenantId.toString(),
-            'X-Access-Token':this.receivedToken
-          },
-          extraData: JSON.stringify({
-            "unitName":this.selectedUnitIndex,
-            "unitId":this.UnitId,
-            "userName": this.name,
-            "position": this.jobPosition,
-            "tel": this.phone,
-            "type": "1",
-            "healthStartTime":this.issueDate,
-            "healthEndTime": this.expiryDate,
-            "portraitPhoto": null,
-            "healthUrl": "https://admin.suoeryun.com/pcUpload/043015131332-32.png",
-            "remark": "123",
-            "inspectionType": 0,
-            "version": 0,
-            "canteenId": null,
-            "id": this.Edit_id
-          })
-
-        }
-
-      );
-
-      if (response.responseCode !== 200) {
-        //console.error('Login Error:'+response.responseCode);
-        return {
-          success: false,
-          result: '删除失败', // 新增默认值
-          message: `HTTP Error: ${response.responseCode}`
-          // 添加其他错误处理逻辑
-        };
-      }
-      console.log('slfj'+response.result.toString())
-      const jsonData = JSON.parse(response.result as string) as Houchu_Edit_Request;
-      console.log('11',jsonData.result);
-      return {
-        success: jsonData.code === 200,
-        code: jsonData.code,
-        result: jsonData.result,
-        message: jsonData.message,
-        //relTenantIds:jsonData.result.userInfo.relTenantIds
-      };
-
-    } catch (error) {
-      console.error('Login Error:', JSON.stringify(error));
-      return {
-        success: false,
-        result: '删除失败', // 新增默认值
-        message: '服务器繁忙'
-      };
-    }
-  }
-
-
-
-
-
-
-
-  private async addStaff(): Promise<addHandlerResult> {
-    try {
-      const httpRequest = http.createHttp();
-      const response = await httpRequest.request(
-        'https://api.suoeryun.com/ifood//jeecg-school/school/xxUnitUser/add',
-        {
-          method: http.RequestMethod.POST,
-          header: { 'Content-Type': 'application/json',
-            'Tenant-Id':this.tenantId.toString(),
-            'X-Access-Token':this.receivedToken
-
-          },
-          extraData: JSON.stringify({
-            //username: this.userUsername,
-            //password: this.userPassword
-            "unitId":this.UnitId,
-            "unitName":this.selectedUnitIndex,
-            "userName":this.name,
-            "idCard":null,
-            "portraitPhoto":"",
-            "position":this.jobPosition,
-            "tel":this.phone,
-            "type":"1",
-            "type_dictText":this.status,
-            "licenceIssuing":"",
-            "healthNumber":"",
-            "healthUrl":"",
-            "healthStartTime":this.issueDate,
-            "healthEndTime":this.expiryDate,
-            "photoQualification":null,
-            "remark":"",
-            "inspectionType":0,
-            "version":0,"canteenId":null,
-            "wxopenId":null,
-            "tenantId":"10021011",
-            "demandUnitIds":null
-          })
-        }
-      );
-
-      if (response.responseCode !== 200) {
-        return {
-          success: false,
-          message: `HTTP Error: ${response.responseCode}`
-          // 添加其他错误处理逻辑
-        };
-      }
-
-      const jsonData = JSON.parse(response.result as string) as addResponse;
-      //console.log('', response.responseCode);
-      //console.log('',jsonData.code);
-      return {
-        success: jsonData.code === 200,
-        code: jsonData.code,
-        //userInfo: jsonData.result.userInfo,
-        // token: jsonData.result.token,
-        message: jsonData.message,
-        relTenantIds:jsonData.result.userInfo.relTenantIds
-      };
-    } catch (error) {
-      // console.error('Login Error:', JSON.stringify(error));
-      return {
-        success: false,
-        message: 'fuck u!'
-      };
-    }
   }
 }

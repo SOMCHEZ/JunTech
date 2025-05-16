@@ -4,6 +4,9 @@ import http from '@ohos.net.http';
 import { BusinessError } from '@ohos.base';
 import promptAction from '@ohos.promptAction';
 
+AppStorage.setOrCreate('token', '');
+AppStorage.setOrCreate('tenantId', 0);
+
 // 接口响应数据类型定义
 interface OutboundOrder {
   id: string;
@@ -28,13 +31,11 @@ interface OutboundOrder {
   stockStatus_dictText: string;
   totalPrice: number;
 }
-
 // 领用单位接口响应类型
 interface AuthUnitVo {
   id: string;
   unitName: string;
 }
-
 interface UnitResponse {
   code: number;
   message: string;
@@ -42,7 +43,6 @@ interface UnitResponse {
   success: boolean;
   timestamp: number;
 }
-
 interface GeneratedTypeLiteralInterface_1 {
   current: number;
   pages: number;
@@ -50,7 +50,6 @@ interface GeneratedTypeLiteralInterface_1 {
   size: number;
   total: number;
 }
-
 interface ApiResponse {
   code: number;
   message: string;
@@ -58,12 +57,14 @@ interface ApiResponse {
   success: boolean;
   timestamp: number;
 }
-
-interface RouterParams {
+interface RouteParams {
   token?: string;
   relTenantIds?: number;
+  id?: string;
+  documentNo?: string;
+  demandUnit?: string;
+  demandUnitName?: string;
 }
-
 // 定义 SelectOption 接口
 interface SelectOption {
   value: string;
@@ -79,7 +80,9 @@ struct PurchaseInventory {
   @State selectedValue: string = '领用单位';
   @State currentTabContent: string = '待审批';
   @State isPressed: boolean = false;
-
+  @State receivedToken: string = '';//参数传递
+  @State tenantId: number = 0;//同上
+  @State unitId: string ='';
   // 分页相关状态
   @State pageNo: number = 1;
   @State pageSize: number = 10;
@@ -87,26 +90,37 @@ struct PurchaseInventory {
   @State loading: boolean = false;
   @State orderList: OutboundOrder[] = [];
 
-  // 存储路由参数
-  @State token: string = '';
-  @State tenantId: number = 0;
-
   // 领用单位列表
   @State unitList: AuthUnitVo[] = [];
   @State options: SelectOption[] = [];
 
+  @State accountingDate: string = ''
+  @State mealType: string = ''
+  @State requirementType: string = ''
+  @State mealCategory: string = ''
+  @State digest: string = ''
 
-  aboutToAppear() {
-    try {
-      const params = router.getParams() as RouterParams;
-      if (params) {
-        this.token = params.token || '';
-        this.tenantId = params.relTenantIds || 0;
-      }
-      this.queryUnitList(); // 先获取领用单位列表
-    } catch (error) {
-      console.error('Router params error:', (error as BusinessError).message);
+  async onPageShow(){
+    // 使用接口类型断言
+    const params = router.getParams() as RouteParams;
+    //console.log('houch11u', params?.token);// 打印接收到的参数
+    // 安全取值如果返回值空，则使用appsetcreat中所预保存的token和id
+    if (!AppStorage.get('token') && params?.token) {
+      AppStorage.set('token', params.token);
+      //console.log('houchu', AppStorage.get('token'));
+      //this.receivedToken = params.token;
     }
+    if (!AppStorage.get('tenantId') && params?.relTenantIds) {
+      AppStorage.set('tenantId', params.relTenantIds);
+      //this.tenantId = params.relTenantIds;
+    }
+
+    // 同步到组件状态
+    this.receivedToken = AppStorage.get('token')??'';
+    this.tenantId = AppStorage.get('tenantId')??0;
+    // console.log('houchu1', this.receivedToken);
+    // console.log('houchu2', this.tenantId);
+
   }
 
   // 查询领用单位列表
@@ -122,7 +136,7 @@ struct PurchaseInventory {
           header: {
             'Content-Type': 'application/x-www-form-urlencoded',
             'tenant-id': this.tenantId.toString(),
-            'X-Access-Token': this.token
+            'X-Access-Token': this.receivedToken
           },
           extraData: {
             unitType: '1' // 固定传参：1-餐厅类型
@@ -182,7 +196,7 @@ struct PurchaseInventory {
             'Content-Type': 'application/json;charset=UTF-8',
             'Accept': 'application/json, text/plain, */*',
             'tenant-id': this.tenantId.toString(),
-            'X-Access-Token': this.token
+            'X-Access-Token': this.receivedToken
           },
           extraData: {
             pageNo: this.pageNo,
@@ -381,16 +395,35 @@ struct PurchaseInventory {
                 if (this.activeTab === 0) { // 待审批b
                   router.pushUrl({
                     url: 'pages/editChuku',
-                    // params: {
-                    //   tab: this.activeTab // 传递当前 tab 值作为参数
-                    // }
+                    params: {
+                      token: this.receivedToken,
+                      relTenantIds: this.tenantId,
+                      unitId: this.unitId,
+                      id: item.id,
+                      documentNo: item.documentNo,
+                      accountingDate: item.accountingDate,
+                      mealType: item.mealType,
+                      requirementType: item.requirementType,
+                      mealCategory: item.mealCategory,
+                      digest: item.digest,
+                      demandUnit: item.demandUnit,
+                      demandUnitName: item.demandUnitName
+                    }
                   });
+                  console.log('token',this.receivedToken);
+                  console.log('relTenantIds',this.tenantId);
+                  // console.log('unitId',this.unitId);
+                  // console.log('accountingDate',this.accountingDate);
+                  // console.log('mealType',this.mealType);
+                  // console.log('requirementType',this.requirementType);
+                  // console.log('mealCategory',this.mealCategory);
+                  // console.log('digest',this.digest)
                 } else { // 已审批
                   router.replaceUrl({
                     url: 'pages/yishenpi',
                     params: {
                       orderId: item.id,
-                      token: this.token,
+                      token: this.receivedToken,
                       relTenantIds: this.tenantId
                     }
                   });
@@ -445,7 +478,7 @@ struct PurchaseInventory {
           router.pushUrl({
             url: 'pages/chukudan',
             params: {
-              token: this.token,
+              token: this.receivedToken,
               relTenantIds: this.tenantId
             }
           });
