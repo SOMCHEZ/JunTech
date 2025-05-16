@@ -1,6 +1,4 @@
-import router from '@ohos.router';
 import { window } from '@kit.ArkUI'
-import { data } from '@kit.TelephonyKit'
 
 @Entry
 @Component
@@ -20,4 +18,5 @@ struct easterEgg{
         .width('100%')
     }
   }
+
 }

@@ -6,65 +6,77 @@ AppStorage.setOrCreate('token', '');
 AppStorage.setOrCreate('tenantId', 0);
 AppStorage.setOrCreate('unitId', '');
 
-interface RecipeFormData {
-  date?: string;
-  recipeName?: string;
-  mealType?: string;
-  diningType?: string;
-  place?: string;
-  photoUri?: string;
+interface RecipeFormData extends records{
+  id?: string;
+  date: string;// 供应时间
+  recipeName: string;//制单时间
+  mealType: string;//需求类型
+  diningType: string;//用餐类型
+  place: string;//餐别
+  photoUri: string;
 }
 
 interface records{//定义接口返回类型
-  id?: number;
-  schoolId: string;
-  schoolName:  string;
+  id?: string;
+  createBy: string;
+  createTime:  string;
+  updateBy: string;
+  updateTime: string;// 后端返回的姓名
+  schoolId?: string;
   unitId: string;
-  unitName: string;
-  userName: string;// 后端返回的姓名
-  idCard?: string;
-  portraitPhoto?:string;
-  position:  string;//  后端返回的职位
-  tel: string;// 后端返回的电话
-  type: string;//  后端返回的职位类型
-  type_dictText:string;// 后端返回的职位类型
-  licenceIssuing: string;//  后端返回的营业执照有效期
-  healthNumber: string;//  后端返回的健康证号
-  healthUrl?: string;  // 后端返回的健康证图片
-  healthStartTime: string;// 后端返回的营业执照有效期
-  healthEndTime:  string;// 后端返回的营业执照有效期
-  photoQualification: string;//  后端返回的营业执照图片
-  remark: string;//  后端返回的备注
-  inspectionType?:number//  后端返回的职位类型
-  version: number;//  后端返回的版本
-  canteenId:  string;// 后端返回的食堂id
-  wxopenId: string;// 后端返回的微信openid
-  tenantId:  number;//  后端返回的租户id
-  demandUnitIds:string;// 后端返回的食堂id
-  code?: number;// 后端返回的code
-
+  schoolName?:string;
+  unitName:  string;
+  unitType:  string;
+  documentNo:string;// 后端返回的code
+  supplyDate: string;
+  supplyTime: string
+  reportUserPhone: string
+  auditTime: string
+  supplyTime_dictText: string
+  planningStatus: string
+  rejectOpinion: string
+  summary: string
+  preparedBy: string
+  reportUserName: string
+  reportUserId: string
+  reportDate: string
+  tenantId: string
+  requirementType: string
+  requirementType_dictText: string
+  planningFoodList: string
+  izReplenishment: string
+  stockId: string
+  distributionId: string
+  supplierRemark: string
+  totalPrice: string
+  izPastDue: string
+  mealType: string
+  mealType_dictText: string
+  mealCategory: string
+  mealCategory_dictText: string
+  planningStatus_dictText: string
   // 其他字段根据实际API响应补充...
 }
 
 interface RouteParams {//接口传递参数定义
   token?: string;
   relTenantIds?: number;
-  unitId?: string;
+  //unitId?: string;
 }
 
-interface HouchuResult {
+interface XuqiuResult {
   records: records[];
   //token: string;
 }
 
-interface HouchuResponse {
+interface XuqiuResponse {
   code: number;
   message: string;
-  result: HouchuResult;
+  result: XuqiuResult;
   timestamp: number;
 }
 
-interface HouchuHandlerResult {
+interface XuqiuHandlerResult {
   success: boolean;
   code?: number;
   records?: records[];
@@ -81,7 +93,7 @@ struct ReportPlanPage {
   @State selectedUnit: string = '请选择需求单位'
   @State selectedDate: string = '请选择供应日期'
   @State selectDate: Date = new Date()
-  @State selectedText: RecipeFormData[] =[]
+  @State RecipeFormData: RecipeFormData[] =[]
   @State receivedToken: string = '';//参数传递
   @State tenantId: number = 0;//同上
   @State unitId: string  ="";
@@ -103,62 +115,59 @@ struct ReportPlanPage {
     // 安全取值如果返回值空，则使用appsetcreat中所预保存的token和id
     if (!AppStorage.get('token') && params?.token) {
       AppStorage.set('token', params.token);
-      //this.receivedToken = params.token;
     }
 
     if (!AppStorage.get('tenantId') && params?.relTenantIds) {
       AppStorage.set('tenantId', params.relTenantIds);
-      //this.tenantId = params.relTenantIds;
     }
-
-    if (!AppStorage.get('unitId') && params?.unitId) {
-      AppStorage.set('unitId', params.unitId);
-      //this.UnitId = params.unitId;
-    }
-
     // 同步到组件状态
     this.receivedToken = AppStorage.get('token')??'';
     this.tenantId = AppStorage.get('tenantId')??0;
-    this.unitId = AppStorage.get('unitId') ?? '';
 
-    const result = await this.Houchuchaxun();
+    const result = await this.Xuqiuchaxun();
     //const result = await this.Houchuchaxun();// 调用Houchuchaxun方法这个函数是用来查数据的
     //console.log('houchu1', result); // 打印返回结果
 
+    if (result.success && result.records) {
+      this.RecipeFormData = result.records?.map((item: records) => ({
+        id: item.id,
+        date: item.supplyDate,
+        recipeName: item.createTime,
+        mealType: item.mealType_dictText,
+        diningType: item.requirementType_dictText,
+      } as RecipeFormData));
 
-    if (result.records && result.records.length > 0) {
-
-      this.unitId = result.records?.find(item =>//存放uid
-      item?.unitId && item.unitId.trim() !== '',
-      )?.unitId ?? 'default_unit_id'
-
-    } else {
-      //console.error('未获取到有效数据');
-      this.unitId = ''; // 设置默认值
+    }else {
+      console.error('数据加载失败:', result.message);
     }
-    console.log('rel',this.unitId);
 
-    // console.log('id',this.kitchenStaffs[0].id)//打印id
-    // console.log('kitchenStaffs', this.unitName);
-    console.debug('所有单位:',//打印所有Id
-      result.records?.map(item => item.unitName).filter(Boolean)
-    )
 
-    console.debug('所有Id:',//打印所有Id
-      result.records?.map(item => item.id).filter(Boolean)
-    )
 
-      //let params = router.getParams()
-      if (params && params.toString()) {
-        this.selectedText.push(params as RecipeFormData)
-      }
-    if (this.unitOptions.length > 0) {
-      this.selectedUnit = this.unitOptions[0]
-    }
+    // const filteredRecords = result.records?.filter(item =>
+    // this.selectedUnit === '选择需求单位' ||  // 显示全部
+    //   item.unitName === this.selectedUnit // 按选中单位过滤
+    // ) ?? [];
+    //
+    // if (result.success && filteredRecords) {
+    //   this.RecipeFormData = filteredRecords.map((item: records) => ({
+    //     id: item.id,
+    //     date: item.supplyDate,
+    //     recipeName: item.createTime,
+    //     mealType: item.mealType_dictText,
+    //     diningType: item.requirementType_dictText,
+    //   } as RecipeFormData));
+    //   console.log('444',this.RecipeFormData[1].id);
+    //
+    //
+    //   const unitNames = result.records?.map(item => item.unitName) ?? [];
+    //   const filteredUnitNames = unitNames.filter(Boolean);
+    //   const uniqueUnits = Array.from(new Set(filteredUnitNames));
+    //   this.unitOptions = ['所属单位', ...uniqueUnits];
+    // }
   }
 
 
-  private async Houchuchaxun(): Promise<HouchuHandlerResult> { //这个请求是针对查询后厨人员列表的
+  private async Xuqiuchaxun(): Promise<XuqiuHandlerResult> { //这个请求是针对查询后厨人员列表的
     try {
       const httpRequest = http.createHttp();
 
@@ -183,7 +192,7 @@ struct ReportPlanPage {
         };
       }
       console.log('slfj' + response.result.toString())
-      const jsonData = JSON.parse(response.result as string) as HouchuResponse;
+      const jsonData = JSON.parse(response.result as string) as XuqiuResponse;
       console.log('11', jsonData.result.records[1]);
       return {
         success: jsonData.code === 200,
@@ -265,9 +274,9 @@ struct ReportPlanPage {
 
 
         Column() {
-          if (this.selectedText.length  >0) {
+          if (this.RecipeFormData.length  >0) {
               List(){
-                ForEach(this.selectedText, (formData: RecipeFormData) => {
+                ForEach(this.RecipeFormData, (formData: RecipeFormData) => {
                     ListItem()
                     {
                         Column() {
@@ -420,7 +429,7 @@ struct ReportPlanPage {
                                   width: 1
                                 })
                                 .onClick(() => {
-                                  this.selectedText = this.selectedText.filter(item => item !== formData)
+                                  this.RecipeFormData = this.RecipeFormData.filter(item => item !== formData)
                                 })
                             }
                           }
@@ -476,7 +485,7 @@ struct ReportPlanPage {
             //   diningType: '堂食',
             //   place: '食堂A'
             // };
-            // this.selectedText.push(newForm);
+            // this.RecipeFormData.push(newForm);
             router.pushUrl({
               url: 'pages/addPlan',
               params: {
