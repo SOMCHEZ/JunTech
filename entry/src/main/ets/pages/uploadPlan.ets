@@ -4,7 +4,7 @@ import http from '@ohos.net.http';
 
 AppStorage.setOrCreate('token', '');
 AppStorage.setOrCreate('tenantId', 0);
-//AppStorage.setOrCreate('unitId', '');
+AppStorage.setOrCreate('unitId', '');
 
 interface RecipeFormData extends records{
   id?: string;
@@ -97,6 +97,7 @@ struct ReportPlanPage {
   @State receivedToken: string = '';//参数传递
   @State tenantId: number = 0;//同上
   @State unitId: string  ="";
+  @State upload:boolean  = false;
   private unitOptions = [
     '选择需求单位',
     '实验第二学校（库房）',
@@ -225,6 +226,7 @@ struct ReportPlanPage {
             .borderWidth(0)// 去除边框
             .onClick(() => {
               this.x = 0
+              this.upload=false
             })
 
           Button('已上报')
@@ -237,6 +239,7 @@ struct ReportPlanPage {
             .borderWidth(0)
             .onClick(() => {
               this.x = 1
+              this.upload=true
             })
         }
         .width('100%')
@@ -296,6 +299,16 @@ struct ReportPlanPage {
                                 .width('70%')
                                 .fontSize(12)
                                 .fontColor('#666666')
+                              if (this.upload) {
+                                Image($r('app.media.approved'))
+                                  .width('30%')
+                                  .position({ top: -20, right: 1})
+                              }else  {
+                                Image($r('app.media.notReported'))
+                                  .width('30%')
+                                  .position({ top: -20, right: 1})
+                                //.visible(formData.status === '已上报')
+                              }
                             }
 
                             .justifyContent(FlexAlign.Start)
@@ -420,13 +433,14 @@ struct ReportPlanPage {
                                 })
                             }
                           }
+                          .padding({ left: 10, right: 10, top: 5, bottom: 10 })
                           .backgroundColor(Color.White)
                           .width('100%')
                           .justifyContent(FlexAlign.Start)
                         }
                         //.padding({ left: 1, right: 10, top: 5, bottom: 10 })
                         .backgroundColor('#4CAF50')
-                        .width('80%')
+                        .width('90%')
                         .height('auto')
                         .alignItems(HorizontalAlign.Center)
                         .border({
@@ -436,7 +450,7 @@ struct ReportPlanPage {
                         })
                     }
                     .width('100%')
-                    .margin({left:0,right: 10, bottom:10 })
+                    .margin({left:10,right: 10, bottom:10 })
                 })
               }
               .width('100%')
@@ -453,7 +467,7 @@ struct ReportPlanPage {
 
         }
         .width('100%')
-        .backgroundColor('#f2dbdada')
+        //.backgroundColor('#f2dbdada')
         .layoutWeight(1)
 
         Button('新建上报计划', { type: ButtonType.Capsule })
