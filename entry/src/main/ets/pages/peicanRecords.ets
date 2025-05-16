@@ -21,44 +21,7 @@ interface  records{//定义接口返回类型
   demandUnitName: string
 }
 
-interface UserInfo {
-  id: string;
-  username: string;
-  clientType: string;
-  realname: string;
-  avatar: string | null;
-  relTenantIds:number;
-  // 其他字段根据实际API响应补充...
-}
 
-interface peicanResult {
-  records: records[];
-  //token: string;
-}
-
-interface peicanResponse {
-  code: number;
-  message: string;
-  result: peicanResult;
-  timestamp: number;
-}
-
-interface peicanHandlerResult{
-  success: boolean;
-  code?: number;
-  message?: string;
-  records?: records[];
-}
-
-interface peicanRecord extends records {
-  mealDate: string;      // 对应原接口的realname
-  mealCategory: string; // 对应原接口的unitName
-  repastNum: string;    // 需确认来源字段
-  withNum: string; // 对应healthStartTime
-  xxMealRecordInfoList: string;// 对应healthEndTime
-  demandUnit:string;//对应在职状态
-  demandUnitName: string;// 对应原接口的position
-}
 interface RecordType {
   unit: string;
   meal: string;
@@ -107,7 +70,7 @@ struct CalendarPage {
   @State records: RecordType[] = [];
 
   @State DataList:PeiCanMessage[] = []
-  private index:number = 0
+  @State TempDataList:PeiCanMessage[] = []
 
   aboutToAppear() {
     const params = router.getParams() as GeneratedTypeLiteralInterface_1;
@@ -119,7 +82,6 @@ struct CalendarPage {
   private weekDays: string[] = ['日', '一', '二', '三', '四', '五', '六']
 
   async onPageShow() {
-    this.index = 0
     const params = router.getParams() as RouteParams;
     if (!AppStorage.get('token') && params?.token) {
       AppStorage.set('token', params.token);
@@ -134,7 +96,11 @@ struct CalendarPage {
     const result = await this.peicanQuest();
     if (result.success && result.result) {
       this.DataList = result.result.records
+      this.TempDataList = this.DataList
     }
+    this.TempDataList = this.TempDataList.filter((item:PeiCanMessage) => item.mealDate == this.formatDate(this.selectedDate))
+
+    console.log('date:',this.formatDate(this.selectedDate))
   }
 
   private async peicanQuest(): Promise<ResponseData> {
@@ -201,6 +167,13 @@ struct CalendarPage {
     this.selectedDate = newDate
   }
 
+  private formatDate(date: Date): string {
+    const year = date.getFullYear();
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const day = date.getDate().toString().padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
   // 日历头部
   @Builder
   private CalendarHeaderBuilder() {
@@ -252,7 +225,7 @@ struct CalendarPage {
   // ... (其他代码保持不变)
 
   @Builder
-  private RecordCardBuilder(record: PeiCanMessage,index:number) {
+  private RecordCardBuilder(record: PeiCanMessage) {
     Column() {
       Row() {
         Text(record.mealDate).fontColor('#666').fontSize(14)
@@ -301,10 +274,12 @@ struct CalendarPage {
             .width('14.282039094572344908579867648657%')
             .height(50)
             .onClick(() => {
+              this.TempDataList = this.DataList
               const newDate = new Date(this.selectedDate)
               newDate.setDate(date)
               this.selectedDate = newDate
-              console.log('selectedDate',this.selectedDate)
+              console.log('selectedDate',this.formatDate(this.selectedDate))
+              this.TempDataList = this.TempDataList.filter((item:PeiCanMessage) => item.mealDate == this.formatDate(this.selectedDate))
             })
           })
         }
@@ -329,7 +304,7 @@ struct CalendarPage {
           console.log('jinitaimei'+this.records);
         })
 
-      if (this.DataList.length === 0) {
+      if (this.TempDataList.length === 0) {
         Text('~ 暂无相关数据 ~')
           .fontSize(15)
           .fontColor('#BBBBBB')
@@ -337,8 +312,8 @@ struct CalendarPage {
       } else {
         Scroll() {
           Column() {
-            ForEach(this.DataList, (record: PeiCanMessage) => {
-              this.RecordCardBuilder(record,this.index++)
+            ForEach(this.TempDataList, (record: PeiCanMessage) => {
+              this.RecordCardBuilder(record)
             })
           }
         }
