@@ -33,9 +33,7 @@
     "pages/kucun",
     "pages/addfood",
     "pages/daishenpi",
-    "pages/easterEgg"
-
-
-
+    "pages/easterEgg",
+    "pages/editChuku"
   ]
 }

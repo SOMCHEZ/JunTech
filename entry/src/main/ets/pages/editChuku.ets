@@ -9,6 +9,16 @@ import http from '@ohos.net.http';
 AppStorage.setOrCreate('token', '');
 AppStorage.setOrCreate('tenantId', 0);
 AppStorage.setOrCreate('unitId', '');
+//小卡片里的东西
+AppStorage.setOrCreate('accountingDate', '');
+AppStorage.setOrCreate('mealType', '');
+AppStorage.setOrCreate('requirementType', '');
+AppStorage.setOrCreate('mealCategory', '');
+AppStorage.setOrCreate('digest', '');
+AppStorage.setOrCreate('currentOrderId', '');
+AppStorage.setOrCreate('documentNo', '');
+AppStorage.setOrCreate('demandUnit', '');
+AppStorage.setOrCreate('demandUnitName', '');
 
 interface FoodItem {
   schoolId: string;
@@ -58,7 +68,17 @@ interface addResponse {
   result: addResult;
   timestamp: number;
 }
-interface RouteParams {//接口传递参数定义
+interface RouteParams {
+  accountingDate: string;//接口传递参数定义
+  mealType: string;
+  requirementType: string;
+  mealCategory: string;
+  digest: string;
+  id?: string;
+  documentNo?: string;
+  demandUnit?: string;
+  demandUnitName?: string;
+
   token?: string;
   relTenantIds?: number;
   unitId?: string;
@@ -102,12 +122,17 @@ struct DatePickerExample {
   @State summary: string = ''// 摘要内容
   @State selectedText: string[] = ['请选择','请选择','请选择','其他','其他','请输入摘要']
   @State private showMealType: boolean = false // 控制是否显示用餐类型
+  @State accountingDate: string = ''
+  @State mealType: string = ''
+  @State requirementType: string = ''
+  @State mealCategory: string = ''
+  @State digest: string = ''
+
   private unitOptions = ['实验第二学校餐厅']
   private selectedTime = ['上午', '下午']
   private demandOptions = ['学生餐', '教师餐']
   private mealTypeOptions = ['其他','营养餐']
   private mealOptions = ['其他', '早餐', '午餐', '晚餐']
-
   // 修改 getMappedValues 函数：显式声明返回类型
   private mapping: Record<string, string> = {
     '上午': 'forenoon',
@@ -121,7 +146,6 @@ struct DatePickerExample {
     '午餐': '2',
     '晚餐': '3'
   };
-
   private getMappedValues(index?: number): string | string[] {
     if (index !== undefined) {
       const text = this.selectedText[index];
@@ -130,7 +154,6 @@ struct DatePickerExample {
     }
     return this.selectedText.map(text => this.mapping[text] || '');
   }
-
   private handleLogMapping(): void {
     const mappedValues = this.getMappedValues();
     console.log('Mapped Values:', mappedValues);
@@ -139,34 +162,67 @@ struct DatePickerExample {
 
   async onPageShow() {
     const params = router.getParams() as RouteParams;
-    console.log('houchu', params?.token);// 打印接收到的参数
+
+
+
+    //console.log('houchu', params?.token);// 打印接收到的参数
     //console.log('houchu', params?.relTenantIds);//  打印接收到的参数
     // 安全取值如果返回值空，则使用appsetcreat中所预保存的token和id
     if (!AppStorage.get('token') && params?.token) {
       AppStorage.set('token', params.token);
       //this.receivedToken = params.token;
     }
-
     if (!AppStorage.get('tenantId') && params?.relTenantIds) {
       AppStorage.set('tenantId', params.relTenantIds);
       //this.tenantId = params.relTenantIds;
     }
-
     if (!AppStorage.get('unitId') && params?.unitId) {
       AppStorage.set('unitId', params.unitId);
-      //this.UnitId = params.unitId;
+    }
+    if (!AppStorage.get('accountingDate') && params?.accountingDate) {
+      AppStorage.set('accountingDate', params.accountingDate);
+    }
+    if (!AppStorage.get('mealType') && params?.mealType) {
+      AppStorage.set('mealType', params.mealType);
+    }
+    if (!AppStorage.get('requirementType') && params?.requirementType) {
+      AppStorage.set('requirementType', params.requirementType);
+    }
+    if (!AppStorage.get('mealCategory') && params?.mealCategory) {
+      AppStorage.set('mealCategory', params.mealCategory);
+    }
+    if (!AppStorage.get('digest') && params?.digest) {
+      AppStorage.set('digest', params.digest);
+    }
+
+    if (params?.id) {
+      AppStorage.setOrCreate('currentOrderId', params.id);
+      AppStorage.setOrCreate('documentNo', params.documentNo || '');
+      AppStorage.setOrCreate('demandUnit', params.demandUnit || '');
+      AppStorage.setOrCreate('demandUnitName', params.demandUnitName || '');
     }
 
     // 同步到组件状态
     this.receivedToken = AppStorage.get('token')??'';
     this.tenantId = AppStorage.get('tenantId')??0;
     this.unitId = AppStorage.get('unitId') ?? '';
+    this.accountingDate = AppStorage.get('accountingDate') ?? '';
+    this.mealType = AppStorage.get('mealType') ?? '';
+    this.requirementType = AppStorage.get('requirementType') ?? '';
+    this.mealCategory = AppStorage.get('mealCategory') ?? '';
+    this.digest = AppStorage.get('digest') ?? '';
     console.log('rel',this.unitId);
     console.log('UID', params?.unitId);
+    this.selectedText[0] = this.unitId;
+    this.selectedText[1] = this.accountingDate;
+    this.selectedText[2] = this.mealType;
+    this.selectedText[3] = this.requirementType;
+    this.selectedText[4] = this.mealCategory;
+    this.selectedText[5] = this.digest;
+    console.log('houchu', this.selectedText);
     //const result = await this.Houchuchaxun();// 调用Houchuchaxun方法这个函数是用来查数据的
     //console.log('houchu1', result); // 打印返回结果
   }
-
   private async addStaff(): Promise<addHandlerResult> {
     try {
       const httpRequest = http.createHttp();
@@ -191,22 +247,22 @@ struct DatePickerExample {
             "stockStatus": "0", // 0为保存、1为保存并审核
             "foods": [
               {
-                "schoolId": "1917168448022519809",
+                "schoolId": "1650064161880203265",
                 "demandUnit": "1917168448072851458",
-                "foodId": "1917167634004582414",
-                "foodName": "绿豆",
+                "foodId": "1664464263113670658",
+                "foodName": "牛骨",
                 "encoding": "126",
-                "groupId": "1917166561189695489",
+                "groupId": "1656552701476487169",
                 "groupName": "其他",
                 "unit": "Kg",
                 "specification": "称重",
                 "modifyPrice": 20,
                 "supplyPricing": 20,
-                "totalNum": 0.01,
+                "totalNum": 0.25,
                 "totalWeight": 0,
                 "supplyWay": "1",
-                "supplierId": "1917168448022519809",
-                "supplierName": "实训第二学校",
+                "supplierId": "1650750930200121346",
+                "supplierName": "小韩食品批发",
                 "batch": "20240816004",
                 "images": "",
                 "requirementType": "2",
@@ -217,8 +273,8 @@ struct DatePickerExample {
                 "mealType_dictText": "学生餐",
                 "mealCategory_dictText": "其他",
                 "num": "0.25",
-                "selectId": "1922500586301390849",
-                "marketWeight": 0.01
+                "selectId": "1826078209368182788",
+                "marketWeight": 0.5
               }
             ]as Array<FoodItem>
           }
@@ -252,7 +308,6 @@ struct DatePickerExample {
       };
     }
   }
-
   build() {
     Stack(){
       Column() {
@@ -601,23 +656,6 @@ struct DatePickerExample {
             .padding({ left: 15, right: 15 })
 
             Button({ type: ButtonType.Normal }) {
-              Text('电子签')
-                .fontSize(14)
-                .fontColor(Color.White)
-            }
-            .height(35)
-            .backgroundColor('#02BC65')
-            .fontColor(Color.White)
-            .borderRadius(8)
-            .width('30%') // 固定宽度，与第一个按钮一致
-            .padding({ left: 15, right: 15 })
-            .onClick(() => {
-              router.pushUrl({
-                url: 'pages/signature'
-              });
-            })
-
-            Button({ type: ButtonType.Normal }) {
               Text('保存并审核')
                 .fontSize(14)
                 .fontColor(Color.White)
@@ -796,17 +834,6 @@ struct DatePickerExample {
   private submitForm() {
     // 验证必填项
     const isStudentMeal = this.selectedText[2] === '学生餐';
-
-    // if (this.selectedText[0] === '请选择' ||  // 领用单位
-    //   this.selectedText[1] === '请选择' ||  // 出库日期
-    //   this.selectedText[2] === '请选择'   // 出库类型
-    // ) {
-    //   prompt.showToast({
-    //     message: '请填写所有必填项',
-    //     duration: 2000
-    //   });
-    //   return;
-    // }
     prompt.showToast({
       message: '保存成功',
       duration: 2000
@@ -817,23 +844,5 @@ struct DatePickerExample {
         token: this.receivedToken,
         tenantId: this.tenantId,
       } })
-
-    // 创建表单数据对象
-    // let formData: GeneratedObjectLiteralInterface_1 = {
-    //   date: this.selectedText[2] === ''
-    //     ? this.selectedText[1]
-    //     : `${this.selectedText[1]} ${this.selectedText[2]}`,
-    //   recipeName: this.selectedText[1], // 使用已选择的日期
-    //   mealType: this.selectedText[3],   // 使用已选择的餐别
-    //   diningType: isStudentMeal ? this.selectedText[4] : '', // 非学生餐时为空 用餐类型
-    //   place: this.selectedText[5],      // 需求单位
-    //   photoUri: this.selectedText[0]    // 餐别（如果需要）
-    // };
-
-    // 跳转到 'uploadPlan' 页面并传递 formData
-//     router.back ({
-//       url: 'pages/uploadPlan',  // 页面路径
-//       params: formData          // 传递的参数
-//     });
-   }
- }
+  }
+}
