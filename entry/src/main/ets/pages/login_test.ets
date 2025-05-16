@@ -57,12 +57,16 @@ struct Index {
         .fontColor(Color.White)
         .fontSize(50)
         .zIndex(100)
-        .position({x:20,y:50})
+        .position({x:20,y:90})
       Text('欢迎使用')
         .fontSize(30)
         .zIndex(100)
         .fontColor(Color.White)
-        .position({x:150,y:70})
+        .position({x:150,y:110})
+      Image($r('app.media.biaoti'))
+        .width(200)
+        .zIndex(100)
+        .position({x:2,y:2})
 
       RelativeContainer() {
         Image("")

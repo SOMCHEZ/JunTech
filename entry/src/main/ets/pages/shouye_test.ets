@@ -279,6 +279,11 @@ struct Index1 {
                         .onClick(() => {
                           router.pushUrl({          // 使用push入栈一个新页面
                             url: item1.route1 // 通过url指定新打开的页面
+                            ,
+                            params:{
+                              token:this.receivedToken,
+                              relTenantIds:this.tenantId,
+                            }
                           })
                         })
                     }
