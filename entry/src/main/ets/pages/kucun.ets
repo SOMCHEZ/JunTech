@@ -83,12 +83,13 @@ struct PurchaseInventory {
   @State receivedToken: string = '';//参数传递
   @State tenantId: number = 0;//同上
   @State unitId: string ='';
+  @State outboundId: string = '';
   // 分页相关状态
   @State pageNo: number = 1;
   @State pageSize: number = 10;
   @State total: number = 0;
   @State loading: boolean = false;
-  @State orderList: OutboundOrder[] = [];
+  @State OutboundOrder: OutboundOrder[] = [];
 
   // 领用单位列表
   @State unitList: AuthUnitVo[] = [];
@@ -120,6 +121,17 @@ struct PurchaseInventory {
     this.tenantId = AppStorage.get('tenantId')??0;
     // console.log('houchu1', this.receivedToken);
     // console.log('houchu2', this.tenantId);
+
+    if (this.OutboundOrder && this.OutboundOrder.length > 0) {
+
+      this.outboundId = this.OutboundOrder?.find(item =>//存放uid
+      item?.id && item.id.trim() !== '',
+      )?.id ?? 'default_unit_Name'
+
+    } else {
+      //console.error('未获取到有效数据');
+      this.outboundId = ''; // 设置默认值
+    }
 
   }
 
@@ -210,9 +222,9 @@ struct PurchaseInventory {
       if (response.responseCode === http.ResponseCode.OK) {
         const responseData = JSON.parse(response.result as string) as ApiResponse;
         if (responseData.code === 200) {
-          this.orderList = responseData.result.records;
+          this.OutboundOrder = responseData.result.records;
           this.total = responseData.result.total;
-          if (this.orderList.length === 0) {
+          if (this.OutboundOrder.length === 0) {
             this.message = '暂无数据';
           }
         } else {
@@ -325,13 +337,13 @@ struct PurchaseInventory {
               .width(50)
               .height(50)
               .margin(20);
-          } else if (this.orderList.length === 0) {
+          } else if (this.OutboundOrder.length === 0) {
             Text(this.message)
               .fontSize(16)
               .fontWeight(FontWeight.Normal)
               .alignSelf(ItemAlign.Center);
           } else {
-            ForEach(this.orderList, (item: OutboundOrder, index: number) => {
+            ForEach(this.OutboundOrder, (item: OutboundOrder, index: number) => {
               Column() {
                 // 添加一个 Row 来包含标题和删除按钮
                 Row() {
@@ -407,7 +419,8 @@ struct PurchaseInventory {
                       mealCategory: item.mealCategory,
                       digest: item.digest,
                       demandUnit: item.demandUnit,
-                      demandUnitName: item.demandUnitName
+                      demandUnitName: item.demandUnitName,
+                      outboundId:  this.outboundId
                     }
                   });
                   console.log('token',this.receivedToken);
@@ -433,7 +446,7 @@ struct PurchaseInventory {
             });
 
             // 加载更多
-            if (this.orderList.length < this.total) {
+            if (this.OutboundOrder.length < this.total) {
               Text('加载更多')
                 .fontSize(14)
                 .fontColor('#666')

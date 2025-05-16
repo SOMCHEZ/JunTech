@@ -9,13 +9,14 @@ import http from '@ohos.net.http';
 AppStorage.setOrCreate('token', '');
 AppStorage.setOrCreate('tenantId', 0);
 AppStorage.setOrCreate('unitId', '');
+AppStorage.setOrCreate('id', '');
 //小卡片里的东西
 AppStorage.setOrCreate('accountingDate', '');
 AppStorage.setOrCreate('mealType', '');
 AppStorage.setOrCreate('requirementType', '');
 AppStorage.setOrCreate('mealCategory', '');
 AppStorage.setOrCreate('digest', '');
-AppStorage.setOrCreate('currentOrderId', '');
+AppStorage.setOrCreate('outboundId', '');
 AppStorage.setOrCreate('documentNo', '');
 AppStorage.setOrCreate('demandUnit', '');
 AppStorage.setOrCreate('demandUnitName', '');
@@ -127,6 +128,7 @@ struct DatePickerExample {
   @State requirementType: string = ''
   @State mealCategory: string = ''
   @State digest: string = ''
+  @State outboundId: string = ''
 
   private unitOptions = ['实验第二学校餐厅']
   private selectedTime = ['上午', '下午']
@@ -196,7 +198,7 @@ struct DatePickerExample {
     }
 
     if (params?.id) {
-      AppStorage.setOrCreate('currentOrderId', params.id);
+      AppStorage.setOrCreate('outboundId', params.id);
       AppStorage.setOrCreate('documentNo', params.documentNo || '');
       AppStorage.setOrCreate('demandUnit', params.demandUnit || '');
       AppStorage.setOrCreate('demandUnitName', params.demandUnitName || '');
@@ -211,6 +213,8 @@ struct DatePickerExample {
     this.requirementType = AppStorage.get('requirementType') ?? '';
     this.mealCategory = AppStorage.get('mealCategory') ?? '';
     this.digest = AppStorage.get('digest') ?? '';
+    this.outboundId = AppStorage.get('id') ?? '';
+
     console.log('rel',this.unitId);
     console.log('UID', params?.unitId);
     this.selectedText[0] = this.unitId;
@@ -236,7 +240,7 @@ struct DatePickerExample {
             'X-Access-Token':this.receivedToken
           },
           extraData: JSON.stringify({
-            "id":"",
+            "id": this.outboundId,
             "demandUnit": "1917168448072851458",
             "demandUnitName": "实训第二学校餐厅",
             "accountingDate": this.selectedText[1],
