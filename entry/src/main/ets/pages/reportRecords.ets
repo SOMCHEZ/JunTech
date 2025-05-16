@@ -162,7 +162,7 @@ struct Page1 {
           .fontSize(16)
         Select(this.unitOptions)
           .value('请选择')
-          // .selected(this.unitOptions.findIndex(item => item.label === this.selectedUnitIndex))
+            // .selected(this.unitOptions.findIndex(item => item.label === this.selectedUnitIndex))
           .onSelect((index: number) => {
             this.selectedUnitIndex = this.unitOptions[index].label;
             // this.selectedUnitIndex = this.unitOptions[index].value;
@@ -179,7 +179,7 @@ struct Page1 {
 
         Select(this.mealOptions)
           .value('请选择')
-          // .selected(this.mealOptions.findIndex(item => item.label === this.selectedMealIndex))
+            // .selected(this.mealOptions.findIndex(item => item.label === this.selectedMealIndex))
           .onSelect((index: number) => {
             this.selectedMealIndex = this.mealOptions[index].label;
             this.selectedMealValue  = this.mealOptions[index].value;

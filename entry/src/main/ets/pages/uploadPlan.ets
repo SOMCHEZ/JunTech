@@ -6,65 +6,81 @@ AppStorage.setOrCreate('token', '');
 AppStorage.setOrCreate('tenantId', 0);
 AppStorage.setOrCreate('unitId', '');
 
-interface RecipeFormData {
-  date?: string;
-  recipeName?: string;
-  mealType?: string;
-  diningType?: string;
-  place?: string;
-  photoUri?: string;
+interface RecipeFormData extends records{
+  photoUri: string;//卡片名对应地点
+  id?: string;
+  date: string;// 供应时间
+  recipeName: string;//制单时间
+  mealType: string;//需求类型
+  human: string;
+  diningType: string;//用餐类型
+  summary:  string;
+  place: string;//餐别
+  planningStatus:string;
+
 }
 
 interface records{//定义接口返回类型
-  id?: number;
-  schoolId: string;
-  schoolName:  string;
+  id?: string;
+  createBy: string;
+  createTime:  string;
+  updateBy: string;
+  updateTime: string;// 后端返回的姓名
+  schoolId?: string;
   unitId: string;
-  unitName: string;
-  userName: string;// 后端返回的姓名
-  idCard?: string;
-  portraitPhoto?:string;
-  position:  string;//  后端返回的职位
-  tel: string;// 后端返回的电话
-  type: string;//  后端返回的职位类型
-  type_dictText:string;// 后端返回的职位类型
-  licenceIssuing: string;//  后端返回的营业执照有效期
-  healthNumber: string;//  后端返回的健康证号
-  healthUrl?: string;  // 后端返回的健康证图片
-  healthStartTime: string;// 后端返回的营业执照有效期
-  healthEndTime:  string;// 后端返回的营业执照有效期
-  photoQualification: string;//  后端返回的营业执照图片
-  remark: string;//  后端返回的备注
-  inspectionType?:number//  后端返回的职位类型
-  version: number;//  后端返回的版本
-  canteenId:  string;// 后端返回的食堂id
-  wxopenId: string;// 后端返回的微信openid
-  tenantId:  number;//  后端返回的租户id
-  demandUnitIds:string;// 后端返回的食堂id
-  code?: number;// 后端返回的code
-
+  schoolName?:string;
+  unitName:  string;
+  unitType:  string;
+  documentNo:string;// 后端返回的code
+  supplyDate: string;
+  supplyTime: string
+  reportUserPhone: string
+  auditTime: string
+  supplyTime_dictText: string
+  planningStatus: string
+  rejectOpinion: string
+  summary: string
+  preparedBy: string
+  reportUserName: string
+  reportUserId: string
+  reportDate: string
+  tenantId: string
+  requirementType: string
+  requirementType_dictText: string
+  planningFoodList: string
+  izReplenishment: string
+  stockId: string
+  distributionId: string
+  supplierRemark: string
+  totalPrice: string
+  izPastDue: string
+  mealType: string
+  mealType_dictText: string
+  mealCategory: string
+  mealCategory_dictText: string
+  planningStatus_dictText: string
   // 其他字段根据实际API响应补充...
 }
 
 interface RouteParams {//接口传递参数定义
   token?: string;
   relTenantIds?: number;
-  unitId?: string;
+  //unitId?: string;
 }
 
-interface HouchuResult {
+interface XuqiuResult {
   records: records[];
   //token: string;
 }
 
-interface HouchuResponse {
+interface XuqiuResponse {
   code: number;
   message: string;
-  result: HouchuResult;
+  result: XuqiuResult;
   timestamp: number;
 }
 
-interface HouchuHandlerResult {
+interface XuqiuHandlerResult {
   success: boolean;
   code?: number;
   records?: records[];
@@ -78,17 +94,18 @@ struct ReportPlanPage {
   @State x: number = 0
   @State s: number = 0
   @State name: string = ''
-  @State selectedUnit: string = '请选择需求单位'
+  @State selectedUnit: string = '选择需求单位'
   @State selectedDate: string = '请选择供应日期'
   @State selectDate: Date = new Date()
-  @State selectedText: RecipeFormData[] =[]
+  @State RecipeFormData: RecipeFormData[] =[]
   @State receivedToken: string = '';//参数传递
   @State tenantId: number = 0;//同上
   @State unitId: string  ="";
+  @State upload:boolean  = false;
   private unitOptions = [
     '选择需求单位',
     '实验第二学校（库房）',
-    '实验第二学校餐厅'
+    '实训第二学校餐厅'
   ]
 
   // 修改生命周期函数
@@ -102,62 +119,64 @@ struct ReportPlanPage {
     // 安全取值如果返回值空，则使用appsetcreat中所预保存的token和id
     if (!AppStorage.get('token') && params?.token) {
       AppStorage.set('token', params.token);
-      //this.receivedToken = params.token;
     }
 
     if (!AppStorage.get('tenantId') && params?.relTenantIds) {
       AppStorage.set('tenantId', params.relTenantIds);
-      //this.tenantId = params.relTenantIds;
     }
-
-    if (!AppStorage.get('unitId') && params?.unitId) {
-      AppStorage.set('unitId', params.unitId);
-      //this.UnitId = params.unitId;
-    }
-
     // 同步到组件状态
     this.receivedToken = AppStorage.get('token')??'';
     this.tenantId = AppStorage.get('tenantId')??0;
-    this.unitId = AppStorage.get('unitId') ?? '';
 
-    const result = await this.Houchuchaxun();
+    const result = await this.Xuqiuchaxun();
     //const result = await this.Houchuchaxun();// 调用Houchuchaxun方法这个函数是用来查数据的
     //console.log('houchu1', result); // 打印返回结果
 
+    if (result.success && result.records) {
+      this.RecipeFormData = result.records?.map((item: records) => ({
+        id: item.id,
+        date: item.supplyDate,
+        recipeName: item.createTime,
+        mealType: item.mealType_dictText,
+        diningType: item.requirementType_dictText,
+        human:item.reportUserName,
+        summary: item.summary,
+        place: item.mealType_dictText,
+        photoUri:  item.unitName,
+        planningStatus: item.planningStatus
+      } as RecipeFormData));
 
-    if (result.records && result.records.length > 0) {
-
-      this.unitId = result.records?.find(item =>//存放uid
-      item?.unitId && item.unitId.trim() !== '',
-      )?.unitId ?? 'default_unit_id'
-
-    } else {
-      //console.error('未获取到有效数据');
-      this.unitId = ''; // 设置默认值
+    }else {
+      console.error('数据加载失败:', result.message);
     }
-    console.log('rel',this.unitId);
 
-    // console.log('id',this.kitchenStaffs[0].id)//打印id
-    // console.log('kitchenStaffs', this.unitName);
-    console.debug('所有单位:',//打印所有Id
-      result.records?.map(item => item.unitName).filter(Boolean)
-    )
 
-    console.debug('所有Id:',//打印所有Id
-      result.records?.map(item => item.id).filter(Boolean)
-    )
 
-    //   let params = router.getParams()
-    //   if (params && params.toString()) {
-    //     this.selectedText.push(params as RecipeFormData)
-    //   }
-    // if (this.unitOptions.length > 0) {
-    //   this.selectedUnit = this.unitOptions[0]
+    // const filteredRecords = result.records?.filter(item =>
+    // this.selectedUnit === '选择需求单位' ||  // 显示全部
+    //   item.unitName === this.selectedUnit // 按选中单位过滤
+    // ) ?? [];
+    //
+    // if (result.success && filteredRecords) {
+    //   this.RecipeFormData = filteredRecords.map((item: records) => ({
+    //     id: item.id,
+    //     date: item.supplyDate,
+    //     recipeName: item.createTime,
+    //     mealType: item.mealType_dictText,
+    //     diningType: item.requirementType_dictText,
+    //   } as RecipeFormData));
+    //   console.log('444',this.RecipeFormData[1].id);
+    //
+    //
+    //   const unitNames = result.records?.map(item => item.unitName) ?? [];
+    //   const filteredUnitNames = unitNames.filter(Boolean);
+    //   const uniqueUnits = Array.from(new Set(filteredUnitNames));
+    //   this.unitOptions = ['所属单位', ...uniqueUnits];
     // }
   }
 
 
-  private async Houchuchaxun(): Promise<HouchuHandlerResult> { //这个请求是针对查询后厨人员列表的
+  private async Xuqiuchaxun(): Promise<XuqiuHandlerResult> { //这个请求是针对查询后厨人员列表的
     try {
       const httpRequest = http.createHttp();
 
@@ -182,7 +201,7 @@ struct ReportPlanPage {
         };
       }
       console.log('slfj' + response.result.toString())
-      const jsonData = JSON.parse(response.result as string) as HouchuResponse;
+      const jsonData = JSON.parse(response.result as string) as XuqiuResponse;
       console.log('11', jsonData.result.records[1]);
       return {
         success: jsonData.code === 200,
@@ -216,6 +235,8 @@ struct ReportPlanPage {
             .borderWidth(0)// 去除边框
             .onClick(() => {
               this.x = 0
+              this.upload=false
+              this.onPageShow() // 重新加载数据
             })
 
           Button('已上报')
@@ -228,6 +249,8 @@ struct ReportPlanPage {
             .borderWidth(0)
             .onClick(() => {
               this.x = 1
+              this.upload=true
+              this.onPageShow() // 重新加载数据
             })
         }
         .width('100%')
@@ -239,6 +262,7 @@ struct ReportPlanPage {
             .value(this.unitOptions[0])
             .onSelect((index: number) => {
               this.selectedUnit = this.unitOptions[index]
+              this.onPageShow() // 选择单位后自动刷新
             })
 
             .margin(10)
@@ -262,11 +286,37 @@ struct ReportPlanPage {
 
 
         Column() {
-          if (this.selectedText.length  >0) {
+
+          if (this.RecipeFormData.filter(item => {
+            const statusMatch = this.x === 0 ?
+              item.planningStatus === '1' :
+              item.planningStatus === '5';
+            const unitMatch = this.selectedUnit === '选择需求单位' ||
+              item.photoUri === this.selectedUnit;
+            const dateMatch = this.selectedDate === '请选择供应日期' ||
+              item.date === this.selectedDate;
+            return statusMatch && unitMatch && dateMatch;
+          }).length > 0) {
               List(){
-                ForEach(this.selectedText, (formData: RecipeFormData) => {
+                ForEach(this.RecipeFormData.filter(item => {
+                  // 核心筛选逻辑
+                  const statusMatch = this.x === 0 ?
+                    item.planningStatus === '1' :
+                    item.planningStatus === '5';
+
+                  // 添加单位筛选（默认选项时显示全部）
+                  const unitMatch = this.selectedUnit === '选择需求单位' ||
+                    item.photoUri === this.selectedUnit;
+
+                  // 添加日期筛选（默认选项时显示全部）
+                  const dateMatch = this.selectedDate === '请选择供应日期' ||
+                    item.date === this.selectedDate;
+
+                  return statusMatch && unitMatch && dateMatch;
+                }), (formData: RecipeFormData) => {
                     ListItem()
                     {
+                      //中间卡片部分神中神
                         Column() {
                           Text(formData.photoUri?? 'N/A')
                             .width('100%')
@@ -287,6 +337,16 @@ struct ReportPlanPage {
                                 .width('70%')
                                 .fontSize(12)
                                 .fontColor('#666666')
+                              if (this.upload) {
+                                Image($r('app.media.approved'))
+                                  .width('30%')
+                                  .position({ top: -20, right: 1})
+                              }else  {
+                                Image($r('app.media.notReported'))
+                                  .width('30%')
+                                  .position({ top: -20, right: 1})
+                                //.visible(formData.status === '已上报')
+                              }
                             }
 
                             .justifyContent(FlexAlign.Start)
@@ -343,7 +403,7 @@ struct ReportPlanPage {
                                 .width('30%')
                                 .fontSize(12)
                                 .fontColor('#333333')
-                              Text('人')
+                              Text(formData.human??'人')
                                 .width('70%')
                                 .fontSize(12)
                                 .fontColor('#666666')
@@ -363,17 +423,15 @@ struct ReportPlanPage {
                                 .width('30%')
                                 .fontSize(12)
                                 .fontColor('#333333')
-                              Text('无')
+                              Text(formData.summary??'无')
                                 .width('70%')
                                 .fontSize(12)
                                 .fontColor('#666666')
                             }
-
-
-
-                            // 操作按钮
-                            Row({ space: 5 }) {
-                              Button('重新编辑')
+                            //以上报按钮
+                            if (this.upload){
+                              Row({space:83}){
+                                Button('复制订单')
                                 .backgroundColor('#ffffffff')
                                 .fontColor('#4CAF50')
                                 .fontSize(10)
@@ -383,41 +441,68 @@ struct ReportPlanPage {
                                   width: 1
                                 })
                                 .onClick(() => {
-                                  router.pushUrl({
-                                    url: 'pages/addPlan' })
                                 })
-
-                              Button('单据日志')
-                                .backgroundColor('#ffffffff')
-                                .fontColor('#4CAF50')
-                                .fontSize(10)
-                                .borderRadius(12)
-                                .border({
-                                  color: '#4CAF50',
-                                  width: 1
-                                })
-
-                              Button('删除单据')
-                                .backgroundColor('#ffffffff')
-                                .fontColor('#4CAF50')
-                                .fontSize(10)
-                                .borderRadius(12)
-                                .border({
-                                  color: '#4CAF50',
-                                  width: 1
-                                })
-                                .onClick(() => {
-                                  this.selectedText = this.selectedText.filter(item => item !== formData)
-                                })
+                                Button('单据日志')
+                                  .backgroundColor('#ffffffff')
+                                  .fontColor('#4CAF50')
+                                  .fontSize(10)
+                                  .borderRadius(12)
+                                  .border({
+                                    color: '#4CAF50',
+                                    width: 1
+                                  })
+                                  .onClick(() => {
+                                  })
+                              }
+                            }
+                            else {
+                              // 操作按钮
+                              Row({ space: 5 }) {
+                                Button('重新编辑')
+                                  .backgroundColor('#ffffffff')
+                                  .fontColor('#4CAF50')
+                                  .fontSize(10)
+                                  .borderRadius(12)
+                                  .border({
+                                    color: '#4CAF50',
+                                    width: 1
+                                  })
+                                  .onClick(() => {
+                                    router.pushUrl({
+                                      url: 'pages/addPlan' })
+                                  })
+                                Button('单据日志')
+                                  .backgroundColor('#ffffffff')
+                                  .fontColor('#4CAF50')
+                                  .fontSize(10)
+                                  .borderRadius(12)
+                                  .border({
+                                    color: '#4CAF50',
+                                    width: 1
+                                  })
+                                Button('删除单据')
+                                  .backgroundColor('#ffffffff')
+                                  .fontColor('#4CAF50')
+                                  .fontSize(10)
+                                  .borderRadius(12)
+                                  .border({
+                                    color: '#4CAF50',
+                                    width: 1
+                                  })
+                                  .onClick(() => {
+                                    this.RecipeFormData = this.RecipeFormData.filter(item => item !== formData)
+                                  })
+                              }
                             }
                           }
+                          .padding({ left: 10, right: 10, top: 5, bottom: 10 })
                           .backgroundColor(Color.White)
                           .width('100%')
                           .justifyContent(FlexAlign.Start)
                         }
                         //.padding({ left: 1, right: 10, top: 5, bottom: 10 })
                         .backgroundColor('#4CAF50')
-                        .width('80%')
+                        .width('90%')
                         .height('auto')
                         .alignItems(HorizontalAlign.Center)
                         .border({
@@ -425,11 +510,20 @@ struct ReportPlanPage {
                           color: '#4CAF50',
                           radius: 8
                         })
+                      .onClick(() => {
+                        if (this.upload) {
+                          router.pushUrl({
+                            url: 'pages/uploadcase' })
+
+                        }
+
+                      })
                     }
                     .width('100%')
-                    .margin({left:0,right: 10, bottom:10 })
+                    .margin({left:10,right: 10, bottom:10 })
                 })
               }
+
               .width('100%')
               .borderRadius(8)
           } else {
@@ -444,7 +538,7 @@ struct ReportPlanPage {
 
         }
         .width('100%')
-        .backgroundColor('#f2dbdada')
+        //.backgroundColor('#f2dbdada')
         .layoutWeight(1)
 
         Button('新建上报计划', { type: ButtonType.Capsule })
@@ -462,7 +556,7 @@ struct ReportPlanPage {
             //   diningType: '堂食',
             //   place: '食堂A'
             // };
-            // this.selectedText.push(newForm);
+            // this.RecipeFormData.push(newForm);
             router.pushUrl({
               url: 'pages/addPlan',
               params: {
@@ -489,12 +583,14 @@ struct ReportPlanPage {
       onAccept: (value: DatePickerResult) => {
         // 使用可选链和默认值保证安全性
         const year = value.year ?? new Date().getFullYear()
-        const month = value.month ?? new Date().getMonth() + 1
+        const month = value.month ?? new Date().getMonth()+1
         const day = value.day ?? new Date().getDate()
 
-        this.selectDate = new Date(year, month - 1, day)
-        this.selectedDate = `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`
+        this.selectDate = new Date(year, month , day)
+        this.selectedDate = `${year}-${(month+1).toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
+
       }
+
     })
   }
 

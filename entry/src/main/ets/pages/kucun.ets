@@ -1,7 +1,11 @@
+
 import router from '@ohos.router';
 import http from '@ohos.net.http';
 import { BusinessError } from '@ohos.base';
 import promptAction from '@ohos.promptAction';
+
+AppStorage.setOrCreate('token', '');
+AppStorage.setOrCreate('tenantId', 0);
 
 // 接口响应数据类型定义
 interface OutboundOrder {
@@ -27,13 +31,11 @@ interface OutboundOrder {
   stockStatus_dictText: string;
   totalPrice: number;
 }
-
 // 领用单位接口响应类型
 interface AuthUnitVo {
   id: string;
   unitName: string;
 }
-
 interface UnitResponse {
   code: number;
   message: string;
@@ -41,7 +43,6 @@ interface UnitResponse {
   success: boolean;
   timestamp: number;
 }
-
 interface GeneratedTypeLiteralInterface_1 {
   current: number;
   pages: number;
@@ -49,7 +50,6 @@ interface GeneratedTypeLiteralInterface_1 {
   size: number;
   total: number;
 }
-
 interface ApiResponse {
   code: number;
   message: string;
@@ -57,12 +57,14 @@ interface ApiResponse {
   success: boolean;
   timestamp: number;
 }
-
-interface RouterParams {
+interface RouteParams {
   token?: string;
   relTenantIds?: number;
+  id?: string;
+  documentNo?: string;
+  demandUnit?: string;
+  demandUnitName?: string;
 }
-
 // 定义 SelectOption 接口
 interface SelectOption {
   value: string;
@@ -78,7 +80,9 @@ struct PurchaseInventory {
   @State selectedValue: string = '领用单位';
   @State currentTabContent: string = '待审批';
   @State isPressed: boolean = false;
-
+  @State receivedToken: string = '';//参数传递
+  @State tenantId: number = 0;//同上
+  @State unitId: string ='';
   // 分页相关状态
   @State pageNo: number = 1;
   @State pageSize: number = 10;
@@ -86,25 +90,37 @@ struct PurchaseInventory {
   @State loading: boolean = false;
   @State orderList: OutboundOrder[] = [];
 
-  // 存储路由参数
-  @State token: string = '';
-  @State tenantId: number = 0;
-
   // 领用单位列表
   @State unitList: AuthUnitVo[] = [];
   @State options: SelectOption[] = [];
 
-  aboutToAppear() {
-    try {
-      const params = router.getParams() as RouterParams;
-      if (params) {
-        this.token = params.token || '';
-        this.tenantId = params.relTenantIds || 0;
-      }
-      this.queryUnitList(); // 先获取领用单位列表
-    } catch (error) {
-      console.error('Router params error:', (error as BusinessError).message);
+  @State accountingDate: string = ''
+  @State mealType: string = ''
+  @State requirementType: string = ''
+  @State mealCategory: string = ''
+  @State digest: string = ''
+
+  async onPageShow(){
+    // 使用接口类型断言
+    const params = router.getParams() as RouteParams;
+    //console.log('houch11u', params?.token);// 打印接收到的参数
+    // 安全取值如果返回值空，则使用appsetcreat中所预保存的token和id
+    if (!AppStorage.get('token') && params?.token) {
+      AppStorage.set('token', params.token);
+      //console.log('houchu', AppStorage.get('token'));
+      //this.receivedToken = params.token;
     }
+    if (!AppStorage.get('tenantId') && params?.relTenantIds) {
+      AppStorage.set('tenantId', params.relTenantIds);
+      //this.tenantId = params.relTenantIds;
+    }
+
+    // 同步到组件状态
+    this.receivedToken = AppStorage.get('token')??'';
+    this.tenantId = AppStorage.get('tenantId')??0;
+    // console.log('houchu1', this.receivedToken);
+    // console.log('houchu2', this.tenantId);
+
   }
 
   // 查询领用单位列表
@@ -120,7 +136,7 @@ struct PurchaseInventory {
           header: {
             'Content-Type': 'application/x-www-form-urlencoded',
             'tenant-id': this.tenantId.toString(),
-            'X-Access-Token': this.token
+            'X-Access-Token': this.receivedToken
           },
           extraData: {
             unitType: '1' // 固定传参：1-餐厅类型
@@ -137,8 +153,6 @@ struct PurchaseInventory {
             acc.push({ value: unit.unitName });
             return acc;
           }, [{ value: '领用单位' }] as SelectOption[]);
-
-
 
           // 获取完单位列表后加载订单数据
           this.loadData();
@@ -182,7 +196,7 @@ struct PurchaseInventory {
             'Content-Type': 'application/json;charset=UTF-8',
             'Accept': 'application/json, text/plain, */*',
             'tenant-id': this.tenantId.toString(),
-            'X-Access-Token': this.token
+            'X-Access-Token': this.receivedToken
           },
           extraData: {
             pageNo: this.pageNo,
@@ -319,16 +333,55 @@ struct PurchaseInventory {
           } else {
             ForEach(this.orderList, (item: OutboundOrder, index: number) => {
               Column() {
-                Text(item.demandUnitName || '实训第一学校餐厅')
-                  .fontSize(20)
-                  .fontWeight(FontWeight.Bold)
-                  .margin({ bottom: 8 });
-                Text(`单据号：${item.documentNo}`).fontSize(16).margin({ bottom: 2 });
-                Text(`出库日期：${item.accountingDate}`).fontSize(16).margin({ bottom: 2 });
-                Text(`出库类型：${item.mealType_dictText}`).fontSize(16).margin({ bottom: 2 });
-                Text(`用餐类型：${item.requirementType_dictText}`).fontSize(16).margin({ bottom: 2 });
-                Text(`餐    别：${item.mealCategory_dictText}`).fontSize(16).margin({ bottom: 2 });
-                Text(`制单时间：${item.createTime}`).fontSize(16).margin({ bottom: 2 });
+                // 添加一个 Row 来包含标题和删除按钮
+                Row() {
+                  Text(item.demandUnitName || '实训第一学校餐厅')
+                    .fontSize(20)
+                    .fontWeight(FontWeight.Bold)
+                    .layoutWeight(1) // 让文本占据剩余空间io
+
+                  if (this.activeTab === 0) { // 只在待审批状态显示删除按钮
+                    Image($r('app.media.del')) // 确保有删除图标资源
+                      .width(24)
+                      .height(24)
+                      .margin({ left: 8 })
+                      .onClick((event: ClickEvent) => {
+                         // 阻止事件冒泡，避免触发卡片点击
+                        promptAction.showDialog({
+                          title: '确认删除',
+                          message: '是否确认删除该出库单？',
+                          buttons: [
+                            {
+                              text: '取消',
+                              color: '#666666'
+                            },
+                            {
+                              text: '确认',
+                              color: '#E84335'
+                            }
+                          ]
+                        }).then(result => {
+                          if (result.index === 1) {
+                            // TODO: 调用删除接口
+                            promptAction.showToast({
+                              message: '删除成功',
+                              duration: 2000
+                            })
+                          }
+                        })
+                      })
+                  }
+                }
+                .width('100%')
+                .margin({ bottom: 8 })
+
+                // 其他信息保持不变
+                Text(`单据号：${item.documentNo}`).fontSize(16).margin({ bottom: 2 })
+                Text(`出库日期：${item.accountingDate}`).fontSize(16).margin({ bottom: 2 })
+                Text(`出库类型：${item.mealType_dictText}`).fontSize(16).margin({ bottom: 2 })
+                Text(`用餐类型：${item.requirementType_dictText}`).fontSize(16).margin({ bottom: 2 })
+                Text(`餐    别：${item.mealCategory_dictText}`).fontSize(16).margin({ bottom: 2 })
+                Text(`制单时间：${item.createTime}`).fontSize(16).margin({ bottom: 2 })
               }
               .key(index.toString()) // 确保每个项有唯一的 key
               .padding(16)
@@ -339,14 +392,42 @@ struct PurchaseInventory {
               .margin({ top: 20, bottom: 20 })
               .shadow({ radius: 8, color: '#07C160', offsetX: 0, offsetY: 4 })
               .onClick(() => {
-                router.pushUrl({
-                  url: 'pages/yishenpi',
-                  params: {
-                    orderId: item.id,
-                    token: this.token,
-                    relTenantIds: this.tenantId
-                  }
-                });
+                if (this.activeTab === 0) { // 待审批b
+                  router.pushUrl({
+                    url: 'pages/editChuku',
+                    params: {
+                      token: this.receivedToken,
+                      relTenantIds: this.tenantId,
+                      unitId: this.unitId,
+                      id: item.id,
+                      documentNo: item.documentNo,
+                      accountingDate: item.accountingDate,
+                      mealType: item.mealType,
+                      requirementType: item.requirementType,
+                      mealCategory: item.mealCategory,
+                      digest: item.digest,
+                      demandUnit: item.demandUnit,
+                      demandUnitName: item.demandUnitName
+                    }
+                  });
+                  console.log('token',this.receivedToken);
+                  console.log('relTenantIds',this.tenantId);
+                  // console.log('unitId',this.unitId);
+                  // console.log('accountingDate',this.accountingDate);
+                  // console.log('mealType',this.mealType);
+                  // console.log('requirementType',this.requirementType);
+                  // console.log('mealCategory',this.mealCategory);
+                  // console.log('digest',this.digest)
+                } else { // 已审批
+                  router.replaceUrl({
+                    url: 'pages/yishenpi',
+                    params: {
+                      orderId: item.id,
+                      token: this.receivedToken,
+                      relTenantIds: this.tenantId
+                    }
+                  });
+                }
                 console.log('IDDDDD',item.id);
               });
             });
@@ -364,6 +445,7 @@ struct PurchaseInventory {
             }
           }
         }
+
         .width('100%')
         .height('80%')
         .justifyContent(FlexAlign.Center)
@@ -396,7 +478,7 @@ struct PurchaseInventory {
           router.pushUrl({
             url: 'pages/chukudan',
             params: {
-              token: this.token,
+              token: this.receivedToken,
               relTenantIds: this.tenantId
             }
           });
