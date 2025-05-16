@@ -7,13 +7,17 @@ AppStorage.setOrCreate('tenantId', 0);
 AppStorage.setOrCreate('unitId', '');
 
 interface RecipeFormData extends records{
+  photoUri: string;//卡片名对应地点
   id?: string;
   date: string;// 供应时间
   recipeName: string;//制单时间
   mealType: string;//需求类型
+  human: string;
   diningType: string;//用餐类型
+  summary:  string;
   place: string;//餐别
-  photoUri: string;
+  planningStatus:string;
+
 }
 
 interface records{//定义接口返回类型
@@ -135,6 +139,11 @@ struct ReportPlanPage {
         recipeName: item.createTime,
         mealType: item.mealType_dictText,
         diningType: item.requirementType_dictText,
+        human:item.reportUserName,
+        summary: item.summary,
+        place: item.mealType_dictText,
+        photoUri:  item.unitName,
+        planningStatus: item.planningStatus
       } as RecipeFormData));
 
     }else {
@@ -365,7 +374,7 @@ struct ReportPlanPage {
                                 .width('30%')
                                 .fontSize(12)
                                 .fontColor('#333333')
-                              Text('人')
+                              Text(formData.human??'人')
                                 .width('70%')
                                 .fontSize(12)
                                 .fontColor('#666666')
@@ -385,7 +394,7 @@ struct ReportPlanPage {
                                 .width('30%')
                                 .fontSize(12)
                                 .fontColor('#333333')
-                              Text('无')
+                              Text(formData.summary??'无')
                                 .width('70%')
                                 .fontSize(12)
                                 .fontColor('#666666')
