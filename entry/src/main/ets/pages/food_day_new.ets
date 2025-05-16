@@ -266,7 +266,7 @@ struct food_day_new {
   onPageShow(): void {
     const params = router.getParams() as GeneratedObjectLiteralInterface_1;
     if (params) {
-      this.PageType = '上报'
+      this.PageType = '修改食谱'
 
       this.Id = params.id
 

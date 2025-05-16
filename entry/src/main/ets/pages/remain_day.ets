@@ -1,5 +1,6 @@
 import router from '@ohos.router';
 import http from '@ohos.net.http';
+import prompt from '@ohos.prompt';
 
 AppStorage.setOrCreate('token', '');
 AppStorage.setOrCreate('tenantId', 0);
@@ -35,6 +36,7 @@ interface  records{//定义接口返回类型
 
   // 其他字段根据实际API响应补充...
 }
+
 interface SampleFormData {
   id?: string;
   unitName?: string;
@@ -50,6 +52,7 @@ interface SampleFormData {
   fridgeImages?: string[];
   remark?: string;
 }
+
 interface everydayremain{
   records: SampleFormData[],
   total: number,
@@ -60,23 +63,20 @@ interface ApiResponse {
   message: string;
   result?: everydayremain;
 }
-// 修改 RouterParams 接口定义
+
 interface RouterParams {
   formData?: SampleFormData;
   token?: string;         // 新增：允许 token 属性
   relTenantIds?: number;  // 新增：允许 relTenantIds 属性
 }
 
-
 @Entry
 @Component
 struct CalendarPage {
   @State samples: SampleFormData[] = [];
   @State filteredSamples: SampleFormData[] = [];
-
   @State receivedToken: string = ''; // 接收 token
   @State tenantId: number = 0;       // 接收租户 ID
-
 
   // 当前显示的月份和年份（响应式状态变量）
   @State private currentDate: Date = new Date()
@@ -84,14 +84,18 @@ struct CalendarPage {
   @State private selectedDate: Date = new Date()
   // 星期显示文本
   private weekDays: string[] = ['日', '一', '二', '三', '四', '五', '六']
-
-  private formatDate(date: Date): string {
-    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-  }
-
+  // 查询接口
   private async loadSamplesFromServer() {
     try {
       const httpRequest = http.createHttp();
+
+      console.info('Request Headers:', {
+        'X-Access-Token': this.receivedToken,
+        'Tenant-Id': this.tenantId
+      });
+      console.info('Token value:', this.receivedToken);
+      console.info('TenantId value:', this.tenantId);
+
       const response = await httpRequest.request(
         `https://api.suoeryun.com/ifood/jeecg-school/school/xxReservedSample/list`, // 示例接口地址
         {
@@ -108,7 +112,11 @@ struct CalendarPage {
         if (jsonData.code === 200 && jsonData.result) {
           // this.samples = jsonData.result || [];
           this.samples =  jsonData.result.records
-          console.log('this.samples:', this.samples[0].id)
+          if (this.samples.length > 0) {
+            console.log('this.samples[0].id:', this.samples[0].id)
+          } else {
+            console.log('this.samples is empty');
+          }
         } else {
           console.error('获取数据失败:', jsonData.message);
         }
@@ -120,7 +128,7 @@ struct CalendarPage {
     }
   }
 
-
+  // 日期列表制作
   private getDatesForWeek(): number[] {
     // 计算当月第一天
     const firstDayOfMonth = new Date(this.currentDate.getFullYear(), this.currentDate.getMonth(), 1)
@@ -143,7 +151,6 @@ struct CalendarPage {
     }
     return dates;
   }
-
   private changeWeek(increment: number) {
     const newDate = new Date(this.selectedDate);
     newDate.setDate(this.selectedDate.getDate() + increment * 7);
@@ -152,10 +159,10 @@ struct CalendarPage {
     this.selectedDate = newDate;
 
     // 切换周后重新加载数据
-    void this.loadSamplesFromServer();
+    void this.loadSamplesFromServer().then(()=>{
+      this.filterSamplesBySelectedDate();
+    });
   }
-
-
   @Builder
   private CalendarHeaderBuilder() {
     Row() {
@@ -182,7 +189,6 @@ struct CalendarPage {
     .padding({ left: 16, right: 16, top: 12, bottom: 12 })
     .backgroundColor('#00C853')
   }
-
   @Builder
   private WeekDaysBuilder() {
     Row() {
@@ -199,6 +205,7 @@ struct CalendarPage {
     .padding({ top: 8, bottom: 8 })
   }
 
+  // 接收id和token
   async onPageShow() {
       const params = router.getParams() as RouterParams;
 
@@ -207,30 +214,52 @@ struct CalendarPage {
       }
 
       // 接收 token 和租户 ID
-      if (params?.token) {
-        this.receivedToken = params.token;
-      }
-      if (params?.relTenantIds !== undefined) {
-        this.tenantId = params.relTenantIds;
-      }
+    if (params?.token) {
+      this.receivedToken = params.token;
+      AppStorage.set('token', params.token); // 同步保存到 AppStorage
+    } else {
+      this.receivedToken = AppStorage.get('token') ?? ''; // 从本地恢复 token
+    }
 
+    if (params?.relTenantIds !== undefined) {
+      this.tenantId = params.relTenantIds;
+      AppStorage.set('tenantId', params.relTenantIds); // 同步保存 tenantId
+    } else {
+      this.tenantId = AppStorage.get('tenantId') ?? 0; // 从本地恢复 tenantId
+    }
       // 可选：根据当前选中日期加载数据
       // await this.loadSamplesFromServer(this.formatDate(this.selectedDate));
       await this.loadSamplesFromServer();
+     this.filterSamplesBySelectedDate();
 
   }
 
+  // 筛选
+  private formatDate(date: Date): string {
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+  }
+  private filterSamplesBySelectedDate() {
+    const selectedDateString = this.formatDate(this.selectedDate);
+    this.filteredSamples = this.samples.filter(sample =>
+    sample.createTime && sample.createTime.startsWith(selectedDateString)
+    );
+  }
+
+  // 制作卡片
   @Builder
   renderSampleCards() {
     Scroll() {
       Column() {
-        ForEach(this.samples, (sample: SampleFormData) => {
+        ForEach(this.filteredSamples, (sample: SampleFormData) => {
           this.renderSampleCard(sample);
         }, (item: SampleFormData) => item.id || Math.random().toString())
       }
+      .width('100%')
+      .height('100%')
     }
     .zIndex(0)
-    .scrollBarWidth(0)
+    .scrollBarWidth(0) // 隐藏滚动条
+    .edgeEffect(EdgeEffect.Spring) // 添加下拉回弹效果
     .height('100%');
   }
 
@@ -240,34 +269,33 @@ struct CalendarPage {
       this.renderSampleCard(this.samples[0]);
     }
   }
-
   @Builder
   renderSampleCard(sample: SampleFormData) {
     Stack() {
       Column({ space: 10 }) {
         // 菜品名称
         Text(`菜品名称: ${sample.dishName} `)
-          .fontSize(18)
+          .fontSize(20)
           .fontWeight(FontWeight.Bold)
           .margin({ left: 16 })
           .width('100%')
         // 制单日期
         Text(`制单日期: ${sample.createTime || '无'}`)
-          .fontSize(14)
+          .fontSize(16)
           .fontColor('#666')
           .margin({ left: 16 })
           .width('100%');
 
         // 提交人
         Text(`销毁人员: ${sample.destroyPerson || '无'}`)
-          .fontSize(14)
+          .fontSize(16)
           .fontColor('#666')
           .margin({ left: 16 })
           .width('100%');
 
         // 销毁日期
         Text(`销毁日期: ${sample.destroyTime || '无'}`)
-          .fontSize(14)
+          .fontSize(16)
           .fontColor('#666')
           .margin({ left: 16 })
           .width('100%');
@@ -275,7 +303,16 @@ struct CalendarPage {
         Row({ space: 10 }) {
           Button('重新编辑')
             .onClick(() => {
-              // 可以跳转到详情页或弹出对话框
+              router.pushUrl({
+                url: 'pages/remain_day_new',
+                params: {
+                  formData: sample, // 直接传递当前 sample 数据
+                  token: this.receivedToken,
+                  relTenantIds: this.tenantId
+                }
+
+              });
+              console.log( 'samples',this.samples.toString())
             })
             .margin({left:'35%'})
             .backgroundColor(Color.White)
@@ -285,7 +322,17 @@ struct CalendarPage {
 
           Button('删除单据')
             .onClick(() => {
-              this.samples = this.samples.filter(s => s.id !== sample.id);
+                AlertDialog.show({
+                  title: '确认删除',
+                  message: '确定要删除这条留样记录吗？',
+                  confirm: {
+                    value: '确定',
+                    action: () => this.deleteSample(sample.id ?? '')
+                  },
+                  cancel:()=> {
+                  }
+                });
+
             })
             .backgroundColor(Color.White)
             .fontColor('#00C853')
@@ -305,10 +352,51 @@ struct CalendarPage {
     }
   }
 
+  // 删除
+  private async deleteSample(id: string) {
+  if (!id) {
+    console.warn('无效的留样ID');
+    return;
+  }
 
-  /**
-   * 组件构建方法
-   */
+  try {
+    const httpRequest = http.createHttp();
+    const url = `https://api.suoeryun.com/ifood/jeecg-school/school/xxReservedSample/delete?id=${encodeURIComponent(id)}`;
+
+    const response = await httpRequest.request(url, {
+        method: http.RequestMethod.DELETE,
+        header: {
+          'Content-Type': 'application/json',
+          'X-Access-Token': this.receivedToken,
+          'Tenant-Id': this.tenantId.toString()
+        },
+        connectTimeout: 60000,
+        readTimeout: 60000
+      }
+    );
+
+    if (response.responseCode === 200) {
+      const result = JSON.parse(response.result as string) as ApiResponse;
+      if (result.code === 200) {
+        prompt.showToast({ message: '删除成功' });
+        // 从本地状态中移除该记录
+        this.samples = this.samples.filter(s => s.id !== id);
+        this.filterSamplesBySelectedDate(); // 更新视图
+      } else {
+        console.error('删除失败:', result.message);
+        prompt.showToast({ message: '删除失败: ' + result.message });
+      }
+    } else {
+      console.error('HTTP 请求失败:', response.responseCode);
+      prompt.showToast({ message: '网络请求失败' });
+    }
+  } catch (error) {
+    console.error('删除异常:', error);
+    prompt.showToast({ message: '删除时发生错误' });
+  }
+}
+
+
   build() {
     Column() {
       // 渲染日历头部
@@ -341,10 +429,12 @@ struct CalendarPage {
             .height(50)
             .justifyContent(FlexAlign.Center)
             .onClick(() => {
-              const newDate = new Date(this.selectedDate)
-              newDate.setDate(date)
-              this.selectedDate = newDate
+              const newDate = new Date(this.selectedDate);
+              newDate.setDate(date);
+              this.selectedDate = newDate;
+              this.filterSamplesBySelectedDate(); // 点击后立即筛选
             })
+
           })
         }
         .width('100%')
@@ -355,7 +445,7 @@ struct CalendarPage {
 
       // 数据卡片区域（占满中间部分）
       Column() {
-        if (this.samples.length == 0) {
+        if (this.filteredSamples.length == 0) {
           Text('~ 暂无相关数据 ~')
             .fontSize(16)
             .fontColor(Color.Gray)
@@ -369,7 +459,8 @@ struct CalendarPage {
       // .padding({ top: 16, bottom: 6 })
       .layoutWeight(1)// 占据剩余空间
       .margin({ left: 5, right: 5 })
-
+      .justifyContent(FlexAlign.Start)     // 关键：让卡片内容靠上排列
+      .backgroundColor('#F5F5F5')        // 可选背景色
       // 【关键】新增留样按钮固定在底部
       Column() {
         Button('新增留样')
