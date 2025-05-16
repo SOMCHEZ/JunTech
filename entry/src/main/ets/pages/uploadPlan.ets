@@ -7,13 +7,17 @@ AppStorage.setOrCreate('tenantId', 0);
 AppStorage.setOrCreate('unitId', '');
 
 interface RecipeFormData extends records{
+  photoUri: string;//卡片名对应地点
   id?: string;
   date: string;// 供应时间
   recipeName: string;//制单时间
   mealType: string;//需求类型
+  human: string;
   diningType: string;//用餐类型
+  summary:  string;
   place: string;//餐别
-  photoUri: string;
+  planningStatus:string;
+
 }
 
 interface records{//定义接口返回类型
@@ -90,7 +94,7 @@ struct ReportPlanPage {
   @State x: number = 0
   @State s: number = 0
   @State name: string = ''
-  @State selectedUnit: string = '请选择需求单位'
+  @State selectedUnit: string = '选择需求单位'
   @State selectedDate: string = '请选择供应日期'
   @State selectDate: Date = new Date()
   @State RecipeFormData: RecipeFormData[] =[]
@@ -101,7 +105,7 @@ struct ReportPlanPage {
   private unitOptions = [
     '选择需求单位',
     '实验第二学校（库房）',
-    '实验第二学校餐厅'
+    '实训第二学校餐厅'
   ]
 
   // 修改生命周期函数
@@ -135,6 +139,11 @@ struct ReportPlanPage {
         recipeName: item.createTime,
         mealType: item.mealType_dictText,
         diningType: item.requirementType_dictText,
+        human:item.reportUserName,
+        summary: item.summary,
+        place: item.mealType_dictText,
+        photoUri:  item.unitName,
+        planningStatus: item.planningStatus
       } as RecipeFormData));
 
     }else {
@@ -227,6 +236,7 @@ struct ReportPlanPage {
             .onClick(() => {
               this.x = 0
               this.upload=false
+              this.onPageShow() // 重新加载数据
             })
 
           Button('已上报')
@@ -240,6 +250,7 @@ struct ReportPlanPage {
             .onClick(() => {
               this.x = 1
               this.upload=true
+              this.onPageShow() // 重新加载数据
             })
         }
         .width('100%')
@@ -251,6 +262,7 @@ struct ReportPlanPage {
             .value(this.unitOptions[0])
             .onSelect((index: number) => {
               this.selectedUnit = this.unitOptions[index]
+              this.onPageShow() // 选择单位后自动刷新
             })
 
             .margin(10)
@@ -274,11 +286,37 @@ struct ReportPlanPage {
 
 
         Column() {
-          if (this.RecipeFormData.length  >0) {
+
+          if (this.RecipeFormData.filter(item => {
+            const statusMatch = this.x === 0 ?
+              item.planningStatus === '1' :
+              item.planningStatus === '5';
+            const unitMatch = this.selectedUnit === '选择需求单位' ||
+              item.photoUri === this.selectedUnit;
+            const dateMatch = this.selectedDate === '请选择供应日期' ||
+              item.date === this.selectedDate;
+            return statusMatch && unitMatch && dateMatch;
+          }).length > 0) {
               List(){
-                ForEach(this.RecipeFormData, (formData: RecipeFormData) => {
+                ForEach(this.RecipeFormData.filter(item => {
+                  // 核心筛选逻辑
+                  const statusMatch = this.x === 0 ?
+                    item.planningStatus === '1' :
+                    item.planningStatus === '5';
+
+                  // 添加单位筛选（默认选项时显示全部）
+                  const unitMatch = this.selectedUnit === '选择需求单位' ||
+                    item.photoUri === this.selectedUnit;
+
+                  // 添加日期筛选（默认选项时显示全部）
+                  const dateMatch = this.selectedDate === '请选择供应日期' ||
+                    item.date === this.selectedDate;
+
+                  return statusMatch && unitMatch && dateMatch;
+                }), (formData: RecipeFormData) => {
                     ListItem()
                     {
+                      //中间卡片部分神中神
                         Column() {
                           Text(formData.photoUri?? 'N/A')
                             .width('100%')
@@ -365,7 +403,7 @@ struct ReportPlanPage {
                                 .width('30%')
                                 .fontSize(12)
                                 .fontColor('#333333')
-                              Text('人')
+                              Text(formData.human??'人')
                                 .width('70%')
                                 .fontSize(12)
                                 .fontColor('#666666')
@@ -385,17 +423,15 @@ struct ReportPlanPage {
                                 .width('30%')
                                 .fontSize(12)
                                 .fontColor('#333333')
-                              Text('无')
+                              Text(formData.summary??'无')
                                 .width('70%')
                                 .fontSize(12)
                                 .fontColor('#666666')
                             }
-
-
-
-                            // 操作按钮
-                            Row({ space: 5 }) {
-                              Button('重新编辑')
+                            //以上报按钮
+                            if (this.upload){
+                              Row({space:83}){
+                                Button('复制订单')
                                 .backgroundColor('#ffffffff')
                                 .fontColor('#4CAF50')
                                 .fontSize(10)
@@ -405,32 +441,58 @@ struct ReportPlanPage {
                                   width: 1
                                 })
                                 .onClick(() => {
-                                  router.pushUrl({
-                                    url: 'pages/addPlan' })
                                 })
-
-                              Button('单据日志')
-                                .backgroundColor('#ffffffff')
-                                .fontColor('#4CAF50')
-                                .fontSize(10)
-                                .borderRadius(12)
-                                .border({
-                                  color: '#4CAF50',
-                                  width: 1
-                                })
-
-                              Button('删除单据')
-                                .backgroundColor('#ffffffff')
-                                .fontColor('#4CAF50')
-                                .fontSize(10)
-                                .borderRadius(12)
-                                .border({
-                                  color: '#4CAF50',
-                                  width: 1
-                                })
-                                .onClick(() => {
-                                  this.RecipeFormData = this.RecipeFormData.filter(item => item !== formData)
-                                })
+                                Button('单据日志')
+                                  .backgroundColor('#ffffffff')
+                                  .fontColor('#4CAF50')
+                                  .fontSize(10)
+                                  .borderRadius(12)
+                                  .border({
+                                    color: '#4CAF50',
+                                    width: 1
+                                  })
+                                  .onClick(() => {
+                                  })
+                              }
+                            }
+                            else {
+                              // 操作按钮
+                              Row({ space: 5 }) {
+                                Button('重新编辑')
+                                  .backgroundColor('#ffffffff')
+                                  .fontColor('#4CAF50')
+                                  .fontSize(10)
+                                  .borderRadius(12)
+                                  .border({
+                                    color: '#4CAF50',
+                                    width: 1
+                                  })
+                                  .onClick(() => {
+                                    router.pushUrl({
+                                      url: 'pages/addPlan' })
+                                  })
+                                Button('单据日志')
+                                  .backgroundColor('#ffffffff')
+                                  .fontColor('#4CAF50')
+                                  .fontSize(10)
+                                  .borderRadius(12)
+                                  .border({
+                                    color: '#4CAF50',
+                                    width: 1
+                                  })
+                                Button('删除单据')
+                                  .backgroundColor('#ffffffff')
+                                  .fontColor('#4CAF50')
+                                  .fontSize(10)
+                                  .borderRadius(12)
+                                  .border({
+                                    color: '#4CAF50',
+                                    width: 1
+                                  })
+                                  .onClick(() => {
+                                    this.RecipeFormData = this.RecipeFormData.filter(item => item !== formData)
+                                  })
+                              }
                             }
                           }
                           .padding({ left: 10, right: 10, top: 5, bottom: 10 })
@@ -448,11 +510,20 @@ struct ReportPlanPage {
                           color: '#4CAF50',
                           radius: 8
                         })
+                      .onClick(() => {
+                        if (this.upload) {
+                          router.pushUrl({
+                            url: 'pages/uploadcase' })
+
+                        }
+
+                      })
                     }
                     .width('100%')
                     .margin({left:10,right: 10, bottom:10 })
                 })
               }
+
               .width('100%')
               .borderRadius(8)
           } else {
@@ -512,12 +583,14 @@ struct ReportPlanPage {
       onAccept: (value: DatePickerResult) => {
         // 使用可选链和默认值保证安全性
         const year = value.year ?? new Date().getFullYear()
-        const month = value.month ?? new Date().getMonth() + 1
+        const month = value.month ?? new Date().getMonth()+1
         const day = value.day ?? new Date().getDate()
 
-        this.selectDate = new Date(year, month - 1, day)
-        this.selectedDate = `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`
+        this.selectDate = new Date(year, month , day)
+        this.selectedDate = `${year}-${(month+1).toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
+
       }
+
     })
   }
 
