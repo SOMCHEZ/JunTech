@@ -94,7 +94,7 @@ struct ReportPlanPage {
   @State x: number = 0
   @State s: number = 0
   @State name: string = ''
-  @State selectedUnit: string = '请选择需求单位'
+  @State selectedUnit: string = '选择需求单位'
   @State selectedDate: string = '请选择供应日期'
   @State selectDate: Date = new Date()
   @State RecipeFormData: RecipeFormData[] =[]
@@ -105,7 +105,7 @@ struct ReportPlanPage {
   private unitOptions = [
     '选择需求单位',
     '实验第二学校（库房）',
-    '实验第二学校餐厅'
+    '实训第二学校餐厅'
   ]
 
   // 修改生命周期函数
@@ -236,6 +236,7 @@ struct ReportPlanPage {
             .onClick(() => {
               this.x = 0
               this.upload=false
+              this.onPageShow() // 重新加载数据
             })
 
           Button('已上报')
@@ -249,6 +250,7 @@ struct ReportPlanPage {
             .onClick(() => {
               this.x = 1
               this.upload=true
+              this.onPageShow() // 重新加载数据
             })
         }
         .width('100%')
@@ -260,6 +262,7 @@ struct ReportPlanPage {
             .value(this.unitOptions[0])
             .onSelect((index: number) => {
               this.selectedUnit = this.unitOptions[index]
+              this.onPageShow() // 选择单位后自动刷新
             })
 
             .margin(10)
@@ -283,9 +286,34 @@ struct ReportPlanPage {
 
 
         Column() {
-          if (this.RecipeFormData.length  >0) {
+
+          if (this.RecipeFormData.filter(item => {
+            const statusMatch = this.x === 0 ?
+              item.planningStatus === '1' :
+              item.planningStatus === '5';
+            const unitMatch = this.selectedUnit === '选择需求单位' ||
+              item.photoUri === this.selectedUnit;
+            const dateMatch = this.selectedDate === '请选择供应日期' ||
+              item.date === this.selectedDate;
+            return statusMatch && unitMatch && dateMatch;
+          }).length > 0) {
               List(){
-                ForEach(this.RecipeFormData, (formData: RecipeFormData) => {
+                ForEach(this.RecipeFormData.filter(item => {
+                  // 核心筛选逻辑
+                  const statusMatch = this.x === 0 ?
+                    item.planningStatus === '1' :
+                    item.planningStatus === '5';
+
+                  // 添加单位筛选（默认选项时显示全部）
+                  const unitMatch = this.selectedUnit === '选择需求单位' ||
+                    item.photoUri === this.selectedUnit;
+
+                  // 添加日期筛选（默认选项时显示全部）
+                  const dateMatch = this.selectedDate === '请选择供应日期' ||
+                    item.date === this.selectedDate;
+
+                  return statusMatch && unitMatch && dateMatch;
+                }), (formData: RecipeFormData) => {
                     ListItem()
                     {
                         Column() {
@@ -462,6 +490,7 @@ struct ReportPlanPage {
                     .margin({left:10,right: 10, bottom:10 })
                 })
               }
+
               .width('100%')
               .borderRadius(8)
           } else {
@@ -521,12 +550,14 @@ struct ReportPlanPage {
       onAccept: (value: DatePickerResult) => {
         // 使用可选链和默认值保证安全性
         const year = value.year ?? new Date().getFullYear()
-        const month = value.month ?? new Date().getMonth() + 1
+        const month = value.month ?? new Date().getMonth()+1
         const day = value.day ?? new Date().getDate()
 
-        this.selectDate = new Date(year, month - 1, day)
-        this.selectedDate = `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`
+        this.selectDate = new Date(year, month , day)
+        this.selectedDate = `${year}-${(month+1).toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
+
       }
+
     })
   }
 
