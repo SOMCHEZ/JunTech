@@ -46,10 +46,7 @@ interface peicanResponse {
 interface peicanHandlerResult{
   success: boolean;
   code?: number;
-  userInfo?: UserInfo;
-  token?: string;
   message?: string;
-  relTenantIds?:number;
   records?: records[];
 }
 
@@ -75,6 +72,25 @@ interface GeneratedTypeLiteralInterface_1 {
   record?: string;
 }
 
+
+interface PeiCanMessage{
+  mealDate:string
+  demandUnitName:string
+  mealCategory_dictText:string
+}
+interface ResultData{
+  total:number
+  records:PeiCanMessage[]
+}
+interface ResponseData{
+  success: boolean,
+  message: string,
+  code: number,
+  result:ResultData|null
+}
+
+
+
 @Entry
 @Component
 struct CalendarPage {
@@ -87,8 +103,12 @@ struct CalendarPage {
   @State receivedToken: string = '';//参数传递
   @State tenantId: number = 0;//同上
   @State unitId: string ='';
-  @State peicanRecord: peicanRecord[] = []
+  @State peicanRecord: records[] = []
   @State records: RecordType[] = [];
+
+  @State DataList:PeiCanMessage[] = []
+  private index:number = 0
+
   aboutToAppear() {
     const params = router.getParams() as GeneratedTypeLiteralInterface_1;
     if (params?.record) {
@@ -98,42 +118,26 @@ struct CalendarPage {
 
   private weekDays: string[] = ['日', '一', '二', '三', '四', '五', '六']
 
-  async onPageShow() { //这是一个接收传递参数的方法
-    // 使用接口类型断言
+  async onPageShow() {
+    this.index = 0
     const params = router.getParams() as RouteParams;
-    console.log('peican', params?.token);// 打印接收到的参数
-    // 安全取值如果返回值空，则使用appsetcreat中所预保存的token和id
     if (!AppStorage.get('token') && params?.token) {
       AppStorage.set('token', params.token);
-      //this.receivedToken = params.token;
     }
     if (!AppStorage.get('tenantId') && params?.relTenantIds) {
       AppStorage.set('tenantId', params.relTenantIds);
-      //this.tenantId = params.relTenantIds;
     }
-    // 同步到组件状态
     this.receivedToken = AppStorage.get('token') ?? '';
     this.tenantId = AppStorage.get('tenantId') ?? 0;
 
-    console.log('pctoken', this.receivedToken)
-    console.log('pctenantId', this.tenantId)
 
-    const result = await this.peicanQuest(); // 调用Houchuchaxun方法这个函数是用来查数据的
-
-
-    if (result.success && result.records) {
-      this.peicanRecord = result.records.map(item => ({
-        mealDate: item.mealDate || '',          // 映射姓名
-        mealCategory: item.mealCategory || '',     // 映射工作单位
-        repastNum: item.repastNum || '未知状态',
-        withNum: item.withNum || '未设置',
-        xxMealRecordInfoList: item.xxMealRecordInfoList || '未设置',
-        demandUnitName: item.demandUnitName || '未知单位'
-      } as peicanRecord));
+    const result = await this.peicanQuest();
+    if (result.success && result.result) {
+      this.DataList = result.result.records
     }
   }
 
-  private async peicanQuest(): Promise<peicanHandlerResult> {
+  private async peicanQuest(): Promise<ResponseData> {
     try {
       const httpRequest = http.createHttp();
 
@@ -147,32 +151,27 @@ struct CalendarPage {
           },
         }
       );
-      //console.log('teneanId',this.tenantId);
-
+      console.log('response:',response.result)
+      console.log('response:',response.responseCode)
       if (response.responseCode !== 200) {
-        //console.error('Login Error:'+response.responseCode);
+        console.error('Login Error8:'+response.responseCode);
         return {
           success: false,
-          message: `HTTP Error: ${response.responseCode}`
-          // 添加其他错误处理逻辑
+          message: `HTTP Error: ${response.responseCode}`,
+          code: response.responseCode,
+          result:null
         };
       }
-      console.log('slfj'+response.result.toString())
-      const jsonData = JSON.parse(response.result as string) as peicanResponse;
-      console.log('11',jsonData.result.records[1]);
-      return {
-        success: jsonData.code === 200,
-        code: jsonData.code,
-        records: jsonData.result.records,
-        message: jsonData.message,
-        //relTenantIds:jsonData.result.userInfo.relTenantIds
-      };
+      const jsonData = JSON.parse(response.result as string) as ResponseData;
+      return jsonData
 
     } catch (error) {
-      console.error('Login Error:', JSON.stringify(error));
+      console.error( error);
       return {
         success: false,
-        message: '服务器繁忙'
+        message: '服务器繁忙',
+        code: 500,
+        result: null
       };
     }
   }
@@ -253,22 +252,20 @@ struct CalendarPage {
   // ... (其他代码保持不变)
 
   @Builder
-  private RecordCardBuilder(record: RecordType) {
+  private RecordCardBuilder(record: PeiCanMessage,index:number) {
     Column() {
       Row() {
-        Text(record.date).fontColor('#666').fontSize(14)
-        Text(record.unit).fontColor('#333').fontSize(16).margin({ left: 10 })
+        Text(record.mealDate).fontColor('#666').fontSize(14)
+        Text(record.demandUnitName).fontColor('#333').fontSize(16).margin({ left: 10 })
       }
       .justifyContent(FlexAlign.Start)
 
       Row() {
-        Text(`餐别：${record.meal}`).fontSize(14)
-        Text(`身份：${record.position}`).margin({ left: 15 }) // 确保这里显示的是字符串值
+        Text(`餐别：${record.mealCategory_dictText}`).fontSize(14)
+        Text('身份：教师').margin({ left: 15 }) // 确保这里显示的是字符串值
       }
       .margin({ top: 8 })
 
-      Text(`姓名：${record.name}`).fontSize(14).margin({ top: 4 })
-      Text(`评价：${record.evaluation}`).fontSize(14).margin({ top: 4 })
     }
     .padding(10)
     .backgroundColor(Color.White)
@@ -307,6 +304,7 @@ struct CalendarPage {
               const newDate = new Date(this.selectedDate)
               newDate.setDate(date)
               this.selectedDate = newDate
+              console.log('selectedDate',this.selectedDate)
             })
           })
         }
@@ -331,7 +329,7 @@ struct CalendarPage {
           console.log('jinitaimei'+this.records);
         })
 
-      if (this.records.length === 0) {
+      if (this.DataList.length === 0) {
         Text('~ 暂无相关数据 ~')
           .fontSize(15)
           .fontColor('#BBBBBB')
@@ -339,12 +337,12 @@ struct CalendarPage {
       } else {
         Scroll() {
           Column() {
-            ForEach(this.records, (record: RecordType) => {
-              this.RecordCardBuilder(record)
+            ForEach(this.DataList, (record: PeiCanMessage) => {
+              this.RecordCardBuilder(record,this.index++)
             })
           }
         }
-        .height('30%')
+        .height('60%')
         .margin({ top: 20 })
       }
     }
