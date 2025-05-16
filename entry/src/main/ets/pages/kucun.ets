@@ -324,7 +324,7 @@ struct PurchaseInventory {
                   Text(item.demandUnitName || '实训第一学校餐厅')
                     .fontSize(20)
                     .fontWeight(FontWeight.Bold)
-                    .layoutWeight(1) // 让文本占据剩余空间
+                    .layoutWeight(1) // 让文本占据剩余空间io
 
                   if (this.activeTab === 0) { // 只在待审批状态显示删除按钮
                     Image($r('app.media.del')) // 确保有删除图标资源
@@ -378,12 +378,12 @@ struct PurchaseInventory {
               .margin({ top: 20, bottom: 20 })
               .shadow({ radius: 8, color: '#07C160', offsetX: 0, offsetY: 4 })
               .onClick(() => {
-                if (this.activeTab === 0) { // 待审批
+                if (this.activeTab === 0) { // 待审批b
                   router.pushUrl({
-                    url: 'pages/kucun',
-                    params: {
-                      tab: this.activeTab // 传递当前 tab 值作为参数
-                    }
+                    url: 'pages/editChuku',
+                    // params: {
+                    //   tab: this.activeTab // 传递当前 tab 值作为参数
+                    // }
                   });
                 } else { // 已审批
                   router.replaceUrl({
@@ -412,6 +412,7 @@ struct PurchaseInventory {
             }
           }
         }
+
         .width('100%')
         .height('80%')
         .justifyContent(FlexAlign.Center)
