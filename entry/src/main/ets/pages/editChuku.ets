@@ -139,8 +139,9 @@ struct DatePickerExample {
 
   async onPageShow() {
     const params = router.getParams() as RouteParams;
-    console.log('houchu', params?.token);// 打印接收到的参数
+    //console.log('houchu', params?.token);// 打印接收到的参数
     //console.log('houchu', params?.relTenantIds);//  打印接收到的参数
+
     // 安全取值如果返回值空，则使用appsetcreat中所预保存的token和id
     if (!AppStorage.get('token') && params?.token) {
       AppStorage.set('token', params.token);
@@ -191,22 +192,22 @@ struct DatePickerExample {
             "stockStatus": "0", // 0为保存、1为保存并审核
             "foods": [
               {
-                "schoolId": "1917168448022519809",
+                "schoolId": "1650064161880203265",
                 "demandUnit": "1917168448072851458",
-                "foodId": "1917167634004582414",
-                "foodName": "绿豆",
+                "foodId": "1664464263113670658",
+                "foodName": "牛骨",
                 "encoding": "126",
-                "groupId": "1917166561189695489",
+                "groupId": "1656552701476487169",
                 "groupName": "其他",
                 "unit": "Kg",
                 "specification": "称重",
                 "modifyPrice": 20,
                 "supplyPricing": 20,
-                "totalNum": 0.01,
+                "totalNum": 0.25,
                 "totalWeight": 0,
                 "supplyWay": "1",
-                "supplierId": "1917168448022519809",
-                "supplierName": "实训第二学校",
+                "supplierId": "1650750930200121346",
+                "supplierName": "小韩食品批发",
                 "batch": "20240816004",
                 "images": "",
                 "requirementType": "2",
@@ -217,8 +218,8 @@ struct DatePickerExample {
                 "mealType_dictText": "学生餐",
                 "mealCategory_dictText": "其他",
                 "num": "0.25",
-                "selectId": "1922500586301390849",
-                "marketWeight": 0.01
+                "selectId": "1826078209368182788",
+                "marketWeight": 0.5
               }
             ]as Array<FoodItem>
           }
@@ -252,7 +253,6 @@ struct DatePickerExample {
       };
     }
   }
-
   build() {
     Stack(){
       Column() {
@@ -601,23 +601,6 @@ struct DatePickerExample {
             .padding({ left: 15, right: 15 })
 
             Button({ type: ButtonType.Normal }) {
-              Text('电子签')
-                .fontSize(14)
-                .fontColor(Color.White)
-            }
-            .height(35)
-            .backgroundColor('#02BC65')
-            .fontColor(Color.White)
-            .borderRadius(8)
-            .width('30%') // 固定宽度，与第一个按钮一致
-            .padding({ left: 15, right: 15 })
-            .onClick(() => {
-              router.pushUrl({
-                url: 'pages/signature'
-              });
-            })
-
-            Button({ type: ButtonType.Normal }) {
               Text('保存并审核')
                 .fontSize(14)
                 .fontColor(Color.White)
@@ -796,17 +779,6 @@ struct DatePickerExample {
   private submitForm() {
     // 验证必填项
     const isStudentMeal = this.selectedText[2] === '学生餐';
-
-    // if (this.selectedText[0] === '请选择' ||  // 领用单位
-    //   this.selectedText[1] === '请选择' ||  // 出库日期
-    //   this.selectedText[2] === '请选择'   // 出库类型
-    // ) {
-    //   prompt.showToast({
-    //     message: '请填写所有必填项',
-    //     duration: 2000
-    //   });
-    //   return;
-    // }
     prompt.showToast({
       message: '保存成功',
       duration: 2000
@@ -817,23 +789,5 @@ struct DatePickerExample {
         token: this.receivedToken,
         tenantId: this.tenantId,
       } })
-
-    // 创建表单数据对象
-    // let formData: GeneratedObjectLiteralInterface_1 = {
-    //   date: this.selectedText[2] === ''
-    //     ? this.selectedText[1]
-    //     : `${this.selectedText[1]} ${this.selectedText[2]}`,
-    //   recipeName: this.selectedText[1], // 使用已选择的日期
-    //   mealType: this.selectedText[3],   // 使用已选择的餐别
-    //   diningType: isStudentMeal ? this.selectedText[4] : '', // 非学生餐时为空 用餐类型
-    //   place: this.selectedText[5],      // 需求单位
-    //   photoUri: this.selectedText[0]    // 餐别（如果需要）
-    // };
-
-    // 跳转到 'uploadPlan' 页面并传递 formData
-//     router.back ({
-//       url: 'pages/uploadPlan',  // 页面路径
-//       params: formData          // 传递的参数
-//     });
-   }
- }
+  }
+}
