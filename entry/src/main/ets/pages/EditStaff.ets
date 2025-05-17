@@ -466,7 +466,7 @@ struct AddStaff {
       .position({x:18, y:'95%'})
       .onClick(async() => {
         if(this.name.length!==0&&this.jobPosition.length!==0&&this.phone.length!==0&&this.status.length!==0&&this.issueDate.length!==0&&this.expiryDate.length!==0)
-        {router.pushUrl({
+        {router.back({
           url: 'pages/kitchenStaff',
           params:{
             token:this.receivedToken,

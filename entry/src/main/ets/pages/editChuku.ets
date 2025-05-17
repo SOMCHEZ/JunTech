@@ -216,6 +216,7 @@ struct DatePickerExample {
     this.outboundId = AppStorage.get('id') ?? '';
 
     console.log('rel',this.unitId);
+    console.log('datsssssssse', this.accountingDate);
     console.log('UID', params?.unitId);
     this.selectedText[0] = this.unitId;
     this.selectedText[1] = this.accountingDate;

@@ -510,6 +510,12 @@ struct ReportPlanPage {
                           color: '#4CAF50',
                           radius: 8
                         })
+                        .shadow({
+                          radius: 5,
+                          color: '#4CAF50',
+                          offsetX: 10,
+                          offsetY: 10
+                        })
                       .onClick(() => {
                         if (this.upload) {
                           router.pushUrl({

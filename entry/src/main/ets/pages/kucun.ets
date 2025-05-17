@@ -121,7 +121,7 @@ struct PurchaseInventory {
     this.tenantId = AppStorage.get('tenantId')??0;
     // console.log('houchu1', this.receivedToken);
     // console.log('houchu2', this.tenantId);
-
+    const result=await this.queryUnitList();
     if (this.OutboundOrder && this.OutboundOrder.length > 0) {
 
       this.outboundId = this.OutboundOrder?.find(item =>//存放uid
@@ -423,6 +423,7 @@ struct PurchaseInventory {
                       outboundId:  this.outboundId
                     }
                   });
+                  console.log('idwww',item.id);
                   console.log('token',this.receivedToken);
                   console.log('relTenantIds',this.tenantId);
                   // console.log('unitId',this.unitId);

@@ -241,7 +241,8 @@ struct CalendarPage {
   private filterSamplesBySelectedDate() {
     const selectedDateString = this.formatDate(this.selectedDate);
     this.filteredSamples = this.samples.filter(sample =>
-    sample.createTime && sample.createTime.startsWith(selectedDateString)
+    sample.createTime && sample.createTime.startsWith(selectedDateString),
+      console.log('selectedDateString:', selectedDateString)
     );
   }
 
