@@ -18,7 +18,7 @@ interface  records{//定义接口返回类型
   repastNum: string;
   withNum: string;
   xxMealRecordInfoList: string;
-  demandUnitName: string
+  schoolName: string;
 }
 
 
@@ -36,11 +36,14 @@ interface GeneratedTypeLiteralInterface_1 {
 }
 
 
-interface PeiCanMessage{
-  mealDate:string
-  demandUnitName:string
-  mealCategory_dictText:string
+interface PeiCanMessage {
+  mealDate: string
+  schoolName: string
+  mealCategory_dictText: string
+  dutposition: string // ✅ 添加陪餐人职务字段
 }
+
+
 interface ResultData{
   total:number
   records:PeiCanMessage[]
@@ -119,14 +122,17 @@ struct CalendarPage {
       );
       console.log('response:',response.result)
       console.log('response:',response.responseCode)
+      console.log('111',response.result)
       if (response.responseCode !== 200) {
         console.error('Login Error8:'+response.responseCode);
+        // this.records = response.result.
         return {
           success: false,
           message: `HTTP Error: ${response.responseCode}`,
           code: response.responseCode,
           result:null
         };
+        // console.log(record.dutposition)
       }
       const jsonData = JSON.parse(response.result as string) as ResponseData;
       return jsonData
@@ -229,24 +235,36 @@ struct CalendarPage {
     Column() {
       Row() {
         Text(record.mealDate).fontColor('#666').fontSize(14)
-        Text(record.demandUnitName).fontColor('#333').fontSize(16).margin({ left: 10 })
+        Text(record.schoolName).fontColor('#333').fontSize(16).margin({ left: 10 })
       }
       .justifyContent(FlexAlign.Start)
 
       Row() {
         Text(`餐别：${record.mealCategory_dictText}`).fontSize(14)
-        Text('身份：教师').margin({ left: 15 }) // 确保这里显示的是字符串值
       }
       .margin({ top: 8 })
-
     }
-    .padding(10)
-    .backgroundColor(Color.White)
-    .borderRadius(8)
-    .margin({ top: 10 })
-    .width('90%')
-    .shadow({ radius: 4, color: '#30000000', offsetX: 1, offsetY: 1 })
+    .padding({ left: 16, right: 16, top: 12, bottom: 12 }) // 增加内边距
+    .backgroundColor('#f9f9f9')
+    .borderRadius(10)
+    .margin({ top: 15, bottom: 10}) // 增加上下边距
+    .width('95%') // 卡片更宽
+    .height(80) // 固定高度，可根据内容调整
+    .shadow({ radius: 6, color: '#30000000', offsetX: 2, offsetY: 4 })
+    .onClick(() => {
+      // 跳转到 detailPage 并传递参数
+      router.pushUrl({
+        url: 'pages/detailPage',
+        params: {
+          schoolName: record.schoolName,
+          mealDate: record.mealDate,
+          mealCategory: record.mealCategory_dictText,
+          dutposition: record.dutposition
+        }
+      });
+    });
   }
+
 
   // ... (其他代码保持不变)
 
