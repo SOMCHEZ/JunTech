@@ -264,6 +264,7 @@ struct DatePickerExample {
       const jsonData = JSON.parse(response.result as string) as addResponse;
       //console.log('', response.responseCode);
       //console.log('',jsonData.code);
+      console.log('ssssssssss',this.unitId);
       return {
         success: jsonData.code === 200,
         code: jsonData.code,

@@ -128,6 +128,8 @@ struct DatePickerExample {
   @State mealCategory: string = ''
   @State digest: string = ''
   @State outboundId: string = ''
+  @State Id: string = ''
+  @State demandUnit: string = ''
 
   private unitOptions = ['实验第二学校餐厅']
   private selectedTime = ['上午', '下午']
@@ -189,6 +191,12 @@ struct DatePickerExample {
     if (!AppStorage.get('digest') && params?.digest) {
       AppStorage.set('digest', params.digest);
     }
+    if (!AppStorage.get('id') && params?.id) {
+      AppStorage.set('id', params.id);
+    }
+    if (!AppStorage.get('demandUnit') && params?.demandUnit) {
+      AppStorage.set('demandUnit', params.demandUnit);
+    }
 
     if (params?.id) {
       AppStorage.setOrCreate('outboundId', params.id);
@@ -208,8 +216,9 @@ struct DatePickerExample {
     this.mealCategory = AppStorage.get('mealCategory') ?? '';
     this.digest = AppStorage.get('digest') ?? '';
     this.outboundId = AppStorage.get('id') ?? '';
+    this.demandUnit = AppStorage.get('demandUnit') ?? '';
 
-    console.log('id',this.outboundId);
+    console.log('iddd',this.demandUnit);
     console.log('datsssssssse', this.accountingDate);
     console.log('UID', params?.unitId);
     this.selectedText[0] = this.unitId;
@@ -235,8 +244,8 @@ struct DatePickerExample {
             'X-Access-Token':this.receivedToken
           },
           extraData: JSON.stringify({
-            "id":"1923540295534346241",
-            "demandUnit": "1917168448072851458",
+            "id":this.outboundId,
+            "demandUnit": this.demandUnit,
             "demandUnitName": "实训第二学校餐厅",
             "accountingDate": this.selectedText[1],
             "digest": this.selectedText[5],
