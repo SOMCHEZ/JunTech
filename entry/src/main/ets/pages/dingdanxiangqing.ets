@@ -14,13 +14,13 @@ struct xiangqing {
   aboutToAppear() {
     // 获取参数
     let params = router.getParams() as Record<string, string>
-    this.productName = params.productName || ''
-    this.stockAmount = params.stockAmount || ''
-    this.orderNo = params.orderNo || ''
-    this.operateTime = params.operateTime || ''
-    this.operateAmount = params.operateAmount || ''
-    this.operator = params.operator || ''
-    this.supplier = params.supplier || ''
+    this.productName = params.productName || ''//商品名称
+    this.stockAmount = params.stockAmount || ''//库存量
+    this.orderNo = params.orderNo || ''//单据号——采购
+    this.operateTime = params.operateTime || ''//操作时间
+    this.operateAmount = params.operateAmount || ''//操作数量
+    this.operator = params.operator || ''//操作人
+    this.supplier = params.supplier || ''//供应商
   }
 
   build() {
@@ -62,10 +62,12 @@ struct xiangqing {
         Column() {
           Text(this.productName)
             .fontSize(22)
+            .width('100%')
             .fontWeight(FontWeight.Bold)
             .margin({ top: 12, left: 16, bottom: 8 })
-          Text('库    存 量：' + this.stockAmount)
+          Text('库    存    量：' + this.stockAmount)
             .fontSize(16)
+            .width('100%')
             .margin({ left: 16, bottom: 16 })
         }
         .width('100%')
@@ -85,6 +87,7 @@ struct xiangqing {
           .fontSize(16)
           .fontColor('#3ec97c')
       }
+      .width('92%')
       .margin({ left: 16, bottom: 12 })
 
       // 操作信息卡片
@@ -92,20 +95,24 @@ struct xiangqing {
         Row() {
           Text('⏱ 操作时间：' + this.operateTime)
             .fontSize(15)
+            .width('100%')
             .margin({ bottom: 4 })
         }
-        Text('操作数量：' + this.operateAmount)
+        Text('操作数量：' + this.operateAmount+'kg')
           .fontSize(15)
+          .width('100%')
           .margin({ bottom: 2 })
         Text('操作人：' + this.operator)
           .fontSize(15)
-          .margin({ bottom: 8 })
-        Button('采购入库,从【' + this.supplier + '】处采购入库')
           .width('100%')
+          .margin({ bottom: 8 })
+        Text(this.supplier)
+          .width('100%')
+          .height(40)
           .backgroundColor('#3ec97c')
           .fontColor('#fff')
-          .fontSize(16)
-          .borderRadius(8)
+          .fontSize(15)
+          .borderRadius(3)
           .margin({ top: 8, bottom: 8 })
       }
       .width('92%')
