@@ -1,4 +1,6 @@
 import router from '@ohos.router';
+import { it } from '@ohos/hypium';
+import { ConfigurationConstant } from '@kit.AbilityKit';
 
 // 定义一个菜品的数据结构
 
@@ -70,6 +72,8 @@ struct shicai {
     }
 
   ];
+  @State FavoriteFoodList: FoodItem[] = []
+
   @State x: number = 0
   @State s: number = 0
   @State name: string = ''
@@ -85,6 +89,13 @@ struct shicai {
   @State hasDate : boolean = false
   @State activeTab: number = 0; // 用于跟踪当前激活的选项卡索引
   @State refreshTrigger: number = 80 // 触发刷新的下拉距离(像素)
+  @State private count:number = 0
+
+  private selectIndex:number[] = []
+  private FavoriteIndex:number = -1
+  private SelectIndex:number = -1
+
+
   //分类种类
   private categoryOptions = [
     '全部分类',
@@ -145,6 +156,7 @@ struct shicai {
             .onClick(() => {
               this.activeTab = 0
               this.x = 0
+              this.selectIndex = []
             })
             .margin({ right: 65 })
           Image($r('app.media.shoucang'))
@@ -162,6 +174,14 @@ struct shicai {
           .onClick(() => {
             this.x = 1
             this.activeTab = 1
+            if(this.FavoriteFoodList.length>0){
+              for (let indexs = 0; indexs < this.FavoriteFoodList.length; indexs++) {
+                for (let index = 0; index < this.foodList.length; index++) {
+                  if(this.FavoriteFoodList[indexs].name == this.foodList[index].name && this.FavoriteFoodList[indexs].supplier == this.foodList[index].supplier)
+                    this.selectIndex.push(index)
+                }
+              }
+            }
           })
 
         }  //大选择
@@ -250,8 +270,6 @@ struct shicai {
                 this.searchText = value // 更新搜索内容
                 console.log('搜索内容:', value)
               })
-
-
           }
           .width('90%')
           .height(50)
@@ -269,153 +287,192 @@ struct shicai {
 
       Column() {
         List({space:3}){
-          ForEach(this.foodList, (item: FoodItem, index: number) => {
+          if (this.activeTab === 1 && this.FavoriteFoodList.length === 0) {
             ListItem() {
-              Stack() {
-                // Toast 提示（仅顶部显示一次）
-
-
-                // 第一行：图片、名称和收藏按钮
-                Row({ space: 10 }) {
-                  Row(){
-                    Image(item.imageResId)
-                      .width(70)
-                      .borderRadius(0)
-                      .margin({ left: 5, top: -115 })
-                  }.width('30%').margin({top:20})
-
-                  Row(){
-                    Text(item.name)
-                      .fontSize(25)
-                      .fontWeight(FontWeight.Bold)
-                      .fontColor(Color.Black)
-                      .margin({  top: -100 })
-                  }.width('50%')
-
-                  Row(){
-                    Button() {
-                      Image((this.isFavorite[index] && this.foodList[index].isFavorite)? $r('app.media.shoucang') : $r('app.media.noshoucang'))
-                        .width(30)
-                        .height(30)
-                    }
-                    .width(50)
-                    .height(50)
-                    .backgroundColor(Color.White)
-                    .borderRadius(25)
-                    .margin({  left: -10,top: -120 })
-                    .onClick(() => {
-                      this.isFavorite[index] = !this.isFavorite[index]
-                      this.foodList[index].isFavorite = !this.foodList[index].isFavorite
-                      this.showAlert(this.isFavorite[index] ? '操作成功' : '操作成功')
-                    })
-                  }.width('20%')
-
-                }
+              Text('暂无常用商品')
+                .fontSize(18)
+                .textAlign(TextAlign.Center)
                 .width('100%')
-                .height(80)
-                .padding({ left: 20 })
-
-                // 分割线
-                Row()
-                  .width('86%')
-                  .height(1)
-                  .margin({ top: -10, left: 8 })
-                  .linearGradient({
-                    angle: 90,
-                    colors: [['#FCE4CF', 0], ['#F5A35F', 0.5], ['#FCE4CF', 1]]
-                  })
-                  .zIndex(1)
-
-                // 采购价、供应商、库存等信息
-                Column() {
-                  Row() {
-                    Text('采  购  价：')
-                      .fontWeight(600)
-                      .width(90)
-                    Text(item.price)
-                      .fontSize(21)
-                      .fontWeight(FontWeight.Bold)
-                      .fontColor(Color.Red)
-                    Text(item.unit)
-                      .fontWeight(600)
-                      .fontColor(Color.Red)
-                  }
-                  .margin({ top: 10 })
-                  .zIndex(2)
-
-                  // 供应商信息
-                  Row() {
-                    Text('供  应  商：')
-                      .fontWeight(600)
-                      .width(90)
-                    Text(item.supplier)
-                      .fontWeight(600)
-                  }
-                  .margin({ top: 10 })
-
-                  // 库存信息
-                  Row() {
-                    Text('学校库存：')
-                      .fontWeight(600)
-                      .width(90)
-                    Text(item.stock)
-                      .fontSize(21)
-                      .fontWeight(FontWeight.Bold)
-                    Text('Kg')
-                      .fontWeight(600)
-                  }
-                  .margin({ top: 10 })
-                }
-                .alignItems(HorizontalAlign.Start)
-                .width(220)
-                .margin({ top: 100, left: -70 })
-
-                // 左上角三角形标签
-                Path()
-                  .width(40)
-                  .height(40)
-                  .commands('M0 0 L180 0 L0 180 Z')
-                  .fill('#FFA500')
-                  .margin({ left: -293, top: -180 })
-                  .stroke('#FFA500')// 无边框
-                  .shadow({ radius: 0 }) // 确保无阴影
-
-                Text('称重')
-                  .fontSize(15)
-                  .fontColor(Color.White)
-                  .rotate({ angle: -45 })
-                  .margin({ left: -300, top: -180 })
-
-                // 右下角三角形 (精确匹配)
-                Path()
-                  .width(60)
-                  .height(30)
-                  .commands('M230 0 L230 230 L0 230 Z')
-                  .fill((this.isBothClicked[index] &&this.foodList[index].isSelected) ? '#16B76A' : '#CCCCCC')// 点击后绿色，默认灰色
-                  .margin({ left: 240, top: 96 })
-                  .stroke(Color.White)// 无边框
-                  .shadow({ radius: 0 })// 确保无阴影s
-              }
-              .width('95%')
-              .height(220)
-              .borderColor(Color.Orange)
-              .backgroundColor(Color.White)
-              .borderWidth(2)
-              .margin(10)
-              .padding(5)
-              .shadow({
-                radius: 10,
-                color: '#fffabc85',
-                offsetX: 20,
-                offsetY: 20
-              })
-              .onClick(() => {
-                this.isBothClicked[index] = !this.isBothClicked[index]
-                this.foodList[index].isSelected  = !this.foodList[index].isSelected
-                this.showAlert(this.isBothClicked[index] ? '已选择' : '取消选择')
-              })
             }
-          }, (item: FoodItem) => item.name.toString())
+            .height(200) // 建议设置高度占位
+          }
+
+          ForEach(this.activeTab === 0 ? this.foodList : this.FavoriteFoodList,
+            (item: FoodItem, index: number) => {
+              ListItem() {
+                Stack() {
+                  // Toast 提示（仅顶部显示一次）
+
+
+                  // 第一行：图片、名称和收藏按钮
+                  Row({ space: 10 }) {
+                    Row(){
+                      Image(item.imageResId)
+                        .width(70)
+                        .borderRadius(0)
+                        .margin({ left: 5, top: -115 })
+                    }.width('30%').margin({top:20})
+
+                    Row(){
+                      Text(item.name)
+                        .fontSize(25)
+                        .fontWeight(FontWeight.Bold)
+                        .fontColor(Color.Black)
+                        .margin({  top: -100 })
+                    }.width('50%')
+
+                    Row(){
+                      Button() {
+                        // Image(this.isFavorite[index]? $r('app.media.shoucang') : $r('app.media.noshoucang'))
+                        Image(this.activeTab  == 1? $r('app.media.shoucang') :
+                          (this.isFavorite[index]? $r('app.media.shoucang') : $r('app.media.noshoucang')))
+                          .width(30)
+                          .height(30)
+                      }
+                      .width(50)
+                      .height(50)
+                      .backgroundColor(Color.White)
+                      .borderRadius(25)
+                      .margin({  left: -10,top: -120 })
+                      .onClick(() => {
+                        if(this.activeTab === 1){
+                          this.FavoriteIndex = 0
+                          while (item.name!=this.foodList[this.FavoriteIndex].name || item.supplier!=this.foodList[this.FavoriteIndex].supplier) this.FavoriteIndex++;
+                          this.isFavorite[this.FavoriteIndex] = !this.isFavorite[this.FavoriteIndex]
+                          this.FavoriteFoodList = this.FavoriteFoodList.filter((foodItem) => foodItem.name !== item.name && foodItem.supplier !== item.supplier)
+                          this.showAlert(this.isFavorite[this.FavoriteIndex] ? '操作成功' : '操作成功')
+
+                          this.selectIndex = this.selectIndex.filter((index) => index !== this.FavoriteIndex)
+
+                        }else {
+                          this.isFavorite[index] = !this.isFavorite[index]
+                          if(this.isFavorite[index]) this.FavoriteFoodList.push(item)
+                          else this.FavoriteFoodList = this.FavoriteFoodList.filter((foodItem) => foodItem.name !== item.name && foodItem.supplier !== item.supplier)
+                          this.showAlert(this.isFavorite[index] ? '操作成功' : '操作成功')
+                        }
+
+                      })
+                    }.width('20%')
+
+                  }
+                  .width('100%')
+                  .height(80)
+                  .padding({ left: 20 })
+
+                  // 分割线
+                  Row()
+                    .width('86%')
+                    .height(1)
+                    .margin({ top: -10, left: 8 })
+                    .linearGradient({
+                      angle: 90,
+                      colors: [['#FCE4CF', 0], ['#F5A35F', 0.5], ['#FCE4CF', 1]]
+                    })
+                    .zIndex(1)
+
+                  // 采购价、供应商、库存等信息
+                  Column() {
+                    Row() {
+                      Text('采  购  价：')
+                        .fontWeight(600)
+                        .width(90)
+                      Text(item.price)
+                        .fontSize(21)
+                        .fontWeight(FontWeight.Bold)
+                        .fontColor(Color.Red)
+                      Text(item.unit)
+                        .fontWeight(600)
+                        .fontColor(Color.Red)
+                    }
+                    .margin({ top: 10 })
+                    .zIndex(2)
+
+                    // 供应商信息
+                    Row() {
+                      Text('供  应  商：')
+                        .fontWeight(600)
+                        .width(90)
+                      Text(item.supplier)
+                        .fontWeight(600)
+                    }
+                    .margin({ top: 10 })
+
+                    // 库存信息
+                    Row() {
+                      Text('学校库存：')
+                        .fontWeight(600)
+                        .width(90)
+                      Text(item.stock)
+                        .fontSize(21)
+                        .fontWeight(FontWeight.Bold)
+                      Text('Kg')
+                        .fontWeight(600)
+                    }
+                    .margin({ top: 10 })
+                  }
+                  .alignItems(HorizontalAlign.Start)
+                  .width(220)
+                  .margin({ top: 100, left: -70 })
+
+                  // 左上角三角形标签
+                  Path()
+                    .width(40)
+                    .height(40)
+                    .commands('M0 0 L180 0 L0 180 Z')
+                    .fill('#FFA500')
+                    .margin({ left: -293, top: -180 })
+                    .stroke('#FFA500')// 无边框
+                    .shadow({ radius: 0 }) // 确保无阴影
+
+                  Text('称重')
+                    .fontSize(15)
+                    .fontColor(Color.White)
+                    .rotate({ angle: -45 })
+                    .margin({ left: -300, top: -180 })
+
+                  // 右下角三角形 (精确匹配)
+                  Path()
+                    .width(60)
+                    .height(30)
+                    .commands('M230 0 L230 230 L0 230 Z')
+                      // .fill((this.isBothClicked[index) ? '#16B76A' : '#CCCCCC')
+                    .fill(this.activeTab==1 ? (this.isBothClicked[this.selectIndex[index]] ? '#16B76A' : '#CCCCCC')
+                      : (this.isBothClicked[index] ? '#16B76A' : '#CCCCCC'))
+                    .margin({ left: 240, top: 96 })
+                    .stroke(Color.White)// 无边框
+                    .shadow({ radius: 0 })// 确保无阴影s
+                }
+                .width('95%')
+                .height(220)
+                .borderColor(Color.Orange)
+                .backgroundColor(Color.White)
+                .borderWidth(2)
+                .margin(10)
+                .padding(5)
+                .shadow({
+                  radius: 10,
+                  color: '#fffabc85',
+                  offsetX: 20,
+                  offsetY: 20
+                })
+                .onClick(() => {
+                  if(this.activeTab === 1){
+                    this.SelectIndex = 0
+                    while (item.name!=this.foodList[this.SelectIndex].name || item.supplier!=this.foodList[this.SelectIndex].supplier) this.SelectIndex++;
+                    this.isBothClicked[this.SelectIndex] = !this.isBothClicked[this.SelectIndex]
+                    if(this.isBothClicked[index]) this.count++
+                    else this.count--
+                    console.log(this.count.toString())
+                    this.showAlert(this.isBothClicked[this.SelectIndex] ? '选择成功' : '取消成功')
+                  }else {
+                    this.isBothClicked[index] = !this.isBothClicked[index]
+                    if(this.isBothClicked[index]) this.count++
+                    else this.count--
+                    this.showAlert(this.isBothClicked[index] ? '选择成功' : '取消成功')
+                  }
+                })
+              }
+            }, (item: FoodItem) => item.name.toString())
         }
         .margin({right:5})
       }
@@ -449,7 +506,7 @@ struct shicai {
 
       Column() {
         Row() {
-          Text('已选中*种食材')
+          Text(`已选中${this.count}种食材`)
             .fontSize(15)
             .fontWeight(50)
             .margin({ right: 140, left: 10, bottom: 10 })
@@ -458,7 +515,20 @@ struct shicai {
               .margin({ bottom: 10,top:10 })
 
           }
-          .onClick(() => {router.back();})
+          .onClick(() => {
+            let selectedFoods: FoodItem[] = [];
+            for (let i = 0; i < this.foodList.length; i++) {
+              if (this.isBothClicked[i]) {
+                selectedFoods.push(this.foodList[i]);
+              }
+            }
+            router.back({
+              url:'pages/addPlan',
+              params:{
+                selectedFoods:selectedFoods
+              }
+            })
+          })
           .height(38)
           .width(110)
           .fontColor(Color.White)
