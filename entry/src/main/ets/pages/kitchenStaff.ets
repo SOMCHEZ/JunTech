@@ -13,14 +13,12 @@ interface Staff {
   name: string;
   role: string;
 }
-
 interface Houchu_Delete_Request {
   success: boolean;
   code?: number;
   result:string;
   message?: string;
 }
-
 interface  records{//定义接口返回类型
   id?: number;
   schoolId: string;
@@ -52,32 +50,27 @@ interface  records{//定义接口返回类型
 
   // 其他字段根据实际API响应补充...
 }
-
 interface HouchuResult {
   records: records[];
   //token: string;
 }
-
 interface HouchuResponse {
   code: number;
   message: string;
   result: HouchuResult;
   timestamp: number;
 }
-
 interface HouchuHandlerResult {
   success: boolean;
   code?: number;
   records?: records[];
   message?: string;
 }
-
 interface RouteParams {
   token?: string;
   relTenantIds?: number;
   man:string;
 }
-
 interface kitchenStaffs extends records {
   id:number;
   unitId: string;
