@@ -9,7 +9,7 @@ interface RealTimeInventoryItem {
   groupId: string;
   groupName: string;
   totalNum: number;//库存量
-  unit: string;
+  unit: string;//单位
   supplyPricing: number;//供应价
   modifyPrice: number;//单价
   producedDate: string;//生产日期
@@ -18,12 +18,12 @@ interface RealTimeInventoryItem {
   createTime:string//操作时间
   mealCategory_dictText: string;//餐别-早，午，晚
   mealType: string;
-  mealType_dictText: string;
+  mealType_dictText: string;//库存类型
   requirementType: string;
-  requirementType_dictText: string;
+  requirementType_dictText: string;//用餐类型
   supplierId: string;
   supplierName: string;//供应商
-
+  specification:  string;//规格——称重/计件
 
   // ... 你需要的其他字段
 }
@@ -293,7 +293,7 @@ struct kucun {
       );
 
       const rawResult = response.result as string;
-      //console.info('库存接口原始响应:', rawResult);
+      console.info('库存接口原始响应:', rawResult);
       if (rawResult.trim().startsWith('<!DOCTYPE') || rawResult.trim().startsWith('<html>')) {
         console.error('服务器返回 HTML 页面，可能是未登录或接口错误');
         promptAction.showToast({
@@ -304,7 +304,7 @@ struct kucun {
       }
 
       const result = JSON.parse(rawResult) as ApiResponse;
-      //console.info('库存接口原始响应0:', result);
+      //console.info('库存接口原始响应:', result);
 
       if (response.responseCode === 200 && result.success && result.result) {
         // 打印完整的 API 响应数据
@@ -341,10 +341,12 @@ struct kucun {
           'X-Access-Token': token
         }
       });
+
       if (stockTypeResponse.responseCode === 200) {
         const stockTypeResult: StockTypeResult = JSON.parse(stockTypeResponse.result as string);
         if (stockTypeResult.result) {
           this.stockTypeOptions = ['库存类型'].concat(stockTypeResult.result.map(item => item.text));
+          console.log('stockTypeOptions:', this.stockTypeOptions)
         }
       }
 
@@ -423,7 +425,7 @@ struct kucun {
       });
 
       const rawResult = response.result as string;
-      //console.info('库存接口原始响应:', rawResult);
+      console.info('库存接口原始响应:', rawResult);
 
       if (rawResult.trim().startsWith('<!DOCTYPE') || rawResult.trim().startsWith('<html>')) {
         promptAction.showToast({ message: '登录失效，请重新登录', duration: 3000 });
@@ -470,31 +472,42 @@ struct kucun {
 
   // 修改筛选方法
   filterData() {
-    // 定义通用筛选函数
-    const filterItems = (items:  StockItem[]) => {
+    const filterItems = (items: StockItem[]) => {
       return items.filter(item => {
-        // 分类筛选
-        if (this.selectedCategory !== '全部分类' && item.groupName !== this.selectedCategory) {
-          return false;
+        // 分类筛选（支持模糊匹配）
+        if (this.selectedCategory !== '全部分类') {
+          const category = this.selectedCategory.toLowerCase();
+          if (!item.groupName?.toLowerCase().includes(category)) {
+            return false;
+          }
         }
 
         // 库存类型筛选
-        if (this.selectedStockType !== '库存类型' && item.needType !== this.selectedStockType) {
-          return false;
+        if (this.selectedStockType !== '库存类型') {
+          const stockType = this.selectedStockType.toLowerCase();
+          if (!item.mealType?.toLowerCase().includes(stockType)) {
+            return false;
+          }
         }
 
         // 用餐类型筛选
-        if (this.selectedMealType !== '用餐类型' && item.mealType !== this.selectedMealType) {
-          return false;
+        if (this.selectedMealType !== '用餐类型') {
+          const mealType = this.selectedMealType.toLowerCase();
+          if (!item.needType?.toLowerCase().includes(mealType)) {
+            return false;
+          }
         }
 
         // 餐别筛选
-        if (this.selectedMealCategory !== '餐别' && item.mealCategory !== this.selectedMealCategory) {
-          return false;
+        if (this.selectedMealCategory !== '餐别') {
+          const mealCategory = this.selectedMealCategory.toLowerCase();
+          if (!item.mealCategory?.toLowerCase().includes(mealCategory)) {
+            return false;
+          }
         }
 
-        // 搜索文本筛选 (添加了空值检查)
-        if (this.searchText && this.searchText.trim() !== '' &&
+        // 原有名称搜索保持不变
+        if (this.searchText?.trim() &&
           !item.name.toLowerCase().includes(this.searchText.toLowerCase().trim())) {
           return false;
         }
@@ -503,13 +516,10 @@ struct kucun {
       });
     };
 
-    // 应用筛选到非零库存数据
     this.filteredShishikucun = filterItems(this.shishikucun);
-
-    // 应用筛选到零库存数据
     this.filteredShishikucun0 = filterItems(this.shishikucun0);
-
   }
+
 
   categoryController: CustomDialogController = new CustomDialogController({
     builder: () => this.renderDialogContent(this.categoryOptions, (value: string) => {
@@ -769,8 +779,9 @@ struct kucun {
                 })
               })
             }
+            .height('100%')
           }
-          .height(550)
+          .height('100%')
           .margin({ bottom: 8 })
 
           Button('去出库')
@@ -962,8 +973,9 @@ struct kucun {
                 })
               })
             }
+            .height('100%')
           }
-          .height(550)
+          .height('100%')
           .margin({ bottom: 8 })
 
           Button('去出库')
