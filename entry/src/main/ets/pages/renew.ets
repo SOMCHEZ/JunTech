@@ -446,6 +446,7 @@ struct shicai {
             offsetY: 4
           })
       }
+
       Column() {
         Row() {
           Text('已选中*种食材')
@@ -455,13 +456,9 @@ struct shicai {
           Button({ type: ButtonType.Normal }) {
             Text("确定")
               .margin({ bottom: 10,top:10 })
-              .onClick(() => {
-                console.log('11')
-                // 跳转到 chuku 页面
-                router.back();
 
-              });
           }
+          .onClick(() => {router.back();})
           .height(38)
           .width(110)
           .fontColor(Color.White)
@@ -469,11 +466,10 @@ struct shicai {
           .borderRadius(5)
 
         }
-        .height(23)
-        .position({
-          y:690
-        })
+        .height(45)
       }  //底部按钮
+      .width('100%')
+      .height('10%')
 
     }
 
