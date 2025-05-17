@@ -4,7 +4,6 @@ import prompt from '@ohos.prompt';
 import router from '@ohos.router';
 import http from '@ohos.net.http';
 
-
 //永久存储token和租户id
 AppStorage.setOrCreate('token', '');
 AppStorage.setOrCreate('tenantId', 0);
@@ -148,10 +147,10 @@ struct DatePickerExample {
     '午餐': '2',
     '晚餐': '3'
   };
+
   private getMappedValues(index?: number): string | string[] {
     if (index !== undefined) {
       const text = this.selectedText[index];
-      console.log('')
       return this.mapping[text] || text;
     }
     return this.selectedText.map(text => this.mapping[text] || '');
@@ -164,12 +163,6 @@ struct DatePickerExample {
 
   async onPageShow() {
     const params = router.getParams() as RouteParams;
-
-
-
-    //console.log('houchu', params?.token);// 打印接收到的参数
-    //console.log('houchu', params?.relTenantIds);//  打印接收到的参数
-    // 安全取值如果返回值空，则使用appsetcreat中所预保存的token和id
     if (!AppStorage.get('token') && params?.token) {
       AppStorage.set('token', params.token);
       //this.receivedToken = params.token;
@@ -204,6 +197,7 @@ struct DatePickerExample {
       AppStorage.setOrCreate('demandUnitName', params.demandUnitName || '');
     }
 
+
     // 同步到组件状态
     this.receivedToken = AppStorage.get('token')??'';
     this.tenantId = AppStorage.get('tenantId')??0;
@@ -215,7 +209,7 @@ struct DatePickerExample {
     this.digest = AppStorage.get('digest') ?? '';
     this.outboundId = AppStorage.get('id') ?? '';
 
-    console.log('rel',this.unitId);
+    console.log('id',this.outboundId);
     console.log('datsssssssse', this.accountingDate);
     console.log('UID', params?.unitId);
     this.selectedText[0] = this.unitId;
@@ -241,7 +235,7 @@ struct DatePickerExample {
             'X-Access-Token':this.receivedToken
           },
           extraData: JSON.stringify({
-            "id": this.outboundId,
+            "id":"1923540295534346241",
             "demandUnit": "1917168448072851458",
             "demandUnitName": "实训第二学校餐厅",
             "accountingDate": this.selectedText[1],
@@ -252,22 +246,22 @@ struct DatePickerExample {
             "stockStatus": "0", // 0为保存、1为保存并审核
             "foods": [
               {
-                "schoolId": "1650064161880203265",
+                "schoolId": "1917168448022519809",
                 "demandUnit": "1917168448072851458",
-                "foodId": "1664464263113670658",
-                "foodName": "牛骨",
+                "foodId": "1917167634004582414",
+                "foodName": "绿豆",
                 "encoding": "126",
-                "groupId": "1656552701476487169",
+                "groupId": "1917166561189695489",
                 "groupName": "其他",
                 "unit": "Kg",
                 "specification": "称重",
                 "modifyPrice": 20,
                 "supplyPricing": 20,
-                "totalNum": 0.25,
+                "totalNum": 0.01,
                 "totalWeight": 0,
                 "supplyWay": "1",
-                "supplierId": "1650750930200121346",
-                "supplierName": "小韩食品批发",
+                "supplierId": "1917168448022519809",
+                "supplierName": "实训第二学校",
                 "batch": "20240816004",
                 "images": "",
                 "requirementType": "2",
@@ -278,8 +272,8 @@ struct DatePickerExample {
                 "mealType_dictText": "学生餐",
                 "mealCategory_dictText": "其他",
                 "num": "0.25",
-                "selectId": "1826078209368182788",
-                "marketWeight": 0.5
+                "selectId": "1922500586301390849",
+                "marketWeight": 0.01
               }
             ]as Array<FoodItem>
           }
@@ -848,6 +842,8 @@ struct DatePickerExample {
       params: {
         token: this.receivedToken,
         tenantId: this.tenantId,
-      } })
+      }
+    })
+    console.log('提交的参数',this.handleLogMapping())
   }
 }
