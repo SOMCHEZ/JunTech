@@ -40,9 +40,12 @@ interface  records{//定义接口返回类型
 interface SampleFormData {
   id?: string;
   unitName?: string;
+  reservedSampleDate?: string; // 留样日期
   createTime?: string;
   sampleType?: string;
+  sampleType_dictText?: string;
   mealType?: string;
+  mealCategory_dictText?: string;
   fridgeTemp?: string;
   dishName?: string;
   sampleWeight?: string;
@@ -72,7 +75,8 @@ interface RouterParams {
 
 @Entry
 @Component
-struct CalendarPage {
+struct remain_day {
+  @State private scrollOffset: number = 0;
   @State samples: SampleFormData[] = [];
   @State filteredSamples: SampleFormData[] = [];
   @State receivedToken: string = ''; // 接收 token
@@ -84,48 +88,96 @@ struct CalendarPage {
   @State private selectedDate: Date = new Date()
   // 星期显示文本
   private weekDays: string[] = ['日', '一', '二', '三', '四', '五', '六']
-  // 查询接口
-  private async loadSamplesFromServer() {
-    try {
-      const httpRequest = http.createHttp();
 
-      console.info('Request Headers:', {
-        'X-Access-Token': this.receivedToken,
-        'Tenant-Id': this.tenantId
-      });
-      console.info('Token value:', this.receivedToken);
-      console.info('TenantId value:', this.tenantId);
+  build() {
+    Column() {
+      // 渲染日历头部
+      this.CalendarHeaderBuilder()
 
-      const response = await httpRequest.request(
-        `https://api.suoeryun.com/ifood/jeecg-school/school/xxReservedSample/list`, // 示例接口地址
-        {
-          method: http.RequestMethod.GET,
-          header: {
-            'Content-Type': 'application/json',
-            'X-Access-Token': this.receivedToken,
-            'Tenant-Id': this.tenantId.toString()
-          }
+      // 日历内容绿色区域
+      Column() {
+        // 渲染星期标题行
+        this.WeekDaysBuilder()
+
+        // 渲染日期选择行
+        Row() {
+          ForEach(this.getDatesForWeek(), (date: number) => {
+            Column() {
+              Stack() {
+                // 选中日期高亮背景
+                if (date === this.selectedDate.getDate()) {
+                  Circle()
+                    .width(40)
+                    .height(40)
+                    .fill('#ffffffff')
+                }
+                // 日期文本
+                Text(`${date < 10 ? '0' : ''}${date}`)
+                  .fontSize(18)
+                  .fontColor(date === this.selectedDate.getDate() ? '#00C853' : '#FFFFFF')
+              }
+            }
+            .width('14.28%')
+            .height(50)
+            .justifyContent(FlexAlign.Center)
+            .onClick(() => {
+              const newDate = new Date(this.selectedDate);
+              newDate.setDate(date);
+              this.selectedDate = newDate;
+              this.filterSamplesBySelectedDate(); // 点击后立即筛选
+            })
+
+          })
         }
-      );
-      if (response.responseCode === 200) {
-        const jsonData = JSON.parse(response.result as string) as ApiResponse;
-        if (jsonData.code === 200 && jsonData.result) {
-          // this.samples = jsonData.result || [];
-          this.samples =  jsonData.result.records
-          if (this.samples.length > 0) {
-            console.log('this.samples[0].id:', this.samples[0].id)
-          } else {
-            console.log('this.samples is empty');
-          }
-        } else {
-          console.error('获取数据失败:', jsonData.message);
-        }
-      } else {
-        console.error('HTTP 请求失败:', response.responseCode);
+        .width('100%')
+        .padding({ bottom: 16 })
       }
-    } catch (error) {
-      console.error('请求异常:', error);
+      .width('100%')
+      .backgroundColor('#00C853')
+
+      // 数据卡片区域（占满中间部分）
+      Column() {
+        if (this.filteredSamples.length == 0) {
+          Text('~ 暂无相关数据 ~')
+            .fontSize(16)
+            .fontColor(Color.Gray)
+            .textAlign(TextAlign.Center)
+            .padding({ top: 50 });
+        } else {
+          this.renderSampleCards();
+        }
+      }
+      .width('100%')
+      // .padding({ top: 16, bottom: 6 })
+      .layoutWeight(1)// 占据剩余空间
+      .margin({ left: 5, right: 5 })
+      .justifyContent(FlexAlign.Start)     // 关键：让卡片内容靠上排列
+      .backgroundColor('#F5F5F5')        // 可选背景色
+      // 【关键】新增留样按钮固定在底部
+      Column() {
+        Button('新增留样')
+          .width('100%')
+          .height(50)
+          .fontSize(18)
+          .fontColor('#ffffffff')
+          .backgroundColor('#00C853')
+          .onClick(() => {
+            router.push({
+              url: 'pages/remain_day_new',
+              params: {
+                date: this.formatDate(this.selectedDate),
+                token: this.receivedToken,
+                relTenantIds: this.tenantId
+              },
+            })
+          })
+      }
+      .width('100%')
+      .padding({ left: 16, right: 16 }) // 可选：添加内边距
     }
+    .width('100%')
+    .height('100%')
+    .backgroundColor('#F5F5F5')
   }
 
   // 日期列表制作
@@ -207,13 +259,16 @@ struct CalendarPage {
 
   // 接收id和token
   async onPageShow() {
-      const params = router.getParams() as RouterParams;
+    const params = router.getParams() as RouterParams;
 
-      if (params?.formData) {
-        this.samples = [...this.samples, params.formData];
+    if (params?.formData) {
+      const exists = this.samples.some(s => s.id === params.formData?.id);
+      if (!exists) {
+        this.samples.push(params.formData);
       }
+    }
 
-      // 接收 token 和租户 ID
+    // 接收 token 和租户 ID
     if (params?.token) {
       this.receivedToken = params.token;
       AppStorage.set('token', params.token); // 同步保存到 AppStorage
@@ -227,10 +282,10 @@ struct CalendarPage {
     } else {
       this.tenantId = AppStorage.get('tenantId') ?? 0; // 从本地恢复 tenantId
     }
-      // 可选：根据当前选中日期加载数据
-      // await this.loadSamplesFromServer(this.formatDate(this.selectedDate));
-      await this.loadSamplesFromServer();
-     this.filterSamplesBySelectedDate();
+    // 可选：根据当前选中日期加载数据
+    // await this.loadSamplesFromServer(this.formatDate(this.selectedDate));
+    await this.loadSamplesFromServer();
+    this.filterSamplesBySelectedDate();
 
   }
 
@@ -241,7 +296,7 @@ struct CalendarPage {
   private filterSamplesBySelectedDate() {
     const selectedDateString = this.formatDate(this.selectedDate);
     this.filteredSamples = this.samples.filter(sample =>
-    sample.createTime && sample.createTime.startsWith(selectedDateString)
+    sample.reservedSampleDate && sample.reservedSampleDate.startsWith(selectedDateString)
     );
   }
 
@@ -262,7 +317,6 @@ struct CalendarPage {
     .edgeEffect(EdgeEffect.Spring) // 添加下拉回弹效果
     .height('100%');
   }
-
   @Builder
   renderSampCard() {
     if (this.samples.length > 0) {
@@ -274,7 +328,7 @@ struct CalendarPage {
     Stack() {
       Column({ space: 10 }) {
         // 菜品名称
-        Text(`菜品名称: ${sample.dishName} `)
+        Text(`${sample.reservedSampleDate} ${sample.mealCategory_dictText} `)
           .fontSize(20)
           .fontWeight(FontWeight.Bold)
           .margin({ left: 16 })
@@ -322,16 +376,16 @@ struct CalendarPage {
 
           Button('删除单据')
             .onClick(() => {
-                AlertDialog.show({
-                  title: '确认删除',
-                  message: '确定要删除这条留样记录吗？',
-                  confirm: {
-                    value: '确定',
-                    action: () => this.deleteSample(sample.id ?? '')
-                  },
-                  cancel:()=> {
-                  }
-                });
+              AlertDialog.show({
+                title: '确认删除',
+                message: '确定要删除这条留样记录吗？',
+                confirm: {
+                  value: '确定',
+                  action: () => this.deleteSample(sample.id ?? '')
+                },
+                cancel:()=> {
+                }
+              });
 
             })
             .backgroundColor(Color.White)
@@ -352,18 +406,61 @@ struct CalendarPage {
     }
   }
 
+  // 查询接口
+  private async loadSamplesFromServer() {
+    try {
+      const httpRequest = http.createHttp();
+
+      console.info('Request Headers:', {
+        'X-Access-Token': this.receivedToken,
+        'Tenant-Id': this.tenantId
+      });
+      console.info('Token value:', this.receivedToken);
+      console.info('TenantId value:', this.tenantId);
+
+      const response = await httpRequest.request(
+        `https://api.suoeryun.com/ifood/jeecg-school/school/xxReservedSample/list`, // 示例接口地址
+        {
+          method: http.RequestMethod.GET,
+          header: {
+            'Content-Type': 'application/json',
+            'X-Access-Token': this.receivedToken,
+            'Tenant-Id': this.tenantId.toString()
+          }
+        }
+      );
+      if (response.responseCode === 200) {
+        const jsonData = JSON.parse(response.result as string) as ApiResponse;
+        if (jsonData.code === 200 && jsonData.result) {
+          // this.samples = jsonData.result || [];
+          this.samples =  jsonData.result.records
+          if (this.samples.length > 0) {
+            console.log('this.samples[0].id:', this.samples[0].id)
+          } else {
+            console.log('this.samples is empty');
+          }
+        } else {
+          console.error('获取数据失败:', jsonData.message);
+        }
+      } else {
+        console.error('HTTP 请求失败:', response.responseCode);
+      }
+    } catch (error) {
+      console.error('请求异常:', error);
+    }
+  }
   // 删除
   private async deleteSample(id: string) {
-  if (!id) {
-    console.warn('无效的留样ID');
-    return;
-  }
+    if (!id) {
+      console.warn('无效的留样ID');
+      return;
+    }
 
-  try {
-    const httpRequest = http.createHttp();
-    const url = `https://api.suoeryun.com/ifood/jeecg-school/school/xxReservedSample/delete?id=${encodeURIComponent(id)}`;
+    try {
+      const httpRequest = http.createHttp();
+      const url = `https://api.suoeryun.com/ifood/jeecg-school/school/xxReservedSample/delete?id=${encodeURIComponent(id)}`;
 
-    const response = await httpRequest.request(url, {
+      const response = await httpRequest.request(url, {
         method: http.RequestMethod.DELETE,
         header: {
           'Content-Type': 'application/json',
@@ -373,119 +470,27 @@ struct CalendarPage {
         connectTimeout: 60000,
         readTimeout: 60000
       }
-    );
+      );
 
-    if (response.responseCode === 200) {
-      const result = JSON.parse(response.result as string) as ApiResponse;
-      if (result.code === 200) {
-        prompt.showToast({ message: '删除成功' });
-        // 从本地状态中移除该记录
-        this.samples = this.samples.filter(s => s.id !== id);
-        this.filterSamplesBySelectedDate(); // 更新视图
-      } else {
-        console.error('删除失败:', result.message);
-        prompt.showToast({ message: '删除失败: ' + result.message });
-      }
-    } else {
-      console.error('HTTP 请求失败:', response.responseCode);
-      prompt.showToast({ message: '网络请求失败' });
-    }
-  } catch (error) {
-    console.error('删除异常:', error);
-    prompt.showToast({ message: '删除时发生错误' });
-  }
-}
-
-
-  build() {
-    Column() {
-      // 渲染日历头部
-      this.CalendarHeaderBuilder()
-
-      // 日历内容绿色区域
-      Column() {
-        // 渲染星期标题行
-        this.WeekDaysBuilder()
-
-        // 渲染日期选择行
-        Row() {
-          ForEach(this.getDatesForWeek(), (date: number) => {
-            Column() {
-              Stack() {
-                // 选中日期高亮背景
-                if (date === this.selectedDate.getDate()) {
-                  Circle()
-                    .width(40)
-                    .height(40)
-                    .fill('#ffffffff')
-                }
-                // 日期文本
-                Text(`${date < 10 ? '0' : ''}${date}`)
-                  .fontSize(18)
-                  .fontColor(date === this.selectedDate.getDate() ? '#00C853' : '#FFFFFF')
-              }
-            }
-            .width('14.28%')
-            .height(50)
-            .justifyContent(FlexAlign.Center)
-            .onClick(() => {
-              const newDate = new Date(this.selectedDate);
-              newDate.setDate(date);
-              this.selectedDate = newDate;
-              this.filterSamplesBySelectedDate(); // 点击后立即筛选
-            })
-
-          })
-        }
-        .width('100%')
-        .padding({ bottom: 16 })
-      }
-      .width('100%')
-      .backgroundColor('#00C853')
-
-      // 数据卡片区域（占满中间部分）
-      Column() {
-        if (this.filteredSamples.length == 0) {
-          Text('~ 暂无相关数据 ~')
-            .fontSize(16)
-            .fontColor(Color.Gray)
-            .textAlign(TextAlign.Center)
-            .padding({ top: 50 });
+      if (response.responseCode === 200) {
+        const result = JSON.parse(response.result as string) as ApiResponse;
+        if (result.code === 200) {
+          prompt.showToast({ message: '删除成功' });
+          // 从本地状态中移除该记录
+          this.samples = this.samples.filter(s => s.id !== id);
+          this.filterSamplesBySelectedDate(); // 更新视图
         } else {
-          this.renderSampleCards();
+          console.error('删除失败:', result.message);
+          prompt.showToast({ message: '删除失败: ' + result.message });
         }
+      } else {
+        console.error('HTTP 请求失败:', response.responseCode);
+        prompt.showToast({ message: '网络请求失败' });
       }
-      .width('100%')
-      // .padding({ top: 16, bottom: 6 })
-      .layoutWeight(1)// 占据剩余空间
-      .margin({ left: 5, right: 5 })
-      .justifyContent(FlexAlign.Start)     // 关键：让卡片内容靠上排列
-      .backgroundColor('#F5F5F5')        // 可选背景色
-      // 【关键】新增留样按钮固定在底部
-      Column() {
-        Button('新增留样')
-          .width('100%')
-          .height(50)
-          .fontSize(18)
-          .fontColor('#ffffffff')
-          .backgroundColor('#00C853')
-          .onClick(() => {
-            router.push({
-              url: 'pages/remain_day_new',
-              params: {
-                date: this.selectedDate,
-                token: this.receivedToken,
-                relTenantIds: this.tenantId
-              },
-            })
-          })
-      }
-      .width('100%')
-      .padding({ left: 16, right: 16 }) // 可选：添加内边距
+    } catch (error) {
+      console.error('删除异常:', error);
+      prompt.showToast({ message: '删除时发生错误' });
     }
-    .width('100%')
-    .height('100%')
-    .backgroundColor('#F5F5F5')
   }
 
 }

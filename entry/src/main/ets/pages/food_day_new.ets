@@ -147,13 +147,13 @@ struct food_day_new {
           .margin({top: 5, bottom: 5 })
 
           Row({ space: 10 }) {
-              Text('上传食谱照片 *')
-                .fontSize(16)
-                .width('40%')
-                .margin({right:110})
-              Text(`${this.photoCount}/20`)
-                .width('60%')
-                .height(40)
+            Text('上传食谱照片 *')
+              .fontSize(16)
+              .width('40%')
+              .margin({right:110})
+            Text(`${this.photoCount}/20`)
+              .width('60%')
+              .height(40)
           }
           .margin({top: 5, bottom: 5 })
 
@@ -204,7 +204,7 @@ struct food_day_new {
       let photoSelectOptions = new picker.PhotoSelectOptions();
       photoSelectOptions.MIMEType = picker.PhotoViewMIMETypes.IMAGE_TYPE;
       photoSelectOptions.maxSelectNumber = 20 - this.photoCount;
-      
+
       let photoPickerResult = await this.photoPicker.select(photoSelectOptions);
       if (photoPickerResult && photoPickerResult.photoUris && photoPickerResult.photoUris.length > 0) {
         this.photoCount += photoPickerResult.photoUris.length;
@@ -230,8 +230,8 @@ struct food_day_new {
       !this.recipeName ||
       !this.mealType ||
       !this.diningType
-      // ||
-      // !this.photoUri
+    // ||
+    // !this.photoUri
     ) {
       prompt.showToast({
         message: '请填写所有必填项',
