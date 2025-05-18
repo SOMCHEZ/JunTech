@@ -16,6 +16,7 @@ interface FoodItem {
 @Entry
 @Component
 struct shicai {
+  @State adddal: boolean = true
   @State foodList: FoodItem[] = [
     {
       foodName: '绿豆',
@@ -564,25 +565,25 @@ struct shicai {
             .fontSize(15)
             .fontWeight(50)
             .margin({ right: 140, left: 10, bottom: 10 })
-          Button({ type: ButtonType.Normal }) {
+          Button({type: ButtonType.Normal}) {
             Text("确定")
               .margin({ bottom: 10,top:10 })
-              .onClick(() => {
-                let SelectFoodList:FoodItem[] = []
-                for(let i = 0; i < this.isBothClicked.length; i++){
-                  if(this.isBothClicked[i]){
-                    SelectFoodList.push(this.foodList[i])
-                  }
-                }
-                console.log('ses:',SelectFoodList)
-                router.back({
-                  url:'pages/addPlan',
-                  params:{
-                    SelectFoodList:SelectFoodList
-                  }
-                })
-              });
           }
+          .onClick(() => {
+            let SelectFoodList:FoodItem[] = []
+            for(let i = 0; i < this.isBothClicked.length; i++){
+              if(this.isBothClicked[i]){
+                SelectFoodList.push(this.foodList[i])
+              }
+            }
+            console.log('ses:',JSON.stringify(SelectFoodList))
+            router.back({
+              url:'pages/addPlan',
+              params:{
+                SelectFoodList:SelectFoodList
+              }
+            })
+          })
           .height(38)
           .width(110)
           .fontColor(Color.White)
