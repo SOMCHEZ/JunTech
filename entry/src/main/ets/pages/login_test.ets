@@ -39,8 +39,8 @@ interface LoginHandlerResult {
 @Component
 struct Index {
   @State typeid: string = '';
-  @State userUsername: string = '15502933673';//15502933673
-  @State userPassword: string = '123456';//123456
+  @State userUsername: string = '15502933673';//15502933673//18991274264
+  @State userPassword: string = '123456';//123456//123456
 
 
   build() {

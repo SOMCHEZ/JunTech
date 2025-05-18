@@ -1,93 +1,3 @@
-import router from '@ohos.router';
-import http from '@ohos.net.http';
-// 定义接收的参数类型
-
-AppStorage.setOrCreate('token', '');
-AppStorage.setOrCreate('tenantId', 0);
-AppStorage.setOrCreate('unitId', '');
-
-interface RecipeFormData extends records{
-  photoUri: string;//卡片名对应地点
-  id?: string;
-  date: string;// 供应时间
-  recipeName: string;//制单时间
-  mealType: string;//需求类型
-  human: string;
-  diningType: string;//用餐类型
-  summary:  string;
-  place: string;//餐别
-  planningStatus:string;
-
-}
-
-interface records{//定义接口返回类型
-  id?: string;
-  createBy: string;
-  createTime:  string;
-  updateBy: string;
-  updateTime: string;// 后端返回的姓名
-  schoolId?: string;
-  unitId: string;
-  schoolName?:string;
-  unitName:  string;
-  unitType:  string;
-  documentNo:string;// 后端返回的code
-  supplyDate: string;
-  supplyTime: string
-  reportUserPhone: string
-  auditTime: string
-  supplyTime_dictText: string
-  planningStatus: string
-  rejectOpinion: string
-  summary: string
-  preparedBy: string
-  reportUserName: string
-  reportUserId: string
-  reportDate: string
-  tenantId: string
-  requirementType: string
-  requirementType_dictText: string
-  planningFoodList: string
-  izReplenishment: string
-  stockId: string
-  distributionId: string
-  supplierRemark: string
-  totalPrice: string
-  izPastDue: string
-  mealType: string
-  mealType_dictText: string
-  mealCategory: string
-  mealCategory_dictText: string
-  planningStatus_dictText: string
-  // 其他字段根据实际API响应补充...
-}
-
-interface RouteParams {//接口传递参数定义
-  token?: string;
-  relTenantIds?: number;
-  //unitId?: string;
-}
-interface XuqiuResult {
-  records: records[];
-  //token: string;
-}
-
-interface XuqiuResponse {
-  code: number;
-  message: string;
-  result: XuqiuResult;
-  timestamp: number;
-}
-
-interface XuqiuHandlerResult {
-  success: boolean;
-  code?: number;
-  records?: records[];
-  message?: string;
-}
-
-
-
 
 @Entry
 @Component
@@ -99,11 +9,6 @@ struct ReportPlanPage {
   @State selectedUnit: string = '请选择需求单位'
   @State selectedDate: string = '请选择供应日期'
   @State selectDate: Date = new Date()
-  @State RecipeFormData: RecipeFormData[] =[]
-  @State receivedToken: string = '';//参数传递
-  @State tenantId: number = 0;//同上
-  @State unitId: string  ="";
-  @State upload:boolean  = false;
   private unitOptions = [
     '选择需求单位',
     '实验第二学校（库房）',
@@ -112,6 +17,126 @@ struct ReportPlanPage {
   private days = [
 
   ]
+
+
+  // 修改生命周期函数
+  async onPageShow() {
+
+    // 使用接口类型断言
+    const params = router.getParams() as RouteParams;
+    //console.log('houchu', params?.token);// 打印接收到的参数
+    //console.log('houchu', params?.relTenantIds);//  打印接收到的参数
+
+    // 安全取值如果返回值空，则使用appsetcreat中所预保存的token和id
+    if (!AppStorage.get('token') && params?.token) {
+      AppStorage.set('token', params.token);
+    }
+
+    if (!AppStorage.get('tenantId') && params?.relTenantIds) {
+      AppStorage.set('tenantId', params.relTenantIds);
+    }
+    // 同步到组件状态
+    this.receivedToken = AppStorage.get('token')??'';
+    this.tenantId = AppStorage.get('tenantId')??0;
+
+    const result = await this.Xuqiuchaxun();
+    this.unitId = result?.records?.[0]?.unitId ?? '';
+    console.log('牢莩1', this.unitId);
+    //const result = await this.Houchuchaxun();// 调用Houchuchaxun方法这个函数是用来查数据的
+    //console.log('houchu1', result); // 打印返回结果
+
+    if (result.success && result.records) {
+      this.RecipeFormData = result.records?.map((item: records) => ({
+        id: item.id,
+        date: item.supplyDate,
+        recipeName: item.createTime,
+        mealType: item.mealType_dictText,
+        diningType: item.requirementType_dictText,
+        human:item.reportUserName,
+        summary: item.summary,
+        place: item.mealType_dictText,
+        photoUri:  item.unitName,
+        planningStatus: item.planningStatus
+      } as RecipeFormData));
+
+    }else {
+      console.error('数据加载失败:', result.message);
+    }
+
+
+
+
+
+
+    // const filteredRecords = result.records?.filter(item =>
+    // this.selectedUnit === '选择需求单位' ||  // 显示全部
+    //   item.unitName === this.selectedUnit // 按选中单位过滤
+    // ) ?? [];
+    //
+    // if (result.success && filteredRecords) {
+    //   this.RecipeFormData = filteredRecords.map((item: records) => ({
+    //     id: item.id,
+    //     date: item.supplyDate,
+    //     recipeName: item.createTime,
+    //     mealType: item.mealType_dictText,
+    //     diningType: item.requirementType_dictText,
+    //   } as RecipeFormData));
+    //   console.log('444',this.RecipeFormData[1].id);
+    //
+    //
+    //   const unitNames = result.records?.map(item => item.unitName) ?? [];
+    //   const filteredUnitNames = unitNames.filter(Boolean);
+    //   const uniqueUnits = Array.from(new Set(filteredUnitNames));
+    //   this.unitOptions = ['所属单位', ...uniqueUnits];
+    // }
+  }
+
+
+  private async Xuqiuchaxun(): Promise<XuqiuHandlerResult> { //这个请求是针对查询后厨人员列表的
+    try {
+      const httpRequest = http.createHttp();
+
+      const response = await httpRequest.request(
+        'https://api.suoeryun.com/ifood/jeecg-school/school/xxDemandPlanning/list',
+        {
+          method: http.RequestMethod.GET,
+          header: {
+            //'Content-Type': 'application/json',
+            'Tenant-Id': this.tenantId.toString(),
+            'X-Access-Token': this.receivedToken
+          },
+        }
+      );
+
+      if (response.responseCode !== 200) {
+        //console.error('Login Error:'+response.responseCode);
+        return {
+          success: false,
+          message: `HTTP Error: ${response.responseCode}`
+          // 添加其他错误处理逻辑
+        };
+      }
+      console.log('slfj' + response.result.toString())
+      const jsonData = JSON.parse(response.result as string) as XuqiuResponse;
+      console.log('11', jsonData.result.records[1]);
+      return {
+        success: jsonData.code === 200,
+        code: jsonData.code,
+        records: jsonData.result.records,
+        message: jsonData.message,
+        //relTenantIds:jsonData.result.userInfo.relTenantIds
+      };
+
+    } catch (error) {
+      console.error('Login Error:', JSON.stringify(error));
+      return {
+        success: false,
+        message: '服务器繁忙'
+      }
+    }
+  }
+
+
 
   aboutToAppear() {
     if (this.unitOptions.length > 0) {
@@ -451,11 +476,11 @@ struct ReportPlanPage {
               })
           }
         }
-
       }
       .width('100%')
       //.backgroundColor('#f2dbdada')
       .layoutWeight(1)
+
 
     }
 

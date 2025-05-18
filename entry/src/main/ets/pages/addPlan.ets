@@ -9,6 +9,7 @@ import http from '@ohos.net.http';
 AppStorage.setOrCreate('token', '');
 AppStorage.setOrCreate('tenantId', 0);
 AppStorage.setOrCreate('unitId', '');
+//AppStorage.setOrCreate('selectedFoods', []);
 
 interface PlanningFoodItem {
   id: string;
@@ -76,6 +77,18 @@ interface RouteParams {//接口传递参数定义
   token?: string;
   relTenantIds?: number;
   unitId?: string;
+  SelectFoodList?: SelectFoodList[];
+  AA: string;
+  adddal:boolean;
+}
+interface SelectFoodList {
+  foodName: string;
+  procurementPricing: string;
+  unit: string;
+  stock: string;
+  supplyName:string;
+  images: Resource ;
+  groupName:string;
 }
 interface UserInfo {
   id: string;
@@ -99,13 +112,13 @@ interface GeneratedObjectLiteralInterface_1 {
   photoUri: string;
 }
 
+
 @Entry
 @Component
 struct DatePickerExample {
   @State selectedDate: string = ''
   @State selectDate: Date = new Date()
   @State showDialog: boolean = false
-  @State adddal: boolean = true
   @State opacityValue: number = 0
   @State scaleValue: number = 0.8
   @State receivedToken: string = '';//参数传递
@@ -115,10 +128,16 @@ struct DatePickerExample {
   @State summary: string = ''// 摘要内容
   @State selectedText: string[] = ['请选择','请选择','请选择','请选择','请选择','请选择','请输入摘要']
   @State private showMealType: boolean = false // 控制是否显示用餐类型
+  @State kgValue: string = ''//千克值
+  @State jinValue: string = ''//斤值
+  @State SelectFoodList: SelectFoodList []= []
+  @State AA :  string = ''
+  @State selectedFoodslenth :  number = 0
+  @State lastChanged: 'jin' | 'kg' | null = null;
   private unitOptions = ['实验第二学校（库房）', '实验第二学校餐厅']
   private selectedTime = ['上午', '下午']
   private demandOptions = ['学生餐', '教师餐']
-  private mealTypeOptions = ['其他','营养餐']
+  private mealTypeOptions = ['非营养餐','营养餐']
   private mealOptions = ['其他', '早餐', '午餐', '晚餐']
 
   // 修改 getMappedValues 函数：显式声明返回类型
@@ -152,6 +171,8 @@ struct DatePickerExample {
 
   async onPageShow() {
     const params = router.getParams() as RouteParams;
+    console.log('AAAAA',params.AA);
+    console.log('1234',params.adddal);
     //console.log('houchu', params?.token);// 打印接收到的参数
     //console.log('houchu', params?.relTenantIds);//  打印接收到的参数
 
@@ -170,15 +191,20 @@ struct DatePickerExample {
       AppStorage.set('unitId', params.unitId);
       //this.UnitId = params.unitId;
     }
-
     // 同步到组件状态
+    this.SelectFoodList = params.SelectFoodList??[];
+    if (this.SelectFoodList) {
+      this.selectedFoodslenth =this.SelectFoodList.length;
+      console.log("selectedFoodss",this.selectedFoodslenth);
+      console.log("selectedFoods",this.SelectFoodList[0].foodName);
+    }else {
+      this.selectedFoodslenth == 0;
+    }
+    this.AA=params.AA;
+    console.log("Plan2",this.AA);
     this.receivedToken = AppStorage.get('token')??'';
     this.tenantId = AppStorage.get('tenantId')??0;
     this.unitId = AppStorage.get('unitId') ?? '';
-    console.log('rel',this.unitId);
-    console.log('UID', params?.unitId);
-    //const result = await this.Houchuchaxun();// 调用Houchuchaxun方法这个函数是用来查数据的
-    //console.log('houchu1', result); // 打印返回结果
   }
 
   private async addStaff(): Promise<addHandlerResult> {
@@ -264,6 +290,7 @@ struct DatePickerExample {
       const jsonData = JSON.parse(response.result as string) as addResponse;
       //console.log('', response.responseCode);
       //console.log('',jsonData.code);
+      console.log('ssssssssss',this.unitId);
       return {
         success: jsonData.code === 200,
         code: jsonData.code,
@@ -321,7 +348,6 @@ struct DatePickerExample {
                     router.pushUrl({
                       url: 'pages/renew'
                     });
-
                   });
               }
 
@@ -333,9 +359,10 @@ struct DatePickerExample {
               .width('auto')
               .padding({ left: 15, right: 15 })
 
-              Text('已选中*种食材')
+              Text(`已选中${this.selectedFoodslenth}种食材`)
                 .fontColor('#8A96A2')
                 .position({ x: 137, y: 15 })
+
             }
 
             Column()//渐变框
@@ -346,7 +373,7 @@ struct DatePickerExample {
               .margin({top: 10})
               .width('100%')
               .height(20)
-            if (this.adddal) {
+            if (this.selectedFoodslenth) {
               // 显示条件用餐类型行
               Column() {
                 Stack() {
@@ -358,7 +385,7 @@ struct DatePickerExample {
                         .width(70)
                         .borderRadius(0)
                         .margin({ left: 5, top: -115 }) // 原position x:-150 → 计算实际左边距
-                      Text('绿豆')
+                      Text(this.SelectFoodList[0].foodName)
                         .fontSize(25)
                         .fontWeight(FontWeight.Bold)
                         .fontColor(Color.Black)
@@ -369,7 +396,7 @@ struct DatePickerExample {
                         .fillColor(Color.Red)
                         .position({ x: 270, y: -25 })
                         .onClick(() => {
-                          this.adddal = false
+                          this.selectedFoodslenth=0
                         })
                     }
                     .width('100%')
@@ -396,7 +423,7 @@ struct DatePickerExample {
                     Row() {
                       Text('采  购  价：')
                         .fontWeight(600)
-                      Text('12.96')
+                      Text(this.SelectFoodList[0].procurementPricing)
                         .fontSize(21)
                         .fontWeight(FontWeight.Bold)
                         .fontColor(Color.Red)
@@ -410,7 +437,7 @@ struct DatePickerExample {
                     Row() {
                       Text('供  应  商：')
                         .fontWeight(600)
-                      Text('彦红粮油有限公司')
+                      Text(this.SelectFoodList[0].supplyName)
                         .fontWeight(600)
                     }
                     .margin({ top: 10 })
@@ -418,48 +445,54 @@ struct DatePickerExample {
                     Row() {
                       Text('学校库存：')
                         .fontWeight(600)
-                      Text('1')
+                      Text(this.SelectFoodList[0].stock)
                         .fontSize(21)
                         .fontWeight(FontWeight.Bold)
                       Text('Kg')
                         .fontWeight(600)
                     }
                     .margin({ top: 10 })
-                    // 规格
-                    // 需求量
+                    // 斤输入框
                     Row({ space: 10 }) {
                       Text('需 求  量：')
                         .fontWeight(600)
-                      TextInput({ placeholder: '请输入需求量' })
-                        .fontColor('#000') // 输入文字颜色
+                      TextInput({ placeholder: '请输入需求量' ,text: this.jinValue })
+                        .fontColor('#000')
                         .fontSize(16)
-                        .width('40%') // 设置输入框宽度
-                        .border({
-                          width: { bottom: 1 }, // 只设置底部边框
-                          color: '#ccc'
-                        })
+                        .width('40%')
+                        .border({ width: { bottom: 1 }, color: '#ccc' })
                         .onChange((value: string) => {
-                          // 可以在这里处理输入变化
-                          console.log('输入的需求量为:', value)
+                          this.jinValue = value;
+                          this.lastChanged = 'jin';  // 标记是斤输入框触发的
+                          const jinNum = parseFloat(value);
+                          if (!isNaN(jinNum)) {
+                            this.kgValue = (jinNum / 2).toString();  // 计算 kg
+                          } else {
+                            this.kgValue = '';
+                          }
                         })
                       Text('斤')
                         .fontWeight(600)
                     }
-                    // 需求量
+                    //kg 输入框
                     Row({ space: 10 }) {
                       Text('需 求  量：')
                         .fontWeight(600)
-                      TextInput({ placeholder: '请输入需求量' })
-                        .fontColor('#000') // 输入文字颜色
+                      TextInput({ placeholder: '请输入需求量' ,text: this.kgValue })
+                        .fontColor('#000')
                         .fontSize(16)
-                        .width('40%') // 设置输入框宽度
-                        .border({
-                          width: { bottom: 1 }, // 只设置底部边框
-                          color: '#ccc'
-                        })
+                        .width('40%')
+                        .border({ width: { bottom: 1 }, color: '#ccc' })
+
                         .onChange((value: string) => {
-                          // 可以在这里处理输入变化
-                          console.log('输入的需求量为:', value)
+                          this.kgValue = value;
+                          this.lastChanged = 'kg';  // 标记是 kg 输入框触发的
+                          const kgNum = parseFloat(value);
+                          if (!isNaN(kgNum)) {
+                            this.jinValue = (kgNum * 2).toString();  // 计算斤
+                          } else {
+                            this.jinValue = '';
+                          }
                         })
                       Text('kg')
                         .fontWeight(600)
@@ -468,6 +501,10 @@ struct DatePickerExample {
                     Row() {
                       Text('合       计：')
                         .fontWeight(600)
+                      Text(this.calculateTotal())
+                        .fontSize(21)
+                        .fontWeight(FontWeight.Bold)
+                        .fontColor(Color.Red)
                       Text('元')
                         .fontWeight(600)
                         .fontColor(Color.Red)
@@ -611,11 +648,18 @@ struct DatePickerExample {
           .margin({ top: 0, bottom: 7 })
           Row() {
 
-            Text('总计：*元')
+            Text('总计：')
               .fontColor('#8A96A2')
               .fontSize(16)
               .margin({ right: 10 })
-
+            Text(this.calculateTotal())
+              .fontColor('#8A96A2')
+              .fontSize(16)
+              .margin({ right: -10 })
+            Text('元')
+              .fontColor('#8A96A2')
+              .fontSize(16)
+              .margin({ right: 25 })
             Button({type: ButtonType.Normal}){
               Text('保存')
                 .fontSize(16)
@@ -634,19 +678,14 @@ struct DatePickerExample {
                 .fontColor(Color.White)
             }
             .onClick(async() => {
-              router.pushUrl({
-                url: 'pages/uploadPlan',
-                params: {
-                  token: this.receivedToken,
-                  tenantId: this.tenantId,
-                } })
               const result = await this.addStaff()
            // 获取 selectedText[1] 对应的映射值
               const singleValue = this.getMappedValues(2); // 获取 日期 对应的映射值
               console.log('Single Mapped Value:', singleValue);
               //this.submitForm();
-              if(this.selectedText[2]==='请选择')
-                this.selectedText[2] = ''
+              // if(this.selectedText[2]==='请选择')
+              //   this.selectedText[2] = ''
+              this.submitForm()
             })
             .height(35)
             .backgroundColor('#02BC65')
@@ -815,22 +854,33 @@ struct DatePickerExample {
       }
     })
   }
+  //合计乘积函数
+  private calculateTotal(): string {
+    const price = parseFloat(this.SelectFoodList[0]?.procurementPricing ?? '0');
+    const kg = parseFloat(this.kgValue ?? '0');
 
+    if (isNaN(price) || isNaN(kg)) {
+      return '0.00';
+    }
+
+    const total = price * kg;
+    return total.toFixed(2); // 保留两位小数
+  }
   private submitForm() {
     // 验证必填项
     const isStudentMeal = this.selectedText[3] === '学生餐';
-
-    // if (this.selectedText[0] === '请选择' ||  // 需求单位
-    //   this.selectedText[1] === '请选择' ||  // 供应日期
-    //   this.selectedText[3] === '请选择' ||  // 需求类型
-    //   this.selectedText[5] === '请选择'     // 餐别
-    // ) {
-    //   prompt.showToast({
-    //     message: '请填写所有必填项',
-    //     duration: 2000
-    //   });
-    //   return;
-    // }
+    //
+    if (this.selectedText[0] === '请选择' ||  // 需求单位
+      this.selectedText[1] === '请选择' ||  // 供应日期
+      this.selectedText[3] === '请选择' ||  // 需求类型
+      this.selectedText[5] === '请选择'     // 餐别
+    ) {
+      prompt.showToast({
+        message: '请填写所有必填项',
+        duration: 2000
+      });
+      return;
+    }
     // 如果是学生餐，则必须填写用餐类型
     if (isStudentMeal && this.selectedText[4] === '请选择') {
       prompt.showToast({
@@ -843,6 +893,12 @@ struct DatePickerExample {
       message: '保存成功',
       duration: 2000
     });
+    router.pushUrl({
+      url: 'pages/uploadPlan',
+      params: {
+        token: this.receivedToken,
+        tenantId: this.tenantId,
+      } })
 
     // 创建表单数据对象
     let formData: GeneratedObjectLiteralInterface_1 = {

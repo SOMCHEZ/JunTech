@@ -1,4 +1,4 @@
-
+//TODO:我要改传递参数，然后将参数传到编辑页面，使编辑页面的数据变活
 import router from '@ohos.router';
 import http from '@ohos.net.http';
 import { BusinessError } from '@ohos.base';
