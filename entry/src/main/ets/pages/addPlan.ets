@@ -113,6 +113,7 @@ interface GeneratedObjectLiteralInterface_1 {
 }
 
 
+
 @Entry
 @Component
 struct DatePickerExample {

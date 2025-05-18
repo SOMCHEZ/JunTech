@@ -1,70 +1,176 @@
 import router from '@ohos.router';
 import { it } from '@ohos/hypium';
-
+import http from '@ohos.net.http';
+import prompt from '@ohos.prompt';
 // 定义一个菜品的数据结构
+//这里appstorage是个永久容器
+AppStorage.setOrCreate('token', 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJwd2QiOiIyZjg5NWM4NDI2MWFlNzJiYmUyMjVkMjllOWJhZjVjZCIsImV4cCI6MTc0NzM1NjI1NywidXNlcm5hbWUiOiIxNTUwMjkzMzY3MyJ9.iSwsSTRgMclL_ZHLy0NUNvyQ-DJukzsOPhBxbQWxdsc');
+AppStorage.setOrCreate('tenantId', 10021011);
+AppStorage.setOrCreate('unitId', '');
 
-interface FoodItem {
-  foodName: string;
-  procurementPricing: string;
-  unit: string;
-  stock: string;
-  supplyName:string;
-  images: Resource ;
-  groupName:string;
+interface FoodResponse{
+  success: boolean;
+  code: number;
+  result:FoodResult;
+  message: string;
+}//  接口返回外层
+interface FoodResult{
+  records:  records[];
+  total:number;
+  size: number;
+  current: number;
+  orders: [];
+  optimizeCountSql: boolean;
+  searchCount: boolean;
+  countId: string;
+  maxLimit: string;
+  pages: number;
+}//接口返回中层
+interface records{
+  id: string,
+  storehouseId: string,
+  foodAndSupplierId: string,
+  foodId: string,
+  supplyWay: string,
+  superiorLimit: string,
+  lowerLimit: string,
+  storageLocation: string,
+  stock: number,
+  storehouseStatus?: string,
+  izCollec: string,
+  encoding: string,
+  groupId: string,
+  groupName: string,
+  foodName: string,
+  forShort: string,
+  internationalCode?: string,
+  pinyinCode: string,
+  specification: string,
+  expirationDay: number,
+  brandLevel: string,
+  minDeclare?: string,
+  unit?: string,
+  packageQuantity: string,
+  procurementPricing: number,
+  supplyPricing: number,
+  marketPrice: number,
+  modifyPrice: number,
+  supplyNames: string,
+  supplyName: string,
+  supplierId: string,
+  aggregatePurchasePrice: number,
+  images: string,
+  izConvert: string,
+  realSpecification: string,
+  placeOrigin: string,
+  remarks: string,
+  remark: string,
+  testReport: string,
+  supplyWay_dictText: string,
+}//列表数据
+interface FoodItem extends records {
+  id: string,
+  storehouseId: string,
+  foodAndSupplierId: string,
+  foodId: string,
+  supplyWay: string,
+  superiorLimit: string,
+  lowerLimit: string,
+  storageLocation: string,
+  stock: number,
+  storehouseStatus?: string,
+  izCollec: string,
+  encoding: string,
+  groupId: string,
+  groupName: string,
+  foodName: string,
+  forShort: string,
+  internationalCode?: string,
+  pinyinCode: string,
+  specification: string,
+  expirationDay: number,
+  brandLevel: string,
+  minDeclare?: string,
+  unit?: string,
+  packageQuantity: string,
+  procurementPricing: number,
+  supplyPricing: number,
+  marketPrice: number,
+  modifyPrice: number,
+  supplyNames: string,
+  supplyName: string,
+  supplierId: string,
+  aggregatePurchasePrice: number,
+  images: string,
+  izConvert: string,
+  realSpecification: string,
+  placeOrigin: string,
+  remarks: string,
+  remark: string,
+  testReport: string,
+  supplyWay_dictText: string,
+}//继承records的数据
+
+interface RouteParams {//接口传递参数定义
+  token?: string;
+  relTenantIds?: number;
+  unitId?: string;
 }
-
 @Entry
 @Component
 struct shicai {
   @State adddal: boolean = true
-  @State foodList: FoodItem[] = [
-    {
-      foodName: '绿豆',
-      procurementPricing: '12.96',
-      unit: '元/Kg',
-      stock: '1',
-      supplyName: '彦红粮油有限公司',
-      images: $r('app.media.food'),
-      groupName:'谷薯类',
-    },
-    {
-      foodName: '大米',
-      procurementPricing: '5.88',
-      unit: '元/Kg',
-      stock: '10',
-      supplyName: '彦红粮油有限公司',
-      images: $r('app.media.food'),
-      groupName:'谷薯类',
-    },
-    {
-      foodName: '小肉',
-      procurementPricing: '15.00',
-      unit: '元/Kg',
-      stock: '0',
-      supplyName: '小杨肉食店',
-      images: $r('app.media.food'),
-      groupName:'谷薯类',
-    },
-    {
-      foodName: '广红萝卜',
-      procurementPricing: '5.76',
-      unit: '元/Kg',
-      stock: '0',
-      supplyName: '蔬菜批发门市',
-      images: $r('app.media.food'),
-      groupName:'谷薯类',
-    },
-    {
-      foodName: '广红萝卜1',
-      procurementPricing: '5.76',
-      unit: '元/Kg',
-      stock: '0',
-      supplyName: '蔬菜批发门市',
-      images: $r('app.media.food'),
-      groupName:'谷薯类',
-    }
+  @State receivedToken: string = '';//参数传递
+  @State tenantId: number = 0;//同上
+  @State foodList: FoodItem[] = []
+    //[
+    // {
+    //   foodName: '绿豆',
+    //   procurementPricing: '12.96',
+    //   unit: '元/Kg',
+    //   stock: '1',
+    //   supplyName: '彦红粮油有限公司',
+    //   images: $r('app.media.food'),
+    //   groupName:'谷薯类',
+    // },
+    // {
+    //   foodName: '大米',
+    //   procurementPricing: '5.88',
+    //   unit: '元/Kg',
+    //   stock: '10',
+    //   supplyName: '彦红粮油有限公司',
+    //   images: $r('app.media.food'),
+    //   groupName:'谷薯类',
+    // },
+    // {
+    //   foodName: '小肉',
+    //   procurementPricing: '15.00',
+    //   unit: '元/Kg',
+    //   stock: '0',
+    //   supplyName: '小杨肉食店',
+    //   images: $r('app.media.food'),
+    //   groupName:'谷薯类',
+    // },
+    // {
+    //   foodName: '广红萝卜',
+    //   procurementPricing: '5.76',
+    //   unit: '元/Kg',
+    //   stock: '0',
+    //   supplyName: '蔬菜批发门市',
+    //   images: $r('app.media.food'),
+    //   groupName:'谷薯类',
+    // },
+    // {
+    //   foodName: '广红萝卜1',
+    //   procurementPricing: '5.76',
+    //   unit: '元/Kg',
+    //   stock: '0',
+    //   supplyName: '蔬菜批发门市',
+    //   images: $r('app.media.food'),
+    //   groupName:'谷薯类',
+    // }
 
-  ];
+  //];
   @State FavoriteFoodList: FoodItem[] = []
 
   @State x: number = 0
@@ -109,7 +215,26 @@ struct shicai {
     }, 2000)
   }
 
-  onPageShow() {
+  async onPageShow() {
+
+    const params = router.getParams() as RouteParams;//接收传参
+    if (!AppStorage.get('token') && params?.token) {
+      AppStorage.set('token', params.token);
+      //this.receivedToken = params.token;
+    }
+    if (!AppStorage.get('tenantId') && params?.relTenantIds) {
+      AppStorage.set('tenantId', params.relTenantIds);
+      //this.tenantId = params.relTenantIds;
+    }
+    this.receivedToken = AppStorage.get('token')??'';
+    this.tenantId = AppStorage.get('tenantId')??0;
+
+
+    const result = await this.Foodchaxun();
+    this.foodList =result.result.records
+
+
+
     for (let index = 0; index < this.foodList.length; index++) {
       this.isShow[index] = true
       this.isFavorite[index] = false
@@ -443,7 +568,7 @@ struct shicai {
                       Text('采  购  价：')
                         .fontWeight(600)
                         .width(90)
-                      Text(item.procurementPricing)
+                      Text(item.procurementPricing.toString())
                         .fontSize(21)
                         .fontWeight(FontWeight.Bold)
                         .fontColor(Color.Red)
@@ -469,7 +594,7 @@ struct shicai {
                       Text('学校库存：')
                         .fontWeight(600)
                         .width(90)
-                      Text(item.stock)
+                      Text(item.stock.toString())
                         .fontSize(21)
                         .fontWeight(FontWeight.Bold)
                       Text('Kg')
@@ -596,4 +721,76 @@ struct shicai {
       .height('10%')
     }
   }
+
+
+  private async Foodchaxun(): Promise<FoodResponse> { //这个请求是针对查询后厨人员列表的
+    try {
+      const httpRequest = http.createHttp();
+
+      const response = await httpRequest.request(
+        'https://api.suoeryun.com/ifood/jeecg-school/school/xxDemandPlanning/queryNewFoodStorehousePage',
+        {
+          method: http.RequestMethod.GET,
+          header: {
+            //'Content-Type': 'application/json',
+            'Tenant-Id': this.tenantId.toString(),
+            'X-Access-Token': this.receivedToken
+          },
+        }
+      );
+      const emptyResult: FoodResult = {
+        records: [],
+        total: 0,
+        size: 0,
+        current: 0,
+        orders: [],
+        optimizeCountSql: false,
+        searchCount: false,
+        countId: '',
+        maxLimit: '',
+        pages: 0
+      };
+
+      if (response.responseCode !== 200) {
+        //console.error('Login Error:'+response.responseCode);
+        return {
+          success: false,
+          code: response.responseCode,
+          result: emptyResult,
+          message: `HTTP Error: ${response.responseCode}`
+          // 添加其他错误处理逻辑
+        };
+      }
+      console.log('没有报错奥' + response.result.toString())
+      const jsonData = JSON.parse(response.result as string) as FoodResponse;
+      console.log('好耶', jsonData.result.records[1].id);
+      return {
+        success: jsonData.code === 200,
+        code: jsonData.code,
+        result: jsonData.result,
+        message: jsonData.message,
+        //relTenantIds:jsonData.result.userInfo.relTenantIds
+      };
+
+    } catch (error) {
+      //console.error('Login Error:', JSON.stringify(error));
+      return {
+        success: false,
+        code: 500,
+        result: { // 符合 liuyangResult 的空结构
+          records: [],
+          total: 0,
+          size: 0,
+          current: 0,
+          orders: [],
+          optimizeCountSql: false,
+          searchCount: false,
+          countId: '',
+          maxLimit: '',
+          pages: 0
+        },
+        message: '服务器繁忙'
+      }
+    }
+  }//接口函数
 }
