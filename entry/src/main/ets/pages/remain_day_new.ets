@@ -56,9 +56,9 @@ interface SampleFormData {
   sampleType_dictText?: string;
   mealType?: string;
   mealCategory_dictText?: string;
-  fridgeTemp?: string;
+  cabinetTemperature?: string;
   dishName?: string;
-  sampleWeight?: string;
+  putWeight?: string;
   destroyPerson?: string;
   destroyTime?: string;
   sampleImages?: string; // 留样图片
@@ -83,6 +83,25 @@ interface GeneratedTypeLiteralInterface_2 {
   sampleType_dictText: string;
 }
 
+// interface GeneratedObjectLiteralInterface_13{
+//   id: string,
+//   createByName: string,
+//   tenantId: number,
+//   schoolId: string,
+//   demandUnit: string,
+//   demandUnitName: string,
+//   mealCategory: string,
+//   mealCategory_dictText: string,
+//   reservedSampleDate:string,
+//   sampleType:string,
+//   remark: string,
+//   reservedSampleImages: string,
+//   cabinetPhoto: string,
+//   dishName: string,
+//   cabinetTemperature:string,
+//   destroyPerson:string,
+//   destroyTime:string,
+// }
 interface GeneratedObjectLiteralInterface_14 {
   id: string;
   createByName: string;
@@ -90,38 +109,32 @@ interface GeneratedObjectLiteralInterface_14 {
   schoolId:string;
   demandUnit: string;
   demandUnitName: string;
-  reservedSampleDate: string;
-  createTime?: string;
   mealCategory: string;
   mealCategory_dictText: string;
-  dishName: string;
+  reservedSampleDate: string;
   remark: string;
+  reservedSampleImages: string;
+  dishName: string;
+  cabinetPhoto: string;
   cabinetTemperature: number;
   destroyPerson: string;
   destroyTime: string;
   sampleType: string;
-  sampleType_dictText:string,
-  putWeight: number;
-  reservedsampleImagess: string;
-  cabinetPhoto: string;
 }
 
 interface GeneratedObjectLiteralInterface_15 {
   demandUnit: string;
   demandUnitName: string;
   reservedSampleDate: string;
-  createTime?: string;
-  mealCategory: string;
-  mealCategory_dictText: string;
   dishName: string;
   remark: string;
   cabinetTemperature: number;
   destroyPerson: string;
   destroyTime: string;
   sampleType: string;
-  sampleType_dictText:string;
-  putWeight: number;
-  reservedsampleImagess: string;
+  mealCategory: string;
+  putWeight: string;
+  reservedSampleImages: string;
   cabinetPhoto: string;
 }
 
@@ -142,14 +155,16 @@ interface GeneratedObjectLiteralInterface_17 {
 @Component
 struct remain_day_new {
   @State samples: SampleFormData[] = [];
+  @State ids:string  = ''
   @State submitUnit: string = '实训第二学校餐厅'
   @State sampleDate: string = '请选择日期'
-  @State sampleType: string = '不区分'
-  @State sampleType_dictText: string = ''
-  @State mealType: string = '午餐'
+  @State sampleType: string = '0'
+  @State sampleType_dictText: string = '不区分'
+  @State mealCategory_dictText: string='其他'
+  @State mealType: string = '0'
   @State fridgeTemp: string = '5'
   @State dishName: string = ''
-  @State sampleWeight: string = ''
+  @State putWeight: string = ''
   @State destroyPerson: string = ''
   @State destroyTime: string = '请选择销毁时间'
   @State sampleImages: string = '' // 改为单个图片
@@ -201,10 +216,10 @@ struct remain_day_new {
           Row() {
             this.formRow('留样类型', true)
             Select(this.typeOptions.map<SelectOption>(item => ({ value: item })))
-              .value(this.sampleType)
+              .value(this.sampleType_dictText)
               .onSelect((index: number) => {
-                const selectedType = this.typeOptions[index];
-                const typeValues = this.getSampleTypeValue(selectedType);
+                const sampleType_dictText = this.typeOptions[index];
+                const typeValues = this.getSampleTypeValue(sampleType_dictText);
                 this.sampleType = typeValues.sampleType;
                 this.sampleType_dictText = typeValues.sampleType_dictText;
               })
@@ -216,8 +231,8 @@ struct remain_day_new {
           Row() {
             this.formRow('餐    别', true)
             Select(this.mealOptions.map<SelectOption>(item => ({ value: item })))
-              .value(this.mealType)
-              .onSelect(index => this.mealType = this.mealOptions[index])
+              .value(this.mealCategory_dictText)
+              .onSelect(index => this.mealCategory_dictText = this.mealOptions[index])
               .width('65%')
           }
           .margin({ top: 5, bottom: 5 })
@@ -225,7 +240,7 @@ struct remain_day_new {
           // 留样柜温度
           Row() {
             this.formRow('留样柜温度℃', true)
-            TextInput({ placeholder: '5' })
+            TextInput({ placeholder: this.fridgeTemp })
               .type(InputType.Number)
               .onChange(val => this.fridgeTemp = val)
               .width('100%')
@@ -235,7 +250,7 @@ struct remain_day_new {
           // 菜品名称
           Row() {
             this.formRow('菜品名称', true)
-            TextInput({ placeholder: '请输入菜品名称' })
+            TextInput({ placeholder: this.dishName })
               .onChange(val => this.dishName = val)
               .width('100%')
           }
@@ -244,17 +259,16 @@ struct remain_day_new {
           // 留样重量
           Row() {
             this.formRow('留样重量(克)', true)
-            TextInput({ placeholder: '请输入留样重量' })
-              .type(InputType.Number)
-              .onChange(val => this.sampleWeight = val)
-              .width('100%')
+            TextInput({placeholder: `${this.putWeight}`})
+            .onChange(val=> {this.putWeight = val; })
+            .width('100%')
           }
           .margin({ top: 5, bottom: 5 })
 
           // 销毁人员
           Row() {
             this.formRow('销毁人员', true)
-            TextInput({ placeholder: '请输入销毁人员' })
+            TextInput({ placeholder: this.destroyPerson })
               .onChange(val => this.destroyPerson = val)
               .width('100%')
           }
@@ -272,10 +286,10 @@ struct remain_day_new {
           .margin({ top: 5, bottom: 5 })
 
           // 上传留样图片
-          this.formImageRow('上传留样图片', true, this.sampleImages,(url: string) => this.sampleImages = url)
+          this.formImageRow('上传留样图片', true, this.sampleImages,(url: string) => this.photoUri = url)
 
           // 放入留样柜拍照
-          this.formImageRow('放入留样柜拍照', true, this.fridgeImages,(url: string) => this.fridgeImages = url)
+          this.formImageRow('放入留样柜拍照', true, this.fridgeImages,(url: string) => this.photoUri = url)
 
           // 备注
           Column() {
@@ -299,11 +313,10 @@ struct remain_day_new {
         .fontSize(20)
         .margin({ top: 24, bottom: 24 })
         .onClick(() =>{
-          const formattedCreateTime=this.getCurrentDate()
           if  (this.PageType === '新建留样') {
-            this.submit(formattedCreateTime)
+            this.submit()
           } else {
-            this.updateData(formattedCreateTime)
+            this.updateData()
           }
 
         })
@@ -329,15 +342,26 @@ struct remain_day_new {
     if (params?.formData) {
       this.PageType = '修改留样';
       const formData = params.formData;
+      this.submitUnit = formData.unitName ?? '实训第二学校餐厅';
       this.sampleDate = formData.reservedSampleDate ?? '请选择日期'; // ✅ 使用 reservedSampleDate
       this.destroyTime = formData.destroyTime ?? '请选择销毁时间';
+      this.fridgeTemp =formData.cabinetTemperature ?? '';
       this.dishName = formData.dishName ?? '';
-      this.sampleWeight = formData.sampleWeight ?? '';
       this.destroyPerson = formData.destroyPerson ?? '';
+      this.putWeight = formData.putWeight ?? '';
+
       this.sampleImages = formData.sampleImages ?? '';
       this.fridgeImages = formData.fridgeImages ?? '';
       this.remark = formData.remark ?? '';
+      this.mealType = formData.mealType ?? '0';
+      this.mealCategory_dictText = formData.mealCategory_dictText ?? '其他';
+      this.sampleType = formData.sampleType ?? '0';
+      this.sampleType_dictText = formData.sampleType_dictText ?? '不区分';
+      this.ids = formData.id ?? '';
+
     }
+    console.log('id',this.ids)
+
   }
 
   // 表单行封装
@@ -506,49 +530,49 @@ struct remain_day_new {
   }
 
   // 修改数据
-  private async updateData(formattedCreateTime:string): Promise<void> {
+  private async updateData(): Promise<void> {
     try {
       // 验证必填字段
-      if (!this.submitUnit || this.sampleDate === '请选择日期' || !this.dishName || !this.sampleWeight) {
+      if (!this.submitUnit || this.sampleDate === '请选择日期' || !this.dishName || !this.putWeight) {
         AlertDialog.show({ message: '请填写必填项' });
         return;
       }
 
-      console.log('1',this.getMealCategoryValue(this.mealType))
+      console.log('10086',this.getMealCategoryValue(this.mealType))
       const httpRequest = http.createHttp();
 
       // 准备请求数据
-      const mealValues = this.getMealCategoryValue(this.mealType);
+      const mealValues = this.getMealCategoryValue(this.mealCategory_dictText);
       const typeValues = this.getSampleTypeValue(this.sampleType_dictText);
 
       const requestData: GeneratedObjectLiteralInterface_14 = {
-        id: "1917475014189604865", // 新增字段
-        createByName: "测试学校", // 新增字段
-        schoolId: "1650064161880203265", // 新增字段
+        id: this.ids,
+        createByName: "实训第二学校餐厅",
         tenantId:this.tenantId,
-        demandUnit: "1651892693627330561",
+        schoolId: "1917168448022519809",
+        demandUnit: "1917168448035102722",
         demandUnitName: this.submitUnit.trim(),
-        reservedSampleDate: this.sampleDate,
-        createTime: formattedCreateTime,
         mealCategory: mealValues.mealCategory,
         mealCategory_dictText: mealValues.mealCategory_dictText,
-        dishName: this.dishName.trim(),
+        reservedSampleDate: this.sampleDate,
         remark: this.remark ? this.remark.trim() : "",
+        reservedSampleImages: this.sampleImages ||
+          "https://admin.suoeryun.com/pcUpload/1917474932601933825_1745996623568.png",
+        cabinetPhoto: this.fridgeImages || "https://admin.suoeryun.com/pcUpload/1917474946438942721_1745996626850.png",
+        dishName: this.dishName.trim(),
         cabinetTemperature: Number(this.fridgeTemp) || 5,
         destroyPerson: this.destroyPerson ? this.destroyPerson.trim() : "",
         destroyTime: this.destroyTime !== '请选择销毁时间' ? `${this.destroyTime} 15:03` : "",
         sampleType: typeValues.sampleType,
-        sampleType_dictText: typeValues.sampleType_dictText,
-        putWeight: Number(this.sampleWeight) || 0,
-        reservedsampleImagess: this.sampleImages ||
-          "https://admin.suoeryun.com/pcUpload/1917474932601933825_1745996623568.png",
-        cabinetPhoto: this.fridgeImages || "https://admin.suoeryun.com/pcUpload/1917474946438942721_1745996626850.png"
-      };
+
+        // createTime: formattedCreateTime,
+        // sampleType_dictText: typeValues.sampleType_dictText,
+        // putWeight: Number(this.putWeight) || 0,
+         };
 
       // 数据验证
-      if (!requestData.demandUnitName || !requestData.reservedSampleDate || !requestData.dishName ||
-        !requestData.putWeight) {
-        AlertDialog.show({ message: '请填写必填项（提交单位、留样日期、菜品名称、留样重量）' });
+      if (!requestData.demandUnitName || !requestData.reservedSampleDate || !requestData.dishName ) {
+        AlertDialog.show({ message: '请填写必填项（提交单位、留样日期、菜品名称）' });
         return;
       }
 
@@ -560,16 +584,6 @@ struct remain_day_new {
             `${dateParts[0]}-${dateParts[1].padStart(2, '0')}-${dateParts[2].padStart(2, '0')}`;
         }
       }
-
-      // 确保重量是正数且为整数
-      // 留样重量必须大于等于 125
-      const putWeightNum = Math.floor(Number(requestData.putWeight));
-
-      if (isNaN(putWeightNum) || putWeightNum < 125) {
-        AlertDialog.show({ message: '留样重量不能少于125g' });
-        return;
-      }
-
 
       // 准备请求头
       const headers: GeneratedObjectLiteralInterface_16 = {
@@ -586,13 +600,6 @@ struct remain_day_new {
         'Accept': 'application/json, text/plain, */*'
       };
 
-      // 打印请求信息
-      // console.info('Request URL:', 'https://api.suoeryun.com/ifood/jeecg-school/school/xxReservedSample/add');
-      // console.info('Request Headers:', JSON.stringify(apiHeaders, null, 2));
-      // console.info('Request Data:', JSON.stringify(requestData, null, 2));
-      // console.info('TenantId: ' + headers.tenantId);
-      // console.info('Token: ' + headers.xAccessToken);
-
       try {
         const response = await httpRequest.request(
           'https://api.suoeryun.com/ifood/jeecg-school/school/xxReservedSample/edit',
@@ -604,7 +611,7 @@ struct remain_day_new {
             readTimeout: 60000
           }
         );
-
+        console.log('result:',response.result)
         console.info('Response Status:', response.responseCode);
         console.info('Response Headers:', JSON.stringify(response.header, null, 2));
 
@@ -620,8 +627,6 @@ struct remain_day_new {
           throw new Error('Unexpected response format');
         }
 
-        // console.info('Processed Response:', JSON.stringify(jsonData, null, 2));
-
         if (jsonData && jsonData.success) {
           prompt.showToast({
             message: jsonData.message || '提交成功',
@@ -636,26 +641,18 @@ struct remain_day_new {
             reservedSampleDate: this.sampleDate,
             sampleType: this.sampleType,
             mealType: this.mealType,
-            fridgeTemp: this.fridgeTemp,
+            mealCategory_dictText: mealValues.mealCategory_dictText,
+            cabinetTemperature: this.fridgeTemp,
             dishName: this.dishName,
-            sampleWeight: this.sampleWeight,
+            putWeight: this.putWeight,
             destroyPerson: this.destroyPerson,
             destroyTime: this.destroyTime,
             sampleImages: this.sampleImages,
             fridgeImages: this.fridgeImages,
-            remark: this.remark,
-            mealCategory_dictText: ''
+            remark: this.remark
           };
-
+          console.log('传输的 formData:', JSON.stringify(formData))
           await AppStorage.set('newSampleData', JSON.stringify(formData));
-          router.back({
-            url: 'pages/remain_day',
-            params: {
-              formData: formData,
-              token: this.receivedToken,
-              relTenantIds: this.tenantId
-            }
-          });
         } else {
           throw new Error(jsonData?.message || '提交失败');
         }
@@ -697,11 +694,11 @@ struct remain_day_new {
     }
 
   }
-  // 提交数据
-  private async submit(formattedCreateTime:string ): Promise<void> {
+  // 添加数据
+  private async submit(): Promise<void> {
     try {
       // 验证必填字段
-      if (!this.submitUnit || this.sampleDate === '请选择日期' || !this.dishName || !this.sampleWeight) {
+      if (!this.submitUnit || this.sampleDate === '请选择日期' || !this.dishName || !this.putWeight) {
         AlertDialog.show({ message: '请填写必填项' });
         return;
       }
@@ -710,30 +707,29 @@ struct remain_day_new {
       const httpRequest = http.createHttp();
 
       // 准备请求数据
-      const mealValues = this.getMealCategoryValue(this.mealType);
+      const mealValues = this.getMealCategoryValue(this.mealCategory_dictText);
       const typeValues = this.getSampleTypeValue(this.sampleType_dictText);
 
       const requestData: GeneratedObjectLiteralInterface_15 = {
         demandUnit: "1923315011606380545",
         demandUnitName: this.submitUnit.trim(),
         reservedSampleDate: this.sampleDate,
-        createTime: formattedCreateTime,
         mealCategory:mealValues.mealCategory,
-        mealCategory_dictText: mealValues.mealCategory_dictText,
         dishName: this.dishName.trim(),
         remark: this.remark ? this.remark.trim() : "",
         cabinetTemperature: Number(this.fridgeTemp) || 5,
         destroyPerson: this.destroyPerson ? this.destroyPerson.trim() : "",
+        // createTime: formattedCreateTime,
         destroyTime: this.destroyTime !== '请选择销毁时间' ? `${this.destroyTime} 15:03` : "",
         sampleType: typeValues.sampleType,
-        sampleType_dictText: typeValues.sampleType_dictText,
-        putWeight: Number(this.sampleWeight) || 0,
-
-
-        reservedsampleImagess: this.sampleImages ||
+        putWeight: this.putWeight,
+        reservedSampleImages: this.sampleImages ||
           "https://admin.suoeryun.com/pcUpload/1917474932601933825_1745996623568.png",
-        cabinetPhoto: this.fridgeImages || "https://admin.suoeryun.com/pcUpload/1917474946438942721_1745996626850.png"
-      };
+        cabinetPhoto: this.fridgeImages || "https://admin.suoeryun.com/pcUpload/1917474946438942721_1745996626850.png",
+
+        // mealCategory_dictText: mealValues.mealCategory_dictText,
+        // sampleType_dictText: typeValues.sampleType_dictText,
+         };
 
       // 数据验证
       if (!requestData.demandUnitName || !requestData.reservedSampleDate || !requestData.dishName ||
@@ -825,15 +821,17 @@ struct remain_day_new {
             sampleType: this.sampleType,
             mealType: this.mealType,
             mealCategory_dictText: mealValues.mealCategory_dictText,
-            fridgeTemp: this.fridgeTemp,
+            cabinetTemperature: this.fridgeTemp,
             dishName: this.dishName,
-            sampleWeight: this.sampleWeight,
+            putWeight: this.putWeight,
             destroyPerson: this.destroyPerson,
             destroyTime: this.destroyTime,
             sampleImages: this.sampleImages,
             fridgeImages: this.fridgeImages,
             remark: this.remark
           };
+          console.log('接收到的 formData:', JSON.stringify(formData));
+
 
           await AppStorage.set('newSampleData', JSON.stringify(formData));
           router.back({
@@ -884,12 +882,14 @@ struct remain_day_new {
       });
     }
 
+
+
   }
 
   // 添加重置表单的方法
   private resetForm() {
     this.dishName = '';
-    this.sampleWeight = '';
+    this.putWeight = '';
     this.destroyPerson = '';
     this.destroyTime = '请选择销毁时间';
     this.sampleImages = '';

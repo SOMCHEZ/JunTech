@@ -46,14 +46,16 @@ interface SampleFormData {
   sampleType_dictText?: string;
   mealType?: string;
   mealCategory_dictText?: string;
-  fridgeTemp?: string;
+  cabinetTemperature?: string;
   dishName?: string;
-  sampleWeight?: string;
+  putWeight?: string;
   destroyPerson?: string;
   destroyTime?: string;
   sampleImages?: string[];
   fridgeImages?: string[];
   remark?: string;
+
+  isRemote?: boolean;
 }
 
 interface everydayremain{
@@ -125,6 +127,7 @@ struct remain_day {
               newDate.setDate(date);
               this.selectedDate = newDate;
               this.filterSamplesBySelectedDate(); // 点击后立即筛选
+              this.loadSamplesFromServer();
             })
 
           })
@@ -268,6 +271,20 @@ struct remain_day {
       }
     }
 
+    // const cachedData = await AppStorage.get('newSampleData') as SampleFormData;
+    // if (cachedData) {
+    //   try {
+    //     const formDataJsonString = JSON.stringify(cachedData);
+    //     const formData:SampleFormData = JSON.parse(formDataJsonString);
+    //     const exists = this.samples.some(s => s.id === formData.id);
+    //     if (!exists) {
+    //       this.samples.push(formData);
+    //     }
+    //   }catch (error) {
+    //     console.error('解析缓存数据失败:', error);
+    //   }
+    // }
+    //
     // 接收 token 和租户 ID
     if (params?.token) {
       this.receivedToken = params.token;
@@ -360,13 +377,31 @@ struct remain_day {
               router.pushUrl({
                 url: 'pages/remain_day_new',
                 params: {
-                  formData: sample, // 直接传递当前 sample 数据
+                  formData: {
+                    id: sample.id,
+                    unitName: sample.unitName,
+                    reservedSampleDate: sample.reservedSampleDate,
+                    createTime: sample.createTime,
+                    sampleType: sample.sampleType,
+                    sampleType_dictText: sample.sampleType_dictText,
+                    mealType: sample.mealType,
+                    mealCategory_dictText: sample.mealCategory_dictText,
+                    cabinetTemperature: sample.cabinetTemperature,
+                    dishName: sample.dishName,
+                    putWeight: sample.putWeight,
+                    destroyPerson: sample.destroyPerson,
+                    destroyTime: sample.destroyTime,
+                    sampleImages: sample.sampleImages,
+                    fridgeImages: sample.fridgeImages,
+                    remark: sample.remark
+                  },
                   token: this.receivedToken,
                   relTenantIds: this.tenantId
                 }
 
               });
-              console.log( 'samples',this.samples.toString())
+              console.log( 'AaAAaAAAAAAAAAAAAAAAAAAA',JSON.stringify(sample))
+
             })
             .margin({left:'35%'})
             .backgroundColor(Color.White)
@@ -433,7 +468,9 @@ struct remain_day {
         const jsonData = JSON.parse(response.result as string) as ApiResponse;
         if (jsonData.code === 200 && jsonData.result) {
           // this.samples = jsonData.result || [];
-          this.samples =  jsonData.result.records
+          this.samples = [...(jsonData.result.records || []), ...this.samples.filter(s => !s.isRemote)];
+          this.samples.forEach(sample => sample.isRemote = true); // 标记远程数据
+
           if (this.samples.length > 0) {
             console.log('this.samples[0].id:', this.samples[0].id)
           } else {

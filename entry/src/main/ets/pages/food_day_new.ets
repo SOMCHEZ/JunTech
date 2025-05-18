@@ -5,7 +5,6 @@ import picker from '@ohos.file.picker';
 import http from '@ohos.net.http';
 import { AppKeys } from '../common/Constants';
 
-
 interface GeneratedObjectLiteralInterface_1 {
   id?:string;
 
@@ -73,14 +72,12 @@ struct food_day_new {
             Text(this.selectedDate)
               .width('60%')
               .height(40)
-              .textAlign(TextAlign.Center)
-              .borderRadius(4)
-              .borderWidth(1)
+              .textAlign(TextAlign.End)
               .borderColor('#CCCCCC')
               .onClick(() => {
                 this.showDateDialog()
               })
-              .width('70%')
+              .width('60%')
             FormItem('食谱日期', true)
           }
           .margin({top: 5, bottom: 5 })
@@ -92,12 +89,10 @@ struct food_day_new {
             TextInput({text: this.recipeName, placeholder: '请输入食谱名称' })
               .width('60%')
               .height(40)
-              .textAlign(TextAlign.Start)
-              .borderRadius(4)
-              .borderWidth(1)
+              .textAlign(TextAlign.End)
               .borderColor('#CCCCCC')
               .onChange(value => this.recipeName = value)
-              .width('70%')
+              .width('60%')
             FormItem('食谱名称', true)
           }
           .margin({top: 5, bottom: 5 })
