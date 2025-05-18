@@ -260,8 +260,8 @@ struct remain_day_new {
           Row() {
             this.formRow('留样重量(克)', true)
             TextInput({placeholder: `${this.putWeight}`})
-            .onChange(val=> {this.putWeight = val; })
-            .width('100%')
+              .onChange(val=> {this.putWeight = val; })
+              .width('100%')
           }
           .margin({ top: 5, bottom: 5 })
 
@@ -473,7 +473,7 @@ struct remain_day_new {
       onAccept: (value: DatePickerResult) => {
         const year = value.year ?? new Date().getFullYear()
         const month = value.month ?? new Date().getMonth() + 1
-        const day = value.day ?? new Date().getDate()+1
+        const day = value.day ?? new Date().getDate()
         this.sampleDate = `${year}-${(month+1).toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`
       }
     })
@@ -562,13 +562,13 @@ struct remain_day_new {
         dishName: this.dishName.trim(),
         cabinetTemperature: Number(this.fridgeTemp) || 5,
         destroyPerson: this.destroyPerson ? this.destroyPerson.trim() : "",
-        destroyTime: this.destroyTime !== '请选择销毁时间' ? `${this.destroyTime} 15:03` : "",
+        destroyTime: this.destroyTime !== '请选择销毁时间' ? `${this.destroyTime} ` : "",
         sampleType: typeValues.sampleType,
 
         // createTime: formattedCreateTime,
         // sampleType_dictText: typeValues.sampleType_dictText,
         // putWeight: Number(this.putWeight) || 0,
-         };
+      };
 
       // 数据验证
       if (!requestData.demandUnitName || !requestData.reservedSampleDate || !requestData.dishName ) {
@@ -653,6 +653,13 @@ struct remain_day_new {
           };
           console.log('传输的 formData:', JSON.stringify(formData))
           await AppStorage.set('newSampleData', JSON.stringify(formData));
+          router.back({
+            url: 'pages/remain_day',
+            params: {
+              token: this.receivedToken,
+              relTenantIds: this.tenantId
+            }
+          });
         } else {
           throw new Error(jsonData?.message || '提交失败');
         }
@@ -720,7 +727,7 @@ struct remain_day_new {
         cabinetTemperature: Number(this.fridgeTemp) || 5,
         destroyPerson: this.destroyPerson ? this.destroyPerson.trim() : "",
         // createTime: formattedCreateTime,
-        destroyTime: this.destroyTime !== '请选择销毁时间' ? `${this.destroyTime} 15:03` : "",
+        destroyTime: this.destroyTime !== '请选择销毁时间' ? `${this.destroyTime} ` : "",
         sampleType: typeValues.sampleType,
         putWeight: this.putWeight,
         reservedSampleImages: this.sampleImages ||
@@ -729,7 +736,7 @@ struct remain_day_new {
 
         // mealCategory_dictText: mealValues.mealCategory_dictText,
         // sampleType_dictText: typeValues.sampleType_dictText,
-         };
+      };
 
       // 数据验证
       if (!requestData.demandUnitName || !requestData.reservedSampleDate || !requestData.dishName ||
@@ -837,7 +844,7 @@ struct remain_day_new {
           router.back({
             url: 'pages/remain_day',
             params: {
-              formData: formData,
+              // formData: formData,
               token: this.receivedToken,
               relTenantIds: this.tenantId
             }
