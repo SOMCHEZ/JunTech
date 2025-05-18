@@ -111,6 +111,11 @@ interface FoodItem extends records {
   supplyWay_dictText: string,
 }//继承records的数据
 
+// interface categoryOptions extends records{
+//   groupName:string
+//
+// }
+
 interface RouteParams {//接口传递参数定义
   token?: string;
   relTenantIds?: number;
@@ -123,55 +128,9 @@ struct shicai {
   @State receivedToken: string = '';//参数传递
   @State tenantId: number = 0;//同上
   @State foodList: FoodItem[] = []
-    //[
-    // {
-    //   foodName: '绿豆',
-    //   procurementPricing: '12.96',
-    //   unit: '元/Kg',
-    //   stock: '1',
-    //   supplyName: '彦红粮油有限公司',
-    //   images: $r('app.media.food'),
-    //   groupName:'谷薯类',
-    // },
-    // {
-    //   foodName: '大米',
-    //   procurementPricing: '5.88',
-    //   unit: '元/Kg',
-    //   stock: '10',
-    //   supplyName: '彦红粮油有限公司',
-    //   images: $r('app.media.food'),
-    //   groupName:'谷薯类',
-    // },
-    // {
-    //   foodName: '小肉',
-    //   procurementPricing: '15.00',
-    //   unit: '元/Kg',
-    //   stock: '0',
-    //   supplyName: '小杨肉食店',
-    //   images: $r('app.media.food'),
-    //   groupName:'谷薯类',
-    // },
-    // {
-    //   foodName: '广红萝卜',
-    //   procurementPricing: '5.76',
-    //   unit: '元/Kg',
-    //   stock: '0',
-    //   supplyName: '蔬菜批发门市',
-    //   images: $r('app.media.food'),
-    //   groupName:'谷薯类',
-    // },
-    // {
-    //   foodName: '广红萝卜1',
-    //   procurementPricing: '5.76',
-    //   unit: '元/Kg',
-    //   stock: '0',
-    //   supplyName: '蔬菜批发门市',
-    //   images: $r('app.media.food'),
-    //   groupName:'谷薯类',
-    // }
 
-  //];
   @State FavoriteFoodList: FoodItem[] = []
+  // @State categoryOptions: categoryOptions[]=[]
 
   @State x: number = 0
   @State x2: boolean = false //分类判断
@@ -186,25 +145,10 @@ struct shicai {
   @State activeTab: number = 0; // 用于跟踪当前激活的选项卡索引
   @State private count:number = 0
   @State isShow: boolean[] = []
+  @State categoryOptions: string[] = []
+  @State unitOptions: string[] = []
 
-  //分类种类
-  private categoryOptions = [
-    '谷薯类',
-    '蔬菜水果类',
-    '鱼禽肉蛋类',
-    '牛奶类',
-    '大豆坚果类',
-    '干菜调料类',
-    '糕点面包类',
-    '主食半成品类',
-    '其他'
-  ]
-  //供应商种类
-  private unitOptions = [
-    '小杨肉食店',
-    '诚信蔬菜批发门市',
-    '彦红粮油有限公司'
-  ]
+
 
   private showAlert(message: string) {
     this.toastMessage = message
@@ -231,8 +175,24 @@ struct shicai {
 
 
     const result = await this.Foodchaxun();
-    this.foodList =result.result.records
 
+
+    const unitNames = result.result.records.map(item => item.groupName) ?? [];
+    const filteredUnitNames = unitNames.filter(Boolean);
+    const uniqueUnits = Array.from(new Set(filteredUnitNames));
+    this.categoryOptions = ['全部分类', ...uniqueUnits];
+
+    const unitNames1 = result.result.records.map(item => item.supplyName) ?? [];
+    const filteredUnitNames1 = unitNames1.filter(Boolean);
+    const uniqueUnits1 = Array.from(new Set(filteredUnitNames1));
+    this.unitOptions = ['请选择供应商', ...uniqueUnits1];
+
+
+    this.foodList =result.result.records
+    // const filteredRecords = result.result.records.filter(item =>
+    // this.selectedUnit === '所属单位' ||  // 显示全部
+    //   item.groupName === this.selectedUnit // 按选中单位过滤
+    // ) ?? [];
 
 
     for (let index = 0; index < this.foodList.length; index++) {
@@ -568,7 +528,7 @@ struct shicai {
                       Text('采  购  价：')
                         .fontWeight(600)
                         .width(90)
-                      Text(item.procurementPricing.toString())
+                      Text(item.procurementPricing.toString()+'元/')
                         .fontSize(21)
                         .fontWeight(FontWeight.Bold)
                         .fontColor(Color.Red)

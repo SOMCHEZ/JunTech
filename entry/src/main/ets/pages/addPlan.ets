@@ -198,6 +198,7 @@ struct DatePickerExample {
       this.selectedFoodslenth =this.SelectFoodList.length;
       console.log("selectedFoodss",this.selectedFoodslenth);
       console.log("selectedFoods",this.SelectFoodList[0].foodName);
+      console.log("selectedFoods11111",this.SelectFoodList[1].foodName);
     }else {
       this.selectedFoodslenth == 0;
     }
