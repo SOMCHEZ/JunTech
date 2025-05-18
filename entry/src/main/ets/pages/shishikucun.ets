@@ -2,7 +2,6 @@ import Router from '@system.router';
 import http from '@ohos.net.http';
 import { promptAction } from '@kit.ArkUI';
 
-
 interface RealTimeInventoryItem {
   id: string;
   foodId: string;
@@ -10,7 +9,7 @@ interface RealTimeInventoryItem {
   groupId: string;
   groupName: string;
   totalNum: number;//库存量
-  unit: string;
+  unit: string;//单位
   supplyPricing: number;//供应价
   modifyPrice: number;//单价
   producedDate: string;//生产日期
@@ -19,11 +18,13 @@ interface RealTimeInventoryItem {
   createTime:string//操作时间
   mealCategory_dictText: string;//餐别-早，午，晚
   mealType: string;
-  mealType_dictText: string;
+  mealType_dictText: string;//库存类型
   requirementType: string;
-  requirementType_dictText: string;
+  requirementType_dictText: string;//用餐类型
   supplierId: string;
   supplierName: string;//供应商
+  specification:  string;//规格——称重/计件
+
   // ... 你需要的其他字段
 }
 
@@ -43,8 +44,6 @@ interface RealTimeInventoryResponse {
   success: boolean;
   timestamp: number;
 }
-
-
 
 interface FoodGroup {
   id: string;
@@ -69,17 +68,19 @@ interface ApiResponse {
 interface StockItem {
   id: string;
   name: string;
-  price: number;
-  inTime: string;
+  price?: number;
+  inTime?: string;
   amount: number;
-  cTime:string;
-  needType: string;
-  mealCategory: string;
-  supplier: string;
-  productionDate: string;
+  num?:string;
+  cTime?:string;
+  needType?: string;
+  mealCategory?: string;
+  supplier?: string;
+  productionDate?: string;
   groupName?: string;
   mealType?: string;
   mealType1?: string;
+  documentNo?:  string;
 }
 
 interface StockResponse {
@@ -94,7 +95,7 @@ interface kucun1 {
   name: string,
   price: number,
   inTime: string,
-  amount: number,
+  amount?: number,
   needType: string,
   mealCategory: string,
   supplier: string,
@@ -112,10 +113,6 @@ interface RouteParams {
 }
 
 function convertToStockItem(item: RealTimeInventoryItem): StockItem {
-  if (!item.id) {
-    console.error('库存条目缺少ID:', JSON.stringify(item));
-    throw new Error('无效的库存条目数据');
-  }
   return {
     id: item.id ,
     name: item.foodName || '',
@@ -128,8 +125,33 @@ function convertToStockItem(item: RealTimeInventoryItem): StockItem {
     supplier: item.supplierName || '',
     productionDate: item.producedDate || '',
     groupName: item.groupName || '',
-    mealType: item.mealType_dictText || ''
+    mealType: item.mealType_dictText || '',
+    num:item.unit||''
   };
+}
+
+interface mingxi{
+  id:  string;
+  createBy:  string;
+  createTime:  string;
+  updateBy?:  string|null;
+  updateTime?:  string|null;
+  inventoryId: string;
+  accountingDate: string;
+  documentNo:  string;
+  digest: string;
+  num: string;
+  createByName: string;
+  modifyPrice: number;
+  supplyPricing?: number|null;
+}
+
+interface MingxiResponse {
+  success: boolean;
+  message: string;
+  code: number;
+  result: mingxi[];
+  timestamp: number;
 }
 
 interface GeneratedTypeLiteralInterface_1 {
@@ -139,41 +161,6 @@ interface GeneratedTypeLiteralInterface_1 {
 interface StockTypeResult {
   success: boolean;
   result: GeneratedTypeLiteralInterface_1[];
-}
-
-interface mingxi1{
-  id?:string
-  createBy?:string
-  createTime?: string
-  updateBy?:string
-  updateTime?:string
-  inventoryId?:string
-  accountingDate?:string
-  documentNo?:string
-  digest?:string
-  num?:string
-  createByName?:string
-  modifyPrice?:number
-  supplyPricing?:string
-  supplierId?:string
-  supplierName?:string
-  demandUnit?:string
-  demandUnitName?:string
-  detailType?:string
-  numWeight?:string
-  realSpecification?:string
-  placeOrigin?:string
-  beforeNum? :number
-  afterNum?:number
-  unit?:string
-}
-
-interface mingxi{
-  code: number;
-  message: string;
-  result: mingxi1[];
-  success: boolean;
-  timestamp: number;
 }
 
 @Entry
@@ -196,11 +183,17 @@ struct kucun {
 
   @State inventoryId: string = ''; // 新增状态变量
 
+  @State mingxi: StockItem[] = [];
   // 添加筛选后的数据状态
+  @State detailData: mingxi[] = []; // 新增的状态变量
   @State filteredShishikucun: StockItem[] = [];
   @State filteredShishikucun0: StockItem[] = [];
 
   @State selectedTab: number = 0; // 添加这个状态变量来跟踪当前选中的标签页
+
+  kucunmingxi(mingxi:StockItem){
+    this.inventoryId  = mingxi.id;
+  }
 
   collectNames(groups: FoodGroup[]): string[] {
     if (!groups || groups.length === 0) {
@@ -218,14 +211,13 @@ struct kucun {
     return categories;
   }
 
-
   aboutToAppear() {
     const params = Router.getParams() as RouteParamsItem;
     if (params) {
       this.token = params.token ?? '';
       this.tenantId = params.relTenantIds ?? 0;
       this.inventoryId = params.inventoryId ?? ''; // 新增参数获取
-      console.info('路由参数:', JSON.stringify(params));
+      //console.info('路由参数:', JSON.stringify(params));
 
       AppStorage.set('token', this.token);
       AppStorage.set('tenantId', this.tenantId);
@@ -236,29 +228,16 @@ struct kucun {
     this.fetchFoodCategories();
     this.fetchDropdownOptions();
     this.fetchStockData();
-    this.fetchDetail();
   }
-
 
   async fetchDetail() {
     let httpRequest = http.createHttp();
     try {
       this.isLoading = true;
 
-      // 参数校验增强
-      if (!this.inventoryId) {
-        console.error('缺少 inventoryId 参数');
-        promptAction.showToast({ message: '库存ID缺失', duration: 2000 });
-        return;
-      }
-
       // 带参数的请求URL
-      const url = `https://api.suoeryun.com/ifood/school/xxRealTimeInventory/queryInventoryDetail?inventoryId=${this.inventoryId}`;
-
-      console.info('请求明细参数:', {
-        inventoryId: this.inventoryId,
-        tenantId: this.tenantId
-      });
+      const url =
+        `https://api.suoeryun.com/ifood/school/xxRealTimeInventory/queryInventoryDetail?inventoryId=${this.inventoryId}`;
 
       let response = await httpRequest.request(url, {
         method: http.RequestMethod.GET,
@@ -268,49 +247,16 @@ struct kucun {
         }
       });
 
-      // 响应处理增强
-      if (response.responseCode !== 200) {
-        console.error(`请求失败: ${response.responseCode}`);
-        return;
-      }
 
       const rawResult = response.result as string;
       console.info('原始响应数据:', rawResult);
-
-      // 添加解析保护
-      if (!rawResult) {
-        console.error('空响应内容');
-        return;
-      }
-
-      let result: mingxi;
-      try {
-        result = JSON.parse(rawResult);
-      } catch (e) {
-        console.error('JSON解析失败:', e);
-        return;
-      }
-
-      // 结构化日志输出
-      console.info('解析结果:', JSON.stringify({
-        success: result.success,
-        message: result.message,
-        dataCount: result.result?.length || 0,
-        firstItem: result.result?.[0] || '无数据'
-      }, null, 2));
-
-      // 业务逻辑处理
-      if (result.success && result.result) {
-        // 这里添加实际业务处理逻辑
-      } else {
-        console.error('接口返回失败:', result.message);
-      }
-
+      const parsedResult = JSON.parse(rawResult) as MingxiResponse
+      this.detailData = parsedResult.result || [];
+      console.info('响应数据:', this.detailData);
     } catch (error) {
-      console.error('请求异常:', JSON.stringify(error, Object.getOwnPropertyNames(error)));
+      console.error('请求失败:', error);
     } finally {
       this.isLoading = false;
-      httpRequest.destroy();
     }
   }
   async fetchFoodCategories() {
@@ -329,11 +275,11 @@ struct kucun {
       const baseUrl = "https://api.suoeryun.com/ifood/education/jyjFoodGroup/queryFoodGroupByGroupId"
       const url = baseUrl
 
-      console.info('请求URL:', url);
+     /* console.info('请求URL:', url);
       console.info('请求Headers:', {
         'Tenant-Id': tenantId.toString(),
         'X-Access-Token': token
-      });
+      });*/
 
       let response = await httpRequest.request(
         url,
@@ -347,7 +293,7 @@ struct kucun {
       );
 
       const rawResult = response.result as string;
-      console.info('库存接口原始响应01:', rawResult);
+      console.info('库存接口原始响应:', rawResult);
       if (rawResult.trim().startsWith('<!DOCTYPE') || rawResult.trim().startsWith('<html>')) {
         console.error('服务器返回 HTML 页面，可能是未登录或接口错误');
         promptAction.showToast({
@@ -358,14 +304,14 @@ struct kucun {
       }
 
       const result = JSON.parse(rawResult) as ApiResponse;
-      console.info('库存接口原始响应0:', result);
+      //console.info('库存接口原始响应:', result);
 
       if (response.responseCode === 200 && result.success && result.result) {
         // 打印完整的 API 响应数据
-        console.info('API 返回的完整数据:', JSON.stringify(result, null, 2));
+        //console.info('API 返回的完整数据:', JSON.stringify(result, null, 2));
         // Update categoryOptions with API data
         this.categoryOptions = ['全部分类'].concat(this.collectNames(result.result));
-        console.info('更新后的分类选项:', this.categoryOptions);
+        //console.info('更新后的分类选项:', this.categoryOptions);
       } else {
         console.error('接口返回 success=false:', result.message);
       }
@@ -395,10 +341,12 @@ struct kucun {
           'X-Access-Token': token
         }
       });
+
       if (stockTypeResponse.responseCode === 200) {
         const stockTypeResult: StockTypeResult = JSON.parse(stockTypeResponse.result as string);
         if (stockTypeResult.result) {
           this.stockTypeOptions = ['库存类型'].concat(stockTypeResult.result.map(item => item.text));
+          console.log('stockTypeOptions:', this.stockTypeOptions)
         }
       }
 
@@ -466,7 +414,7 @@ struct kucun {
       ].filter(Boolean).join('&');
 
       const stockUrl = `https://api.suoeryun.com/ifood/school/xxRealTimeInventory/list?${params}`;
-      console.info('请求库存URL:', stockUrl);
+      //console.info('请求库存URL:', stockUrl);
 
       let response = await httpRequest.request(stockUrl, {
         method: http.RequestMethod.GET,
@@ -497,9 +445,13 @@ struct kucun {
       if (response.responseCode === 200 && result && result.success && result.result) {
         // 处理分页数据
         const records = result.result.records || [];
+
         //const allStock: StockItem[] = records.map(convertToStockItem);
         this.shishikucun = records.filter(item => item.totalNum > 0).map(item => convertToStockItem(item));
         this.shishikucun0 = records.filter(item => item.totalNum === 0).map(item => convertToStockItem(item));
+
+
+
 
         // 你可以根据 records 里的字段，更新筛选项
         // 例如 groupName、mealCategory_dictText、mealType_dictText、requirementType_dictText
@@ -520,31 +472,42 @@ struct kucun {
 
   // 修改筛选方法
   filterData() {
-    // 定义通用筛选函数
-    const filterItems = (items:  StockItem[]) => {
+    const filterItems = (items: StockItem[]) => {
       return items.filter(item => {
-        // 分类筛选
-        if (this.selectedCategory !== '全部分类' && item.groupName !== this.selectedCategory) {
-          return false;
+        // 分类筛选（支持模糊匹配）
+        if (this.selectedCategory !== '全部分类') {
+          const category = this.selectedCategory.toLowerCase();
+          if (!item.groupName?.toLowerCase().includes(category)) {
+            return false;
+          }
         }
 
         // 库存类型筛选
-        if (this.selectedStockType !== '库存类型' && item.needType !== this.selectedStockType) {
-          return false;
+        if (this.selectedStockType !== '库存类型') {
+          const stockType = this.selectedStockType.toLowerCase();
+          if (!item.mealType?.toLowerCase().includes(stockType)) {
+            return false;
+          }
         }
 
         // 用餐类型筛选
-        if (this.selectedMealType !== '用餐类型' && item.mealType !== this.selectedMealType) {
-          return false;
+        if (this.selectedMealType !== '用餐类型') {
+          const mealType = this.selectedMealType.toLowerCase();
+          if (!item.needType?.toLowerCase().includes(mealType)) {
+            return false;
+          }
         }
 
         // 餐别筛选
-        if (this.selectedMealCategory !== '餐别' && item.mealCategory !== this.selectedMealCategory) {
-          return false;
+        if (this.selectedMealCategory !== '餐别') {
+          const mealCategory = this.selectedMealCategory.toLowerCase();
+          if (!item.mealCategory?.toLowerCase().includes(mealCategory)) {
+            return false;
+          }
         }
 
-        // 搜索文本筛选 (添加了空值检查)
-        if (this.searchText && this.searchText.trim() !== '' &&
+        // 原有名称搜索保持不变
+        if (this.searchText?.trim() &&
           !item.name.toLowerCase().includes(this.searchText.toLowerCase().trim())) {
           return false;
         }
@@ -553,12 +516,10 @@ struct kucun {
       });
     };
 
-    // 应用筛选到非零库存数据
     this.filteredShishikucun = filterItems(this.shishikucun);
-
-    // 应用筛选到零库存数据
     this.filteredShishikucun0 = filterItems(this.shishikucun0);
   }
+
 
   categoryController: CustomDialogController = new CustomDialogController({
     builder: () => this.renderDialogContent(this.categoryOptions, (value: string) => {
@@ -648,7 +609,6 @@ struct kucun {
     .backgroundColor(Color.White)
     .borderRadius({ topLeft: 16, topRight: 16 })
   }
-
   build(): void {
     Tabs() {
       TabContent() {
@@ -780,19 +740,31 @@ struct kucun {
                     .fontSize(14)
                 }
                 .margin({ left: 12, right: 12})
-                .onClick(() => {
-                  Router.push({
-                    uri: 'pages/dingdanxiangqing',
-                    params: {
-                      productName: item.name,
-                      stockAmount: (item.amount*2) + '斤 ('+item.amount+'Kg)',
-                      orderNo: '',
-                      operateTime: item.cTime,
-                      operateAmount: item.amount+'kg',
-                      operator:'',
-                      supplier: item.supplier
+                .onClick(async() => {
+                  this.kucunmingxi(item)
+                  try {
+                    await this.fetchDetail(); // 等待数据加载完成
+
+                    // 添加安全校验
+                    if (!this.detailData || this.detailData.length === 0) {
+                      promptAction.showToast({ message: '暂无明细数据', duration: 2000 });
+                      return;
                     }
-                  })
+                    Router.push({
+                      uri: 'pages/dingdanxiangqing',
+                      params: {
+                        productName: item.name,
+                        stockAmount: (item.amount*2)+'斤 ('+item.amount+'kg)',
+                        orderNo: this.detailData[0].documentNo,
+                        operateTime: item.cTime,
+                        operateAmount: item.amount,
+                        operator: this.detailData[0].createByName,
+                        supplier: this.detailData[0].digest
+                      }
+                    })
+                  }  catch (error) {
+                    console.error('Error fetching detail data:', error);
+                  }
                 })
                 .padding(12)
                 .width('100%')
@@ -807,8 +779,11 @@ struct kucun {
                 })
               })
             }
+            .justifyContent(FlexAlign.Start)
           }
           .height(550)
+          .scrollable(ScrollDirection.Vertical) // 明确垂直滚动方向
+          .scrollBar(BarState.On) // 按需显示滚动条
           .margin({ bottom: 8 })
 
           Button('去出库')
@@ -824,6 +799,7 @@ struct kucun {
             .backgroundColor('#6ff8f2f2')
         }
         .padding(0)
+        .justifyContent(FlexAlign.Start)
         .height('100%')
         .width('100%')
       }
@@ -958,19 +934,34 @@ struct kucun {
                     .fontSize(14)
                 }
                 .margin({ left: 12, right: 12})
-                .onClick(() => {
-                  Router.push({
-                    uri: 'pages/dingdanxiangqing',
-                    params: {
-                      productName: item.name,
-                      stockAmount: item.amount + '斤 (1Kg)',
-                      orderNo: '',
-                      operateTime: item.inTime,
-                      operateAmount: item.amount,
-                      operator:'',
-                      supplier: item.supplier
+                .onClick(async () => {
+                  this.kucunmingxi(item)
+                  try {
+                    await this.fetchDetail(); // 等待数据加载完成
+
+                    // 添加安全校验
+                    if (!this.detailData || this.detailData.length === 0) {
+                      promptAction.showToast({ message: '暂无明细数据', duration: 2000 });
+                      return;
                     }
-                  })
+                    Router.push({
+                      uri: 'pages/dingdanxiangqing0',
+                      params: {
+                        productName: item.name,
+                        stockAmount: item.amount,
+                        orderNo: this.detailData[0].documentNo,
+                        orderNo1:this.detailData[1].documentNo,
+                        operateTime: item.cTime,
+                        operateAmount: this.detailData[0].num,
+                        operateAmount1: this.detailData[1].num,
+                        operator: this.detailData[0].createByName,
+                        supplier: this.detailData[0].digest,
+                        supplier1: this.detailData[1].digest
+                      }
+                    })
+                  } catch (error) {
+                    console.error('Error fetching detail data:', error);
+                  }
                 })
                 .padding(12)
                 .width('100%')
@@ -985,6 +976,8 @@ struct kucun {
                 })
               })
             }
+            .width('100%')
+            .justifyContent(FlexAlign.Start)
           }
           .height(550)
           .margin({ bottom: 8 })

@@ -13,6 +13,7 @@ interface ReportFormData {
   name: string;
   evaluation: string;
   date: string;
+  dutposition: string; // 新增
 }
 
 interface UserInfo {
@@ -90,7 +91,7 @@ struct Page1 {
   @State receivedToken: string = '';//参数传递
   @State tenantId: number = 0;//同上
   @State UnitId: string  ="";
-
+  @State dutposition: string = ''
   private unitOptions: Array<SelectOption> = [
     { value: '实训第二学校餐厅', label: '实训第二学校餐厅' },
   ];
@@ -133,6 +134,7 @@ struct Page1 {
     console.log('UID', params?.unitId);
     //const result = await this.Houchuchaxun();// 调用Houchuchaxun方法这个函数是用来查数据的
     //console.log('houchu1', result); // 打印返回结果
+    const result=await this.report();
   }
 
   build() {
@@ -162,7 +164,7 @@ struct Page1 {
           .fontSize(16)
         Select(this.unitOptions)
           .value('请选择')
-          // .selected(this.unitOptions.findIndex(item => item.label === this.selectedUnitIndex))
+            // .selected(this.unitOptions.findIndex(item => item.label === this.selectedUnitIndex))
           .onSelect((index: number) => {
             this.selectedUnitIndex = this.unitOptions[index].label;
             // this.selectedUnitIndex = this.unitOptions[index].value;
@@ -179,7 +181,7 @@ struct Page1 {
 
         Select(this.mealOptions)
           .value('请选择')
-          // .selected(this.mealOptions.findIndex(item => item.label === this.selectedMealIndex))
+            // .selected(this.mealOptions.findIndex(item => item.label === this.selectedMealIndex))
           .onSelect((index: number) => {
             this.selectedMealIndex = this.mealOptions[index].label;
             this.selectedMealValue  = this.mealOptions[index].value;
@@ -194,13 +196,14 @@ struct Page1 {
         Text("陪餐人职务")
           .fontSize(16)
           .margin({ left: 20, right: 10 })
-        TextInput({ placeholder: '请输入职务' }) // ArkTS 中推荐的写法
+        TextInput({ placeholder: '请输入陪餐人职务' })
           .onChange((value: string) => {
-            this.name = value;
-          })// 输入变化更新 @State name
+            this.dutposition = value;
+          })
           .layoutWeight(1)
           .margin({ right: 20 })
       }
+
       // 陪餐评价
       // Row() {
       //   Text("陪餐评价")
@@ -243,24 +246,35 @@ struct Page1 {
       .backgroundColor(Color.Green)
       .onClick(async () => {
         // 构造要传递的数据
+        // const formData: ReportFormData = {
+        //   unit: this.selectedUnitIndex,
+        //   meal: this.selectedMealValue,
+        //   position: '教师', // 可以根据业务动态获取或固定值
+        //   name: this.name,
+        //   evaluation: this.evaluation,
+        //   date: this.dates
+        // };
+        //
+        // // 跳转页面并携带数据
+        // router.back({
+        //   url: 'pages/peicanRecords',
+        //   params: {
+        //     token: this.receivedToken,
+        //     tenantId: this.tenantId,
+        //     record: JSON.stringify(formData) // 关键：传递 record 数据
+        //   }
+        // });
+        router.back()
         const formData: ReportFormData = {
           unit: this.selectedUnitIndex,
           meal: this.selectedMealValue,
-          position: '教师', // 可以根据业务动态获取或固定值
           name: this.name,
           evaluation: this.evaluation,
-          date: this.dates
+          date: this.dates,
+          position: '',
+          dutposition: this.dutposition // ✅ 使用用户输入的职务信息
         };
 
-        // 跳转页面并携带数据
-        router.pushUrl({
-          url: 'pages/peicanRecords',
-          params: {
-            token: this.receivedToken,
-            tenantId: this.tenantId,
-            record: JSON.stringify(formData) // 关键：传递 record 数据
-          }
-        });
 
         const result = await this.report();
       })
@@ -285,6 +299,7 @@ struct Page1 {
 
   private async report(): Promise<reportHandlerResult> {
     try {
+      console.log(this.selectedUnitIndex)
       const httpRequest = http.createHttp();
       const response = await httpRequest.request(
         'https://api.suoeryun.com/ifood/jeecg-school/school/xxMealRecord/add',
@@ -301,12 +316,12 @@ struct Page1 {
             "withNum": "",
             "xxMealRecordInfoList": [
               {
-                "position": this.name,
+                "position": this.dutposition || this.name,
                 "images": "https://admin.suoeryun.com/pcUpload/32-32-0430180520.png"
               }
             ] as Array<MealRecordInfo>,
             "demandUnit": "",
-            "demandUnitName": this.selectedUnitIndex
+            "demandUnitName": '实训第二学校餐厅'
           }
           )
         }

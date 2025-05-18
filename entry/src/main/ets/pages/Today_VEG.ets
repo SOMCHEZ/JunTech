@@ -11,9 +11,17 @@ struct Index {
   @State userPassword: string = '';
   build() {
     Stack() {
-      Text("caonima")
-      Button('heek')
-        .position({ x: 60, y: 60 })
+      Text("404Not found,找不到，根本找不到，这个页面谁做呢？我不知道，" +
+        "实话是说，世界上好的页面有很多，我偶尔也喜欢写，" +
+        "对我来说那是茶饭过后的消遣，不是我认为重要的东西，" +
+        "这个页面很简单，可简单这个次无法形容你，我该如何形容你呢？" +
+        "于是我写了个按钮，添加了内容：" +
+        "我抬头望着你，" +
+        "这个世界上不该有词来形容你，" +
+        "这个世界上不该" +
+        " ")
+      Button('点击我找到漂亮妹妹')
+        .position({ x: 80, y: 580 })
         .onClick(async() => {
           const success = await Tv();
       })

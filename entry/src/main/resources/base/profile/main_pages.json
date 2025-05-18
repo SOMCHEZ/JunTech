@@ -34,6 +34,11 @@
     "pages/addfood",
     "pages/daishenpi",
     "pages/easterEgg",
-    "pages/editChuku"
+    "pages/chukudanshicai",
+    "pages/editChuku",
+    "pages/uploadcase"
+
+
+
   ]
 }

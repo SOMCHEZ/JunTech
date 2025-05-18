@@ -1,4 +1,8 @@
 import router from '@ohos.router';
+import http from '@ohos.net.http';
+//这里是接口数据类型的声明
+
+
 @Entry
 @Component
 struct d {

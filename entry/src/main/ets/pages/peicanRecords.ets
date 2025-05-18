@@ -18,50 +18,10 @@ interface  records{//定义接口返回类型
   repastNum: string;
   withNum: string;
   xxMealRecordInfoList: string;
-  demandUnitName: string
+  schoolName: string;
 }
 
-interface UserInfo {
-  id: string;
-  username: string;
-  clientType: string;
-  realname: string;
-  avatar: string | null;
-  relTenantIds:number;
-  // 其他字段根据实际API响应补充...
-}
 
-interface peicanResult {
-  records: records[];
-  //token: string;
-}
-
-interface peicanResponse {
-  code: number;
-  message: string;
-  result: peicanResult;
-  timestamp: number;
-}
-
-interface peicanHandlerResult{
-  success: boolean;
-  code?: number;
-  userInfo?: UserInfo;
-  token?: string;
-  message?: string;
-  relTenantIds?:number;
-  records?: records[];
-}
-
-interface peicanRecord extends records {
-  mealDate: string;      // 对应原接口的realname
-  mealCategory: string; // 对应原接口的unitName
-  repastNum: string;    // 需确认来源字段
-  withNum: string; // 对应healthStartTime
-  xxMealRecordInfoList: string;// 对应healthEndTime
-  demandUnit:string;//对应在职状态
-  demandUnitName: string;// 对应原接口的position
-}
 interface RecordType {
   unit: string;
   meal: string;
@@ -75,6 +35,28 @@ interface GeneratedTypeLiteralInterface_1 {
   record?: string;
 }
 
+
+interface PeiCanMessage {
+  mealDate: string
+  schoolName: string
+  mealCategory_dictText: string
+  dutposition: string // ✅ 添加陪餐人职务字段
+}
+
+
+interface ResultData{
+  total:number
+  records:PeiCanMessage[]
+}
+interface ResponseData{
+  success: boolean,
+  message: string,
+  code: number,
+  result:ResultData|null
+}
+
+
+
 @Entry
 @Component
 struct CalendarPage {
@@ -87,8 +69,12 @@ struct CalendarPage {
   @State receivedToken: string = '';//参数传递
   @State tenantId: number = 0;//同上
   @State unitId: string ='';
-  @State peicanRecord: peicanRecord[] = []
+  @State peicanRecord: records[] = []
   @State records: RecordType[] = [];
+
+  @State DataList:PeiCanMessage[] = []
+  @State TempDataList:PeiCanMessage[] = []
+
   aboutToAppear() {
     const params = router.getParams() as GeneratedTypeLiteralInterface_1;
     if (params?.record) {
@@ -98,42 +84,29 @@ struct CalendarPage {
 
   private weekDays: string[] = ['日', '一', '二', '三', '四', '五', '六']
 
-  async onPageShow() { //这是一个接收传递参数的方法
-    // 使用接口类型断言
+  async onPageShow() {
     const params = router.getParams() as RouteParams;
-    console.log('peican', params?.token);// 打印接收到的参数
-    // 安全取值如果返回值空，则使用appsetcreat中所预保存的token和id
     if (!AppStorage.get('token') && params?.token) {
       AppStorage.set('token', params.token);
-      //this.receivedToken = params.token;
     }
     if (!AppStorage.get('tenantId') && params?.relTenantIds) {
       AppStorage.set('tenantId', params.relTenantIds);
-      //this.tenantId = params.relTenantIds;
     }
-    // 同步到组件状态
     this.receivedToken = AppStorage.get('token') ?? '';
     this.tenantId = AppStorage.get('tenantId') ?? 0;
 
-    console.log('pctoken', this.receivedToken)
-    console.log('pctenantId', this.tenantId)
 
-    const result = await this.peicanQuest(); // 调用Houchuchaxun方法这个函数是用来查数据的
-
-
-    if (result.success && result.records) {
-      this.peicanRecord = result.records.map(item => ({
-        mealDate: item.mealDate || '',          // 映射姓名
-        mealCategory: item.mealCategory || '',     // 映射工作单位
-        repastNum: item.repastNum || '未知状态',
-        withNum: item.withNum || '未设置',
-        xxMealRecordInfoList: item.xxMealRecordInfoList || '未设置',
-        demandUnitName: item.demandUnitName || '未知单位'
-      } as peicanRecord));
+    const result = await this.peicanQuest();
+    if (result.success && result.result) {
+      this.DataList = result.result.records
+      this.TempDataList = this.DataList
     }
+    this.TempDataList = this.TempDataList.filter((item:PeiCanMessage) => item.mealDate == this.formatDate(this.selectedDate))
+
+    console.log('date:',this.formatDate(this.selectedDate))
   }
 
-  private async peicanQuest(): Promise<peicanHandlerResult> {
+  private async peicanQuest(): Promise<ResponseData> {
     try {
       const httpRequest = http.createHttp();
 
@@ -147,32 +120,30 @@ struct CalendarPage {
           },
         }
       );
-      //console.log('teneanId',this.tenantId);
-
+      console.log('response:',response.result)
+      console.log('response:',response.responseCode)
+      console.log('111',response.result)
       if (response.responseCode !== 200) {
-        //console.error('Login Error:'+response.responseCode);
+        console.error('Login Error8:'+response.responseCode);
+        // this.records = response.result.
         return {
           success: false,
-          message: `HTTP Error: ${response.responseCode}`
-          // 添加其他错误处理逻辑
+          message: `HTTP Error: ${response.responseCode}`,
+          code: response.responseCode,
+          result:null
         };
+        // console.log(record.dutposition)
       }
-      console.log('slfj'+response.result.toString())
-      const jsonData = JSON.parse(response.result as string) as peicanResponse;
-      console.log('11',jsonData.result.records[1]);
-      return {
-        success: jsonData.code === 200,
-        code: jsonData.code,
-        records: jsonData.result.records,
-        message: jsonData.message,
-        //relTenantIds:jsonData.result.userInfo.relTenantIds
-      };
+      const jsonData = JSON.parse(response.result as string) as ResponseData;
+      return jsonData
 
     } catch (error) {
-      console.error('Login Error:', JSON.stringify(error));
+      console.error( error);
       return {
         success: false,
-        message: '服务器繁忙'
+        message: '服务器繁忙',
+        code: 500,
+        result: null
       };
     }
   }
@@ -200,6 +171,13 @@ struct CalendarPage {
     newDate.setDate(this.selectedDate.getDate() + (increment * 7))
     this.currentDate = new Date(newDate)
     this.selectedDate = newDate
+  }
+
+  private formatDate(date: Date): string {
+    const year = date.getFullYear();
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const day = date.getDate().toString().padStart(2, '0');
+    return `${year}-${month}-${day}`;
   }
 
   // 日历头部
@@ -253,30 +231,40 @@ struct CalendarPage {
   // ... (其他代码保持不变)
 
   @Builder
-  private RecordCardBuilder(record: RecordType) {
+  private RecordCardBuilder(record: PeiCanMessage) {
     Column() {
       Row() {
-        Text(record.date).fontColor('#666').fontSize(14)
-        Text(record.unit).fontColor('#333').fontSize(16).margin({ left: 10 })
+        Text(record.mealDate).fontColor('#666').fontSize(14)
+        Text(record.schoolName).fontColor('#333').fontSize(16).margin({ left: 10 })
       }
       .justifyContent(FlexAlign.Start)
 
       Row() {
-        Text(`餐别：${record.meal}`).fontSize(14)
-        Text(`身份：${record.position}`).margin({ left: 15 }) // 确保这里显示的是字符串值
+        Text(`餐别：${record.mealCategory_dictText}`).fontSize(14)
       }
       .margin({ top: 8 })
-
-      Text(`姓名：${record.name}`).fontSize(14).margin({ top: 4 })
-      Text(`评价：${record.evaluation}`).fontSize(14).margin({ top: 4 })
     }
-    .padding(10)
-    .backgroundColor(Color.White)
-    .borderRadius(8)
-    .margin({ top: 10 })
-    .width('90%')
-    .shadow({ radius: 4, color: '#30000000', offsetX: 1, offsetY: 1 })
+    .padding({ left: 16, right: 16, top: 12, bottom: 12 }) // 增加内边距
+    .backgroundColor('#f9f9f9')
+    .borderRadius(10)
+    .margin({ top: 15, bottom: 10}) // 增加上下边距
+    .width('95%') // 卡片更宽
+    .height(80) // 固定高度，可根据内容调整
+    .shadow({ radius: 6, color: '#30000000', offsetX: 2, offsetY: 4 })
+    .onClick(() => {
+      // 跳转到 detailPage 并传递参数
+      router.pushUrl({
+        url: 'pages/detailPage',
+        params: {
+          schoolName: record.schoolName,
+          mealDate: record.mealDate,
+          mealCategory: record.mealCategory_dictText,
+          dutposition: record.dutposition
+        }
+      });
+    });
   }
+
 
   // ... (其他代码保持不变)
 
@@ -304,9 +292,12 @@ struct CalendarPage {
             .width('14.282039094572344908579867648657%')
             .height(50)
             .onClick(() => {
+              this.TempDataList = this.DataList
               const newDate = new Date(this.selectedDate)
               newDate.setDate(date)
               this.selectedDate = newDate
+              console.log('selectedDate',this.formatDate(this.selectedDate))
+              this.TempDataList = this.TempDataList.filter((item:PeiCanMessage) => item.mealDate == this.formatDate(this.selectedDate))
             })
           })
         }
@@ -331,7 +322,7 @@ struct CalendarPage {
           console.log('jinitaimei'+this.records);
         })
 
-      if (this.records.length === 0) {
+      if (this.TempDataList.length === 0) {
         Text('~ 暂无相关数据 ~')
           .fontSize(15)
           .fontColor('#BBBBBB')
@@ -339,12 +330,12 @@ struct CalendarPage {
       } else {
         Scroll() {
           Column() {
-            ForEach(this.records, (record: RecordType) => {
+            ForEach(this.TempDataList, (record: PeiCanMessage) => {
               this.RecordCardBuilder(record)
             })
           }
         }
-        .height('30%')
+        .height('60%')
         .margin({ top: 20 })
       }
     }
