@@ -134,7 +134,7 @@ struct ReportPlanPage {
 
     const result = await this.Xuqiuchaxun();
     this.unitId = result?.records?.[0]?.unitId ?? '';
-    console.log('牢莩不是男娘', this.unitId);
+    console.log('牢莩1', this.unitId);
     //const result = await this.Houchuchaxun();// 调用Houchuchaxun方法这个函数是用来查数据的
     //console.log('houchu1', result); // 打印返回结果
 
