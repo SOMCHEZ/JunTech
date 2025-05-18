@@ -779,9 +779,11 @@ struct kucun {
                 })
               })
             }
-            .height('100%')
+            .justifyContent(FlexAlign.Start)
           }
-          .height('100%')
+          .height(550)
+          .scrollable(ScrollDirection.Vertical) // 明确垂直滚动方向
+          .scrollBar(BarState.On) // 按需显示滚动条
           .margin({ bottom: 8 })
 
           Button('去出库')
@@ -797,6 +799,7 @@ struct kucun {
             .backgroundColor('#6ff8f2f2')
         }
         .padding(0)
+        .justifyContent(FlexAlign.Start)
         .height('100%')
         .width('100%')
       }
@@ -973,9 +976,10 @@ struct kucun {
                 })
               })
             }
-            .height('100%')
+            .width('100%')
+            .justifyContent(FlexAlign.Start)
           }
-          .height('100%')
+          .height(550)
           .margin({ bottom: 8 })
 
           Button('去出库')
