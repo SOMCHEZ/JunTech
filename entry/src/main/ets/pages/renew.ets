@@ -1,122 +1,154 @@
 import router from '@ohos.router';
 import { it } from '@ohos/hypium';
-import { ConfigurationConstant } from '@kit.AbilityKit';
-
+import http from '@ohos.net.http';
+import prompt from '@ohos.prompt';
 // 定义一个菜品的数据结构
+//这里appstorage是个永久容器
+AppStorage.setOrCreate('token', 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJwd2QiOiIyZjg5NWM4NDI2MWFlNzJiYmUyMjVkMjllOWJhZjVjZCIsImV4cCI6MTc0NzM1NjI1NywidXNlcm5hbWUiOiIxNTUwMjkzMzY3MyJ9.iSwsSTRgMclL_ZHLy0NUNvyQ-DJukzsOPhBxbQWxdsc');
+AppStorage.setOrCreate('tenantId', 10021011);
+AppStorage.setOrCreate('unitId', '');
 
-interface FoodItem {
-  name: string;
-  price: string;
-  unit: string;
-  stock: string;
-  supplier: string;
-  imageResId: Resource ; // 图片资源 ID，例如 $r('app.media.food')
-  isFavorite: boolean;
-  isSelected: boolean;
+interface FoodResponse{
+  success: boolean;
+  code: number;
+  result:FoodResult;
+  message: string;
+}//  接口返回外层
+interface FoodResult{
+  records:  records[];
+  total:number;
+  size: number;
+  current: number;
+  orders: [];
+  optimizeCountSql: boolean;
+  searchCount: boolean;
+  countId: string;
+  maxLimit: string;
+  pages: number;
+}//接口返回中层
+interface records{
+  id: string,
+  storehouseId: string,
+  foodAndSupplierId: string,
+  foodId: string,
+  supplyWay: string,
+  superiorLimit: string,
+  lowerLimit: string,
+  storageLocation: string,
+  stock: number,
+  storehouseStatus?: string,
+  izCollec: string,
+  encoding: string,
+  groupId: string,
+  groupName: string,
+  foodName: string,
+  forShort: string,
+  internationalCode?: string,
+  pinyinCode: string,
+  specification: string,
+  expirationDay: number,
+  brandLevel: string,
+  minDeclare?: string,
+  unit?: string,
+  packageQuantity: string,
+  procurementPricing: number,
+  supplyPricing: number,
+  marketPrice: number,
+  modifyPrice: number,
+  supplyNames: string,
+  supplyName: string,
+  supplierId: string,
+  aggregatePurchasePrice: number,
+  images: string,
+  izConvert: string,
+  realSpecification: string,
+  placeOrigin: string,
+  remarks: string,
+  remark: string,
+  testReport: string,
+  supplyWay_dictText: string,
+}//列表数据
+interface FoodItem extends records {
+  id: string,
+  storehouseId: string,
+  foodAndSupplierId: string,
+  foodId: string,
+  supplyWay: string,
+  superiorLimit: string,
+  lowerLimit: string,
+  storageLocation: string,
+  stock: number,
+  storehouseStatus?: string,
+  izCollec: string,
+  encoding: string,
+  groupId: string,
+  groupName: string,
+  foodName: string,
+  forShort: string,
+  internationalCode?: string,
+  pinyinCode: string,
+  specification: string,
+  expirationDay: number,
+  brandLevel: string,
+  minDeclare?: string,
+  unit?: string,
+  packageQuantity: string,
+  procurementPricing: number,
+  supplyPricing: number,
+  marketPrice: number,
+  modifyPrice: number,
+  supplyNames: string,
+  supplyName: string,
+  supplierId: string,
+  aggregatePurchasePrice: number,
+  images: string,
+  izConvert: string,
+  realSpecification: string,
+  placeOrigin: string,
+  remarks: string,
+  remark: string,
+  testReport: string,
+  supplyWay_dictText: string,
+}//继承records的数据
 
+// interface categoryOptions extends records{
+//   groupName:string
+//
+// }
+
+interface RouteParams {//接口传递参数定义
+  token?: string;
+  relTenantIds?: number;
+  unitId?: string;
 }
-
 @Entry
 @Component
 struct shicai {
-  @State foodList: FoodItem[] = [
-    {
-      name: '绿豆',
-      price: '12.96',
-      unit: '元/Kg',
-      stock: '1',
-      supplier: '彦红粮油有限公司',
-      imageResId: $r('app.media.food'),
-      isFavorite: false,
-      isSelected: false
-    },
-    {
-      name: '大米',
-      price: '5.88',
-      unit: '元/Kg',
-      stock: '10',
-      supplier: '彦红粮油有限公司',
-      imageResId: $r('app.media.food'),
-      isFavorite: false,
-      isSelected: false
-    },
-    {
-      name: '小肉',
-      price: '15.00',
-      unit: '元/Kg',
-      stock: '0',
-      supplier: '小杨肉食店',
-      imageResId: $r('app.media.food'),
-      isFavorite: false,
-      isSelected: false
-    },
-    {
-      name: '广红萝卜',
-      price: '5.76',
-      unit: '元/Kg',
-      stock: '0',
-      supplier: '蔬菜批发门市',
-      imageResId: $r('app.media.food'),
-      isFavorite: false,
-      isSelected: false
-    },
-    {
-      name: '广红萝卜1',
-      price: '5.76',
-      unit: '元/Kg',
-      stock: '0',
-      supplier: '蔬菜批发门市',
-      imageResId: $r('app.media.food'),
-      isFavorite: false,
-      isSelected: false
-    }
+  @State adddal: boolean = true
+  @State receivedToken: string = '';//参数传递
+  @State tenantId: number = 0;//同上
+  @State foodList: FoodItem[] = []
 
-  ];
   @State FavoriteFoodList: FoodItem[] = []
+  // @State categoryOptions: categoryOptions[]=[]
 
   @State x: number = 0
-  @State s: number = 0
-  @State name: string = ''
   @State x2: boolean = false //分类判断
   @State x3: boolean = false //分类判断
-  @State selectedcategory: string = '全部分类'
+  @State selectedCategory: string = '全部分类'
   @State selectedUnit: string = '请选择供应商'
   @State searchText: string = ''
   @State isFavorite: boolean[] = []
   @State isBothClicked: boolean[] = []
   @State showToast: boolean = false
   @State toastMessage: string = ''
-  @State hasDate : boolean = false
   @State activeTab: number = 0; // 用于跟踪当前激活的选项卡索引
-  @State refreshTrigger: number = 80 // 触发刷新的下拉距离(像素)
   @State private count:number = 0
+  @State isShow: boolean[] = []
+  @State categoryOptions: string[] = []
+  @State unitOptions: string[] = []
 
-  private selectIndex:number[] = []
-  private FavoriteIndex:number = -1
-  private SelectIndex:number = -1
 
-
-  //分类种类
-  private categoryOptions = [
-    '全部分类',
-    '谷薯类',
-    '蔬菜水果类',
-    '鱼禽肉蛋类',
-    '牛奶类',
-    '大豆坚果类',
-    '干菜调料类',
-    '糕点面包类',
-    '主食半成品类',
-    '其他'
-
-  ]
-  //供应商种类
-  private unitOptions = [
-    '请选择供应商',
-    '小杨肉食店',
-    '诚信蔬菜批发门市',
-    '彦红粮油有限公司'
-  ]
 
   private showAlert(message: string) {
     this.toastMessage = message
@@ -127,19 +159,48 @@ struct shicai {
     }, 2000)
   }
 
-  aboutToAppear() {
-    if (this.categoryOptions.length > 0) {
-      this.selectedcategory = this.categoryOptions[0] // '全部分类'
+  async onPageShow() {
+
+    const params = router.getParams() as RouteParams;//接收传参
+    if (!AppStorage.get('token') && params?.token) {
+      AppStorage.set('token', params.token);
+      //this.receivedToken = params.token;
     }
-    if (this.unitOptions.length > 0) {
-      this.selectedUnit = this.unitOptions[0]
+    if (!AppStorage.get('tenantId') && params?.relTenantIds) {
+      AppStorage.set('tenantId', params.relTenantIds);
+      //this.tenantId = params.relTenantIds;
     }
+    this.receivedToken = AppStorage.get('token')??'';
+    this.tenantId = AppStorage.get('tenantId')??0;
+
+
+    const result = await this.Foodchaxun();
+
+
+    const unitNames = result.result.records.map(item => item.groupName) ?? [];
+    const filteredUnitNames = unitNames.filter(Boolean);
+    const uniqueUnits = Array.from(new Set(filteredUnitNames));
+    this.categoryOptions = ['全部分类', ...uniqueUnits];
+
+    const unitNames1 = result.result.records.map(item => item.supplyName) ?? [];
+    const filteredUnitNames1 = unitNames1.filter(Boolean);
+    const uniqueUnits1 = Array.from(new Set(filteredUnitNames1));
+    this.unitOptions = ['请选择供应商', ...uniqueUnits1];
+
+
+    this.foodList =result.result.records
+    // const filteredRecords = result.result.records.filter(item =>
+    // this.selectedUnit === '所属单位' ||  // 显示全部
+    //   item.groupName === this.selectedUnit // 按选中单位过滤
+    // ) ?? [];
+
+
     for (let index = 0; index < this.foodList.length; index++) {
+      this.isShow[index] = true
       this.isFavorite[index] = false
       this.isBothClicked[index] = false
     }
   }
-
 
 
   build() {
@@ -156,7 +217,27 @@ struct shicai {
             .onClick(() => {
               this.activeTab = 0
               this.x = 0
-              this.selectIndex = []
+              for (let index = 0; index < this.isShow.length; index++) this.isShow[index] = true
+              if(this.selectedCategory != '全部分类' && this.selectedUnit == '请选择供应商'){
+                for (let index = 0; index < this.foodList.length; index++) {
+                  if (this.foodList[index].groupName == this.selectedCategory) this.isShow[index] = true
+                  else this.isShow[index] = false
+                }
+              }
+              if(this.selectedCategory == '全部分类' && this.selectedUnit != '请选择供应商'){
+                for (let index = 0; index < this.foodList.length; index++) {
+                  if (this.foodList[index].supplyName == this.selectedUnit) this.isShow[index] = true
+                  else this.isShow[index] = false
+                }
+              }
+              if(this.selectedCategory != '全部分类' && this.selectedUnit != '请选择供应商'){
+                for (let index = 0; index < this.foodList.length; index++) {
+                  if (this.foodList[index].groupName == this.selectedCategory && this.foodList[index].supplyName == this.selectedUnit) this.isShow[index] = true
+                  else this.isShow[index] = false
+                }
+              }
+
+
             })
             .margin({ right: 65 })
           Image($r('app.media.shoucang'))
@@ -174,14 +255,28 @@ struct shicai {
           .onClick(() => {
             this.x = 1
             this.activeTab = 1
-            if(this.FavoriteFoodList.length>0){
-              for (let indexs = 0; indexs < this.FavoriteFoodList.length; indexs++) {
-                for (let index = 0; index < this.foodList.length; index++) {
-                  if(this.FavoriteFoodList[indexs].name == this.foodList[index].name && this.FavoriteFoodList[indexs].supplier == this.foodList[index].supplier)
-                    this.selectIndex.push(index)
+
+            for (let index = 0; index < this.isFavorite.length; index++) {
+              if(this.isFavorite[index]) this.isShow[index] = true
+              else this.isShow[index] = false
+            }
+            if(this.selectedCategory != '全部分类' && this.selectedUnit == '请选择供应商'){
+              for (let index = 0; index < this.foodList.length; index++) {
+                if(this.isFavorite[index]){
+                  if (this.foodList[index].groupName == this.selectedCategory) this.isShow[index] = true
+                  else this.isShow[index] = false
                 }
               }
             }
+            if(this.selectedCategory == '全部分类' && this.selectedUnit != '请选择供应商'){
+              for (let index = 0; index < this.foodList.length; index++) {
+                if(this.isFavorite[index]){
+                  if (this.foodList[index].supplyName == this.selectedUnit) this.isShow[index] = true
+                  else this.isShow[index] = false
+                }
+              }
+            }
+
           })
 
         }  //大选择
@@ -193,13 +288,39 @@ struct shicai {
           .strokeWidth(1)// 分界线粗细
           .margin({ top: 10, bottom: 10 }) // 上下边距
 
-
         Row() {
           Select(this.categoryOptions.map<SelectOption>((item: string) => ({ value: item })))
-            .value(this.selectedcategory)// 绑定到状态变量
+            .value(this.selectedCategory)// 选择类别
             .onSelect((index) => {
-              this.selectedcategory = this.categoryOptions[index]
+              this.selectedCategory = this.categoryOptions[index]
               this.x2 = true
+              if(this.activeTab == 0){
+                for (let index = 0; index < this.foodList.length; index++) {
+                  if (this.foodList[index].groupName == this.selectedCategory) this.isShow[index] = true
+                  else this.isShow[index] = false
+                }
+                if(this.selectedUnit != '请选择供应商'){
+                  for (let index = 0; index < this.foodList.length; index++) {
+                    if (this.foodList[index].supplyName == this.selectedUnit) this.isShow[index] = true
+                    else this.isShow[index] = false
+                  }
+                }
+              }else{
+                for (let index = 0; index < this.isFavorite.length; index++) {
+                  if(this.isFavorite[index]){
+                    if (this.foodList[index].groupName == this.selectedCategory) this.isShow[index] = true
+                    else this.isShow[index] = false
+                  }
+                }
+                if(this.selectedUnit != '请选择供应商'){
+                  for (let index = 0; index < this.foodList.length; index++) {
+                    if(this.isFavorite[index]){
+                      if (this.foodList[index].supplyName == this.selectedUnit) this.isShow[index] = true
+                      else this.isShow[index] = false
+                    }
+                  }
+                }
+              }
             })
 
             .width('40%')
@@ -211,6 +332,33 @@ struct shicai {
             .onSelect((index: number) => {
               this.selectedUnit = this.unitOptions[index]
               this.x3 = true
+              if(this.activeTab == 0){
+                for (let index = 0; index < this.foodList.length; index++) {
+                  if (this.foodList[index].supplyName == this.selectedUnit) this.isShow[index] = true
+                  else this.isShow[index] = false
+                }
+                if(this.selectedCategory != '全部分类'){
+                  for (let index = 0; index < this.foodList.length; index++) {
+                    if (this.foodList[index].groupName == this.selectedCategory) this.isShow[index] = true
+                    else this.isShow[index] = false
+                  }
+                }
+              }else{
+                for (let index = 0; index < this.isFavorite.length; index++) {
+                  if(this.isFavorite[index]){
+                    if (this.foodList[index].supplyName == this.selectedUnit) this.isShow[index] = true
+                    else this.isShow[index] = false
+                  }
+                }
+                if(this.selectedCategory != '全部分类'){
+                  for (let index = 0; index < this.foodList.length; index++) {
+                    if(this.isFavorite[index]){
+                      if (this.foodList[index].groupName == this.selectedCategory) this.isShow[index] = true
+                      else this.isShow[index] = false
+                    }
+                  }
+                }
+              }
             })
 
             .margin({ right: 50, left: 30, top: 10 })
@@ -226,8 +374,24 @@ struct shicai {
               })
               .height(30)
               .onClick(() => {
-                this.selectedcategory = this.categoryOptions[0] // 重置为第一个选项
+                this.selectedCategory = '全部分类' // 重置为第一个选项
                 this.x2 = false
+                if(this.activeTab == 0){
+                  for (let index = 0; index < this.isShow.length; index++) this.isShow[index] = true
+
+                  if(this.selectedUnit != '请选择供应商') {
+                    for (let index = 0; index < this.foodList.length; index++)
+                      if (this.foodList[index].supplyName !== this.selectedUnit)
+                        this.isShow[index] = false
+                  }
+                }else {
+                  for (let index = 0; index < this.isFavorite.length; index++) if(this.isFavorite[index]) this.isShow[index] = true
+                  if(this.selectedUnit != '请选择供应商'){
+                    for (let index = 0; index < this.foodList.length; index++)
+                      if(this.isFavorite[index]) if (this.foodList[index].supplyName !== this.selectedUnit) this.isShow[index] = false
+                  }
+                }
+
               })
           }
           if (this.x3) {
@@ -242,8 +406,25 @@ struct shicai {
               })
               .height(30)
               .onClick(() => {
-                this.selectedUnit = this.unitOptions[0] // 重置为第一个选项
+                this.selectedUnit = '请选择供应商' // 重置为第一个选项
                 this.x3 = false
+
+                if(this.activeTab == 0){
+                  for (let index = 0; index < this.isShow.length; index++) this.isShow[index] = true
+
+                  if(this.selectedCategory != '全部分类') {
+                    for (let index = 0; index < this.foodList.length; index++)
+                      if (this.foodList[index].groupName !== this.selectedCategory)
+                        this.isShow[index] = false
+                  }
+                }else {
+                  for (let index = 0; index < this.isFavorite.length; index++) if(this.isFavorite[index]) this.isShow[index] = true
+                  if(this.selectedCategory != '全部分类'){
+                    for (let index = 0; index < this.foodList.length; index++)
+                      if(this.isFavorite[index]) if (this.foodList[index].groupName !== this.selectedCategory) this.isShow[index] = false
+                  }
+                }
+
               })
           }
 
@@ -284,37 +465,23 @@ struct shicai {
         .padding({ top: 20, bottom: 10 })
       }.height('25%')
 
-
       Column() {
         List({space:3}){
-          if (this.activeTab === 1 && this.FavoriteFoodList.length === 0) {
+          ForEach(this.foodList,(item: FoodItem, index: number) => {
             ListItem() {
-              Text('暂无常用商品')
-                .fontSize(18)
-                .textAlign(TextAlign.Center)
-                .width('100%')
-            }
-            .height(200) // 建议设置高度占位
-          }
-
-          ForEach(this.activeTab === 0 ? this.foodList : this.FavoriteFoodList,
-            (item: FoodItem, index: number) => {
-              ListItem() {
+              if(this.isShow[index]){
                 Stack() {
-                  // Toast 提示（仅顶部显示一次）
-
-
                   // 第一行：图片、名称和收藏按钮
                   Row({ space: 10 }) {
                     Row(){
-                      Image(item.imageResId)
+                      Image(item.images)
                         .width(70)
                         .borderRadius(0)
                         .margin({ left: 5, top: -115 })
                     }.width('30%').margin({top:20})
 
                     Row(){
-                      Text(item.name)
+                      Text(item.foodName)
                         .fontSize(25)
                         .fontWeight(FontWeight.Bold)
                         .fontColor(Color.Black)
@@ -323,9 +490,7 @@ struct shicai {
 
                     Row(){
                       Button() {
-                        // Image(this.isFavorite[index]? $r('app.media.shoucang') : $r('app.media.noshoucang'))
-                        Image(this.activeTab  == 1? $r('app.media.shoucang') :
-                          (this.isFavorite[index]? $r('app.media.shoucang') : $r('app.media.noshoucang')))
+                        Image((this.isFavorite[index]? $r('app.media.shoucang') : $r('app.media.noshoucang')))
                           .width(30)
                           .height(30)
                       }
@@ -335,22 +500,9 @@ struct shicai {
                       .borderRadius(25)
                       .margin({  left: -10,top: -120 })
                       .onClick(() => {
-                        if(this.activeTab === 1){
-                          this.FavoriteIndex = 0
-                          while (item.name!=this.foodList[this.FavoriteIndex].name || item.supplier!=this.foodList[this.FavoriteIndex].supplier) this.FavoriteIndex++;
-                          this.isFavorite[this.FavoriteIndex] = !this.isFavorite[this.FavoriteIndex]
-                          this.FavoriteFoodList = this.FavoriteFoodList.filter((foodItem) => foodItem.name !== item.name && foodItem.supplier !== item.supplier)
-                          this.showAlert(this.isFavorite[this.FavoriteIndex] ? '操作成功' : '操作成功')
-
-                          this.selectIndex = this.selectIndex.filter((index) => index !== this.FavoriteIndex)
-
-                        }else {
-                          this.isFavorite[index] = !this.isFavorite[index]
-                          if(this.isFavorite[index]) this.FavoriteFoodList.push(item)
-                          else this.FavoriteFoodList = this.FavoriteFoodList.filter((foodItem) => foodItem.name !== item.name && foodItem.supplier !== item.supplier)
-                          this.showAlert(this.isFavorite[index] ? '操作成功' : '操作成功')
-                        }
-
+                        this.isFavorite[index] = !this.isFavorite[index]
+                        if(this.activeTab == 1) this.isShow[index] = !this.isShow[index]
+                        this.showAlert(this.isFavorite[index] ? '操作成功' : '操作成功')
                       })
                     }.width('20%')
 
@@ -376,7 +528,7 @@ struct shicai {
                       Text('采  购  价：')
                         .fontWeight(600)
                         .width(90)
-                      Text(item.price)
+                      Text(item.procurementPricing.toString()+'元/')
                         .fontSize(21)
                         .fontWeight(FontWeight.Bold)
                         .fontColor(Color.Red)
@@ -392,7 +544,7 @@ struct shicai {
                       Text('供  应  商：')
                         .fontWeight(600)
                         .width(90)
-                      Text(item.supplier)
+                      Text(item.supplyName)
                         .fontWeight(600)
                     }
                     .margin({ top: 10 })
@@ -402,7 +554,7 @@ struct shicai {
                       Text('学校库存：')
                         .fontWeight(600)
                         .width(90)
-                      Text(item.stock)
+                      Text(item.stock.toString())
                         .fontSize(21)
                         .fontWeight(FontWeight.Bold)
                       Text('Kg')
@@ -435,9 +587,7 @@ struct shicai {
                     .width(60)
                     .height(30)
                     .commands('M230 0 L230 230 L0 230 Z')
-                      // .fill((this.isBothClicked[index) ? '#16B76A' : '#CCCCCC')
-                    .fill(this.activeTab==1 ? (this.isBothClicked[this.selectIndex[index]] ? '#16B76A' : '#CCCCCC')
-                      : (this.isBothClicked[index] ? '#16B76A' : '#CCCCCC'))
+                    .fill((this.isBothClicked[index] ? '#16B76A' : '#CCCCCC'))
                     .margin({ left: 240, top: 96 })
                     .stroke(Color.White)// 无边框
                     .shadow({ radius: 0 })// 确保无阴影s
@@ -456,23 +606,14 @@ struct shicai {
                   offsetY: 20
                 })
                 .onClick(() => {
-                  if(this.activeTab === 1){
-                    this.SelectIndex = 0
-                    while (item.name!=this.foodList[this.SelectIndex].name || item.supplier!=this.foodList[this.SelectIndex].supplier) this.SelectIndex++;
-                    this.isBothClicked[this.SelectIndex] = !this.isBothClicked[this.SelectIndex]
-                    if(this.isBothClicked[index]) this.count++
-                    else this.count--
-                    console.log(this.count.toString())
-                    this.showAlert(this.isBothClicked[this.SelectIndex] ? '选择成功' : '取消成功')
-                  }else {
-                    this.isBothClicked[index] = !this.isBothClicked[index]
-                    if(this.isBothClicked[index]) this.count++
-                    else this.count--
-                    this.showAlert(this.isBothClicked[index] ? '选择成功' : '取消成功')
-                  }
+                  this.isBothClicked[index] = !this.isBothClicked[index]
+                  if(this.isBothClicked[index]) this.count++
+                  else this.count--
+                  this.showAlert(this.isBothClicked[index] ? '操作成功' : '操作成功')
                 })
               }
-            }, (item: FoodItem) => item.name.toString())
+            }
+          }, (item: FoodItem) => item.foodName.toString())
         }
         .margin({right:5})
       }
@@ -503,29 +644,28 @@ struct shicai {
             offsetY: 4
           })
       }
-
       Column() {
         Row() {
           Text(`已选中${this.count}种食材`)
             .fontSize(15)
             .fontWeight(50)
             .margin({ right: 140, left: 10, bottom: 10 })
-          Button({ type: ButtonType.Normal }) {
+          Button({type: ButtonType.Normal}) {
             Text("确定")
               .margin({ bottom: 10,top:10 })
-
           }
           .onClick(() => {
-            let selectedFoods: FoodItem[] = [];
-            for (let i = 0; i < this.foodList.length; i++) {
-              if (this.isBothClicked[i]) {
-                selectedFoods.push(this.foodList[i]);
+            let SelectFoodList:FoodItem[] = []
+            for(let i = 0; i < this.isBothClicked.length; i++){
+              if(this.isBothClicked[i]){
+                SelectFoodList.push(this.foodList[i])
               }
             }
+            console.log('ses:',JSON.stringify(SelectFoodList))
             router.back({
               url:'pages/addPlan',
               params:{
-                selectedFoods:selectedFoods
+                SelectFoodList:SelectFoodList
               }
             })
           })
@@ -534,14 +674,83 @@ struct shicai {
           .fontColor(Color.White)
           .backgroundColor('#16B76A')
           .borderRadius(5)
-
         }
         .height(45)
       }  //底部按钮
       .width('100%')
       .height('10%')
-
     }
-
   }
+
+
+  private async Foodchaxun(): Promise<FoodResponse> { //这个请求是针对查询后厨人员列表的
+    try {
+      const httpRequest = http.createHttp();
+
+      const response = await httpRequest.request(
+        'https://api.suoeryun.com/ifood/jeecg-school/school/xxDemandPlanning/queryNewFoodStorehousePage',
+        {
+          method: http.RequestMethod.GET,
+          header: {
+            //'Content-Type': 'application/json',
+            'Tenant-Id': this.tenantId.toString(),
+            'X-Access-Token': this.receivedToken
+          },
+        }
+      );
+      const emptyResult: FoodResult = {
+        records: [],
+        total: 0,
+        size: 0,
+        current: 0,
+        orders: [],
+        optimizeCountSql: false,
+        searchCount: false,
+        countId: '',
+        maxLimit: '',
+        pages: 0
+      };
+
+      if (response.responseCode !== 200) {
+        //console.error('Login Error:'+response.responseCode);
+        return {
+          success: false,
+          code: response.responseCode,
+          result: emptyResult,
+          message: `HTTP Error: ${response.responseCode}`
+          // 添加其他错误处理逻辑
+        };
+      }
+      console.log('没有报错奥' + response.result.toString())
+      const jsonData = JSON.parse(response.result as string) as FoodResponse;
+      console.log('好耶', jsonData.result.records[1].id);
+      return {
+        success: jsonData.code === 200,
+        code: jsonData.code,
+        result: jsonData.result,
+        message: jsonData.message,
+        //relTenantIds:jsonData.result.userInfo.relTenantIds
+      };
+
+    } catch (error) {
+      //console.error('Login Error:', JSON.stringify(error));
+      return {
+        success: false,
+        code: 500,
+        result: { // 符合 liuyangResult 的空结构
+          records: [],
+          total: 0,
+          size: 0,
+          current: 0,
+          orders: [],
+          optimizeCountSql: false,
+          searchCount: false,
+          countId: '',
+          maxLimit: '',
+          pages: 0
+        },
+        message: '服务器繁忙'
+      }
+    }
+  }//接口函数
 }

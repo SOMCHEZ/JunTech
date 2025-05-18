@@ -129,6 +129,8 @@ struct ReportPlanPage {
     this.tenantId = AppStorage.get('tenantId')??0;
 
     const result = await this.Xuqiuchaxun();
+    this.unitId = result?.records?.[0]?.unitId ?? '';
+    console.log('laofushinanniang', this.unitId);
     //const result = await this.Houchuchaxun();// 调用Houchuchaxun方法这个函数是用来查数据的
     //console.log('houchu1', result); // 打印返回结果
 
@@ -468,8 +470,12 @@ struct ReportPlanPage {
                                     width: 1
                                   })
                                   .onClick(() => {
+                                    console.log('CACACACCACACACAC',this.unitId);
                                     router.pushUrl({
-                                      url: 'pages/addPlan' })
+                                      url: 'pages/addPlan',  params: {
+                                        unitId:this.unitId
+                                      } })
+
                                   })
                                 Button('单据日志')
                                   .backgroundColor('#ffffffff')

@@ -1,4 +1,3 @@
-
 import router from '@ohos.router';
 import http from '@ohos.net.http';
 import { BusinessError } from '@ohos.base';
@@ -258,7 +257,6 @@ struct PurchaseInventory {
   }
 
   build() {
-
     Column() {
 
 
@@ -332,7 +330,6 @@ struct PurchaseInventory {
               .border({ width: 0, color: '#DDD' });
           }
           .margin({ bottom: 10, left: 10, right: 10 });
-
           // 内容展示区
           Scroll() {
             Column() {
