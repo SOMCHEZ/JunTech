@@ -1,4 +1,4 @@
-import { router } from '@kit.ArkUI'
+import { router } from '@kit.ArkUI';
 import http from '@ohos.net.http';
 
 AppStorage.setOrCreate('token', '');
@@ -10,79 +10,44 @@ interface RouteParams {
   relTenantIds?: number;
 }
 
-interface  records{//定义接口返回类型
-  id: string;
+interface PeiCanMessage {
   mealDate: string;
-  createBy:  string;
-  mealCategory: string;
-  repastNum: string;
-  withNum: string;
-  xxMealRecordInfoList: string;
   schoolName: string;
+  mealCategory_dictText: string;
+  dutposition: string;
 }
 
-
-interface RecordType {
-  unit: string;
-  meal: string;
-  position: string;
-  name: string;
-  evaluation: string;
-  date: string;
+interface ResultData {
+  total: number;
+  records: PeiCanMessage[];
 }
 
-interface GeneratedTypeLiteralInterface_1 {
+interface ResponseData {
+  success: boolean;
+  message: string;
+  code: number;
+  result: ResultData | null;
+}
+interface PageParams {
   record?: string;
 }
-
-
-interface PeiCanMessage {
-  mealDate: string
-  schoolName: string
-  mealCategory_dictText: string
-  dutposition: string // ✅ 添加陪餐人职务字段
-}
-
-
-interface ResultData{
-  total:number
-  records:PeiCanMessage[]
-}
-interface ResponseData{
-  success: boolean,
-  message: string,
-  code: number,
-  result:ResultData|null
-}
-
-
-
 @Entry
 @Component
 struct CalendarPage {
-  @State private currentDate: Date = new Date()
-  @State private selectedDate: Date = new Date()
-  @State selectedUnit: string = '所属单位';
-  @State units: string[] = ['所属单位', '实训第二学校餐厅', '其他单位'];
-  @State showDropdown: boolean = false;
-  @State kitchenNumbers: number = 0;
-  @State receivedToken: string = '';//参数传递
-  @State tenantId: number = 0;//同上
-  @State unitId: string ='';
-  @State peicanRecord: records[] = []
-  @State records: RecordType[] = [];
-
-  @State DataList:PeiCanMessage[] = []
-  @State TempDataList:PeiCanMessage[] = []
+  @State private currentDate: Date = new Date();
+  @State private selectedDate: Date = new Date();
+  @State private receivedToken: string = '';
+  @State private tenantId: number = 0;
+  @State private unitId: string = '';
+  @State private DataList: PeiCanMessage[] = [];
+  @State private TempDataList: PeiCanMessage[] = [];
 
   aboutToAppear() {
-    const params = router.getParams() as GeneratedTypeLiteralInterface_1;
+    const params = router.getParams() as PageParams; // 使用接口进行类型断言
     if (params?.record) {
-      this.records.unshift(JSON.parse(params.record));
+      this.DataList.unshift(JSON.parse(params.record));
     }
   }
-
-  private weekDays: string[] = ['日', '一', '二', '三', '四', '五', '六']
 
   async onPageShow() {
     const params = router.getParams() as RouteParams;
@@ -95,16 +60,14 @@ struct CalendarPage {
     this.receivedToken = AppStorage.get('token') ?? '';
     this.tenantId = AppStorage.get('tenantId') ?? 0;
 
-
     const result = await this.peicanQuest();
     if (result.success && result.result) {
-      this.DataList = result.result.records
-      this.TempDataList = this.DataList
+      this.DataList = result.result.records;
+      this.TempDataList = this.DataList.filter((item) => item.mealDate === this.formatDate(this.selectedDate));
     }
-    this.TempDataList = this.TempDataList.filter((item:PeiCanMessage) => item.mealDate == this.formatDate(this.selectedDate))
-
-    console.log('date:',this.formatDate(this.selectedDate))
   }
+
+  private weekDays: string[] = ['一', '二', '三', '四', '五', '六', '日'];
 
   private async peicanQuest(): Promise<ResponseData> {
     try {
@@ -114,63 +77,57 @@ struct CalendarPage {
         'https://api.suoeryun.com/ifood/jeecg-school/school/xxMealRecord/list',
         {
           method: http.RequestMethod.GET,
-          header: { //'Content-Type': 'application/json',
-            'Tenant-Id':this.tenantId.toString(),
-            'X-Access-Token':this.receivedToken
+          header: {
+            'Tenant-Id': this.tenantId.toString(),
+            'X-Access-Token': this.receivedToken,
           },
         }
       );
-      console.log('response:',response.result)
-      console.log('response:',response.responseCode)
-      console.log('111',response.result)
+
       if (response.responseCode !== 200) {
-        console.error('Login Error8:'+response.responseCode);
-        // this.records = response.result.
+        console.error('Login Error8:' + response.responseCode);
         return {
           success: false,
           message: `HTTP Error: ${response.responseCode}`,
           code: response.responseCode,
-          result:null
+          result: null,
         };
-        // console.log(record.dutposition)
       }
-      const jsonData = JSON.parse(response.result as string) as ResponseData;
-      return jsonData
 
+      const jsonData = JSON.parse(response.result as string) as ResponseData;
+      return jsonData;
     } catch (error) {
-      console.error( error);
+      console.error(error);
       return {
         success: false,
         message: '服务器繁忙',
         code: 500,
-        result: null
+        result: null,
       };
     }
   }
 
-  // 获取当前周的日期数组
   private getDatesForWeek(): number[] {
-    const firstDayOfMonth = new Date(this.currentDate.getFullYear(), this.currentDate.getMonth(), 1)
-    const lastDayOfMonth = new Date(this.currentDate.getFullYear(), this.currentDate.getMonth() + 1, 0)
-    const currentDayOfWeek = this.selectedDate.getDay()
-    const startDate = new Date(this.selectedDate)
-    startDate.setDate(this.selectedDate.getDate() - currentDayOfWeek)
+    const firstDayOfMonth = new Date(this.currentDate.getFullYear(), this.currentDate.getMonth(), 1);
+    const lastDayOfMonth = new Date(this.currentDate.getFullYear(), this.currentDate.getMonth() + 1, 0);
+    const currentDayOfWeek = this.selectedDate.getDay();
+    const startDate = new Date(this.selectedDate);
+    startDate.setDate(this.selectedDate.getDate() - currentDayOfWeek);
 
-    const dates: number[] = []
+    const dates: number[] = [];
     for (let i = 0; i < 7; i++) {
-      const currentDate = new Date(startDate)
-      currentDate.setDate(startDate.getDate() + i)
-      dates.push(currentDate.getDate())
+      const currentDate = new Date(startDate);
+      currentDate.setDate(startDate.getDate() + i);
+      dates.push(currentDate.getDate());
     }
-    return dates
+    return dates;
   }
 
-  // 周切换功能
   private changeWeek(increment: number) {
-    const newDate = new Date(this.selectedDate)
-    newDate.setDate(this.selectedDate.getDate() + (increment * 7))
-    this.currentDate = new Date(newDate)
-    this.selectedDate = newDate
+    const newDate = new Date(this.selectedDate);
+    newDate.setDate(this.selectedDate.getDate() + increment * 7);
+    this.currentDate = new Date(newDate);
+    this.selectedDate = newDate;
   }
 
   private formatDate(date: Date): string {
@@ -180,42 +137,42 @@ struct CalendarPage {
     return `${year}-${month}-${day}`;
   }
 
-  // 日历头部
   @Builder
   private CalendarHeaderBuilder() {
     Column() {
       Text('陪餐记录')
         .fontSize(24)
         .fontColor('#FFFFFF')
-        .margin({ bottom: 8 })
+        .margin({ bottom: 8 });
 
       Row() {
         Text(`${this.currentDate.getFullYear()}年${this.currentDate.getMonth() + 1}月`)
           .fontSize(20)
-          .fontColor('#FFFFFF')
-        Blank()
+          .fontColor('#FFFFFF');
+
+        Blank();
+
         Row() {
           Text('<')
-            .font({size: 24})
+            .font({ size: 24 })
             .onClick(() => this.changeWeek(-1))
-            .fontColor(Color.White)
+            .fontColor(Color.White);
+
           Text('>')
             .fontSize(24)
             .margin({ left: 20 })
             .onClick(() => this.changeWeek(1))
-            .fontColor(Color.White)
+            .fontColor(Color.White);
         }
       }
       .width('100%')
-      .justifyContent(FlexAlign.SpaceBetween)
+      .justifyContent(FlexAlign.SpaceBetween);
     }
     .width('100%')
     .padding(16)
-    .backgroundColor('#00C853')
+    .backgroundColor('#00C853');
   }
 
-
-  // 星期标题行
   @Builder
   private WeekDaysBuilder() {
     Row() {
@@ -223,58 +180,48 @@ struct CalendarPage {
         Text(day)
           .width('14.28%')
           .textAlign(TextAlign.Center)
-          .fontColor('#FFFFFF')
-      })
+          .fontColor('#FFFFFF');
+      });
     }
   }
-
-  // ... (其他代码保持不变)
-
+//卡片区域
   @Builder
   private RecordCardBuilder(record: PeiCanMessage) {
     Column() {
       Row() {
-        Text(record.mealDate).fontColor('#666').fontSize(14)
-        Text(record.schoolName).fontColor('#333').fontSize(16).margin({ left: 10 })
+        Text(`${record.mealDate} ${record.mealCategory_dictText}陪餐记录`)
+          .fontSize(30)
+          .fontColor('#333');
       }
-      .justifyContent(FlexAlign.Start)
-
-      Row() {
-        Text(`餐别：${record.mealCategory_dictText}`).fontSize(14)
-      }
-      .margin({ top: 8 })
+      .justifyContent(FlexAlign.Start);
     }
-    .padding({ left: 16, right: 16, top: 12, bottom: 12 }) // 增加内边距
-    .backgroundColor('#f9f9f9')
+    .padding({ left: 16, right: 16, top: 12, bottom: 12 })
+    .backgroundColor('#FFFFFF')
     .borderRadius(10)
-    .margin({ top: 15, bottom: 10}) // 增加上下边距
-    .width('95%') // 卡片更宽
-    .height(80) // 固定高度，可根据内容调整
+    .margin({ top: 15, bottom: 10 })
+    .width('95%')
+    .height(80)
     .shadow({ radius: 6, color: '#30000000', offsetX: 2, offsetY: 4 })
+    .border({ width: 1, color: '#00C853' })
     .onClick(() => {
-      // 跳转到 detailPage 并传递参数
       router.pushUrl({
         url: 'pages/detailPage',
         params: {
           schoolName: record.schoolName,
           mealDate: record.mealDate,
           mealCategory: record.mealCategory_dictText,
-          dutposition: record.dutposition
-        }
+          dutposition: record.dutposition,
+        },
       });
     });
   }
 
-
-  // ... (其他代码保持不变)
-
-
   build() {
     Column() {
-      this.CalendarHeaderBuilder()
+      this.CalendarHeaderBuilder();
 
       Column() {
-        this.WeekDaysBuilder()
+        this.WeekDaysBuilder();
 
         Row() {
           ForEach(this.getDatesForWeek(), (date: number) => {
@@ -282,65 +229,61 @@ struct CalendarPage {
               Stack() {
                 if (date === this.selectedDate.getDate()) {
                   Circle()
-                    .size({width:20 , height:20 })
-                    .fill('#FFFFFF')
+                    .size({ width: 20, height: 20 })
+                    .fill('#FFFFFF');
                 }
                 Text(`${date.toString().padStart(2, '0')}`)
-                  .fontColor(date === this.selectedDate.getDate() ? '#00C853' : '#FFFFFF')
+                  .fontColor(date === this.selectedDate.getDate() ? '#00C853' : '#FFFFFF');
               }
             }
             .width('14.282039094572344908579867648657%')
             .height(50)
             .onClick(() => {
-              this.TempDataList = this.DataList
-              const newDate = new Date(this.selectedDate)
-              newDate.setDate(date)
-              this.selectedDate = newDate
-              console.log('selectedDate',this.formatDate(this.selectedDate))
-              this.TempDataList = this.TempDataList.filter((item:PeiCanMessage) => item.mealDate == this.formatDate(this.selectedDate))
-            })
-          })
+              const newDate = new Date(this.selectedDate);
+              newDate.setDate(date);
+              this.selectedDate = newDate;
+              this.TempDataList = this.DataList.filter((item) => item.mealDate === this.formatDate(this.selectedDate));
+            });
+          });
         }
       }
-      .backgroundColor('#00C853')
+      .backgroundColor('#00C853');
+
+      if (this.TempDataList.length === 0) {
+        Text('~ 暂无相关数据 ~')
+          .fontSize(15)
+          .fontColor('#BBBBBB')
+          .margin({ top: 10 });
+      } else {
+        Scroll() {
+          Column() {
+            ForEach(this.TempDataList, (record: PeiCanMessage) => {
+              this.RecordCardBuilder(record);
+            });
+          }
+        }
+        .height('60%')
+        .margin({ top: 20});
+      }
 
       Button('上传陪餐记录', { type: ButtonType.Capsule })
         .width('90%')
         .height(40)
         .backgroundColor('#00C853')
         .fontColor('#FFFFFF')
-        .position({x:20 , y: '90%'})
+        .position({ x: 20, y: '90%' })
         .onClick(() => {
           router.pushUrl({
             url: 'pages/reportRecords',
-            params:{
-              token:this.receivedToken,
-              relTenantIds:this.tenantId
-
-            }
+            params: {
+              token: this.receivedToken,
+              relTenantIds: this.tenantId,
+            },
           });
-          console.log('jinitaimei'+this.records);
-        })
-
-      if (this.TempDataList.length === 0) {
-        Text('~ 暂无相关数据 ~')
-          .fontSize(15)
-          .fontColor('#BBBBBB')
-          .margin({ top: 30 })
-      } else {
-        Scroll() {
-          Column() {
-            ForEach(this.TempDataList, (record: PeiCanMessage) => {
-              this.RecordCardBuilder(record)
-            })
-          }
-        }
-        .height('60%')
-        .margin({ top: 20 })
-      }
+        });
     }
     .width('100%')
     .height('100%')
-    .backgroundColor('#F5F5F5')
+    .backgroundColor('#F5F5F5');
   }
 }
