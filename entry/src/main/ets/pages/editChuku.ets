@@ -4,12 +4,10 @@ import prompt from '@ohos.prompt';
 import router from '@ohos.router';
 import http from '@ohos.net.http';
 
-//永久存储token和租户id
 AppStorage.setOrCreate('token', '');
 AppStorage.setOrCreate('tenantId', 0);
 AppStorage.setOrCreate('unitId', '');
 AppStorage.setOrCreate('id', '');
-//小卡片里的东西
 AppStorage.setOrCreate('accountingDate', '');
 AppStorage.setOrCreate('mealType', '');
 AppStorage.setOrCreate('requirementType', '');
@@ -50,26 +48,30 @@ interface FoodItem {
   selectId: string;
   marketWeight: number;
 }
+
 interface addHandlerResult {
   success: boolean;
   code?: number;
   userInfo?: UserInfo;
   token?: string;
   message?: string;
-  relTenantIds?:number;
+  relTenantIds?: number;
 }
+
 interface addResult {
   userInfo: UserInfo;
   token: string;
 }
+
 interface addResponse {
   code: number;
   message: string;
   result: addResult;
   timestamp: number;
 }
+
 interface RouteParams {
-  accountingDate: string;//接口传递参数定义
+  accountingDate: string;
   mealType: string;
   requirementType: string;
   mealCategory: string;
@@ -78,33 +80,40 @@ interface RouteParams {
   documentNo?: string;
   demandUnit?: string;
   demandUnitName?: string;
-
   token?: string;
   relTenantIds?: number;
   unitId?: string;
 }
+
 interface UserInfo {
   id: string;
   username: string;
   clientType: string;
   realname: string;
   avatar: string | null;
-  relTenantIds:number;
-  // 其他字段根据实际API响应补充...
+  relTenantIds: number;
 }
-interface SelectOption{
+
+interface SelectOption {
   value: string;
   label: string;
 }
+
 interface GeneratedObjectLiteralInterface_1 {
-  date: string;
-  recipeName: string;
-  mealType: string;
-  diningType: string;
-  place: string;
-  photoUri: string;
+  success: boolean;
+  code: number;
+  message: string;
 }
 
+interface GeneratedObjectLiteralInterface_3 {
+  success: boolean;
+  message: string;
+}
+
+interface GeneratedObjectLiteralInterface_2 {
+  success: boolean;
+  message: string;
+}
 
 @Entry
 @Component
@@ -115,13 +124,12 @@ struct DatePickerExample {
   @State adddal: boolean = true
   @State opacityValue: number = 0
   @State scaleValue: number = 0.8
-  @State receivedToken: string = '';//参数传递
-  @State tenantId: number = 0;//同上
-  @State displayTime: string = ''
-  @State unitId: string  ="";
-  @State summary: string = ''// 摘要内容
-  @State selectedText: string[] = ['请选择','请选择','请选择','其他','其他','请输入摘要']
-  @State private showMealType: boolean = false // 控制是否显示用餐类型
+  @State receivedToken: string = ''
+  @State tenantId: number = 0
+  @State unitId: string = ""
+  @State summary: string = ''
+  @State selectedText: string[] = ['请选择', '请选择', '请选择', '其他', '其他', '请输入摘要']
+  @State showMealType: boolean = false
   @State accountingDate: string = ''
   @State mealType: string = ''
   @State requirementType: string = ''
@@ -134,9 +142,9 @@ struct DatePickerExample {
   private unitOptions = ['实验第二学校餐厅']
   private selectedTime = ['上午', '下午']
   private demandOptions = ['学生餐', '教师餐']
-  private mealTypeOptions = ['其他','营养餐']
+  private mealTypeOptions = ['其他', '营养餐']
   private mealOptions = ['其他', '早餐', '午餐', '晚餐']
-  // 修改 getMappedValues 函数：显式声明返回类型
+
   private mapping: Record<string, string> = {
     '上午': 'forenoon',
     '下午': 'afternoon',
@@ -148,111 +156,118 @@ struct DatePickerExample {
     '早餐': '1',
     '午餐': '2',
     '晚餐': '3'
-  };
-
-  private getMappedValues(index?: number): string | string[] {
-    if (index !== undefined) {
-      const text = this.selectedText[index];
-      return this.mapping[text] || text;
-    }
-    return this.selectedText.map(text => this.mapping[text] || '');
   }
-  private handleLogMapping(): void {
-    const mappedValues = this.getMappedValues();
-    console.log('Mapped Values:', mappedValues);
-    // 可以在此添加更多逻辑
+
+  private reverseMapping: Record<string, string> = {
+    '1': '学生餐',
+    '2': '教师餐',
+    '0': '其他',
+    'forenoon': '上午',
+    'afternoon': '下午'
+  }
+
+  private convertValueToText(value: string, type: string): string {
+    switch (type) {
+      case 'mealType':
+        return value === '1' ? '学生餐' : value === '2' ? '教师餐' : '其他';
+      case 'requirementType':
+        return value === '1' ? '营养餐' : value === '2' ? '非营养餐' : '其他';
+      case 'mealCategory':
+        switch (value) {
+          case '0': return '其他';
+          case '1': return '早餐';
+          case '2': return '午餐';
+          case '3': return '晚餐';
+          default: return '其他';
+        }
+      default:
+        return value;
+    }
   }
 
   async onPageShow() {
     const params = router.getParams() as RouteParams;
+
     if (!AppStorage.get('token') && params?.token) {
       AppStorage.set('token', params.token);
-      //this.receivedToken = params.token;
     }
     if (!AppStorage.get('tenantId') && params?.relTenantIds) {
       AppStorage.set('tenantId', params.relTenantIds);
-      //this.tenantId = params.relTenantIds;
     }
     if (!AppStorage.get('unitId') && params?.unitId) {
       AppStorage.set('unitId', params.unitId);
-    }
-    if (!AppStorage.get('accountingDate') && params?.accountingDate) {
-      AppStorage.set('accountingDate', params.accountingDate);
-    }
-    if (!AppStorage.get('mealType') && params?.mealType) {
-      AppStorage.set('mealType', params.mealType);
-    }
-    if (!AppStorage.get('requirementType') && params?.requirementType) {
-      AppStorage.set('requirementType', params.requirementType);
-    }
-    if (!AppStorage.get('mealCategory') && params?.mealCategory) {
-      AppStorage.set('mealCategory', params.mealCategory);
-    }
-    if (!AppStorage.get('digest') && params?.digest) {
-      AppStorage.set('digest', params.digest);
-    }
-    if (!AppStorage.get('id') && params?.id) {
-      AppStorage.set('id', params.id);
     }
     if (!AppStorage.get('demandUnit') && params?.demandUnit) {
       AppStorage.set('demandUnit', params.demandUnit);
     }
 
-    if (params?.id) {
-      AppStorage.setOrCreate('outboundId', params.id);
-      AppStorage.setOrCreate('documentNo', params.documentNo || '');
-      AppStorage.setOrCreate('demandUnit', params.demandUnit || '');
-      AppStorage.setOrCreate('demandUnitName', params.demandUnitName || '');
-    }
-
-
-    // 同步到组件状态
-    this.receivedToken = AppStorage.get('token')??'';
-    this.tenantId = AppStorage.get('tenantId')??0;
-    this.unitId = AppStorage.get('unitId') ?? '';
-    this.accountingDate = AppStorage.get('accountingDate') ?? '';
-    this.mealType = AppStorage.get('mealType') ?? '';
-    this.requirementType = AppStorage.get('requirementType') ?? '';
-    this.mealCategory = AppStorage.get('mealCategory') ?? '';
-    this.digest = AppStorage.get('digest') ?? '';
-    this.outboundId = AppStorage.get('id') ?? '';
+    this.receivedToken = AppStorage.get('token') ?? '';
+    this.tenantId = AppStorage.get('tenantId') ?? 0;
     this.demandUnit = AppStorage.get('demandUnit') ?? '';
 
-    console.log('iddd',this.demandUnit);
-    console.log('datsssssssse', this.accountingDate);
-    console.log('UID', params?.unitId);
-    this.selectedText[0] = this.unitId;
-    this.selectedText[1] = this.accountingDate;
-    this.selectedText[2] = this.mealType;
-    this.selectedText[3] = this.requirementType;
-    this.selectedText[4] = this.mealCategory;
-    this.selectedText[5] = this.digest;
-    console.log('houchu', this.selectedText);
-    //const result = await this.Houchuchaxun();// 调用Houchuchaxun方法这个函数是用来查数据的
-    //console.log('houchu1', result); // 打印返回结果
+    if (params?.mealType) {
+      this.selectedText[2] = this.convertValueToText(params.mealType, 'mealType');
+    }
+    if (params?.requirementType) {
+      this.selectedText[3] = this.convertValueToText(params.requirementType, 'requirementType');
+    }
+    if (params?.mealCategory) {
+      this.selectedText[4] = this.convertValueToText(params.mealCategory, 'mealCategory');
+    }
+
+    if (params?.demandUnitName) {
+      this.selectedText[0] = params.demandUnitName;
+    }
+    if (params?.accountingDate) {
+      this.selectedText[1] = params.accountingDate;
+    }
+    if (params?.digest) {
+      this.selectedText[5] = params.digest || '请输入摘要';
+    }
+    if (params?.id) {
+      this.outboundId = params.id;
+    }
+
+    if (this.selectedText[2] === '学生餐') {
+      this.showMealType = true;
+    }
+
+    console.log('页面数据初始化完成：', this.selectedText);
   }
-  private async addStaff(): Promise<addHandlerResult> {
+
+  private getMappedValues(index?: number): string | string[] {
+    if (index !== undefined) {
+      const text = this.selectedText[index];
+      if (/^\d+$/.test(text)) {
+        return text;
+      }
+      return this.mapping[text] || text;
+    }
+    return this.selectedText.map(text => this.mapping[text] || text);
+  }
+
+  private async addStaff() {
     try {
       const httpRequest = http.createHttp();
-      // let a:string = '1'
       const response = await httpRequest.request(
         'https://api.suoeryun.com/ifood/school/xxSupplyOutManagement/add',
         {
           method: http.RequestMethod.POST,
-          header: { 'Content-Type': 'application/json',
-            'Tenant-Id':this.tenantId.toString(),
-            'X-Access-Token':this.receivedToken
+          header: {
+            'Content-Type': 'application/json',
+            'Tenant-Id': this.tenantId.toString(),
+            'X-Access-Token': this.receivedToken
           },
           extraData: JSON.stringify({
-            "id":this.outboundId,
+            "id": this.outboundId,
             "demandUnit": this.demandUnit,
-            "demandUnitName": "实训第二学校餐厅",
+            "demandUnitName": this.selectedText[0],
             "accountingDate": this.selectedText[1],
             "digest": this.selectedText[5],
             "mealType": this.getMappedValues(2),
             "requirementType": this.getMappedValues(3),
             "mealCategory": this.getMappedValues(4),
-            "stockStatus": "0", // 0为保存、1为保存并审核
+            "stockStatus": "0",
             "foods": [
               {
                 "schoolId": "1917168448022519809",
@@ -284,66 +299,60 @@ struct DatePickerExample {
                 "selectId": "1922500586301390849",
                 "marketWeight": 0.01
               }
-            ]as Array<FoodItem>
-          }
-          )
+            ] as Array<FoodItem>
+          })
         }
       );
 
-      if (response.responseCode !== 200) {
-        return {
-          success: false,
-          message: `HTTP Error: ${response.responseCode}`
-          // 添加其他错误处理逻辑
-        };
+      interface ApiResponse {
+        code: number;
+        message: string;
       }
-      const jsonData = JSON.parse(response.result as string) as addResponse;
-      //console.log('', response.responseCode);
-      //console.log('',jsonData.code);
-      return {
-        success: jsonData.code === 200,
-        code: jsonData.code,
-        //userInfo: jsonData.result.userInfo,
-        // token: jsonData.result.token,
-        message: jsonData.message,
-        relTenantIds:jsonData.result.userInfo.relTenantIds
-      };
-    } catch (error) {
-      //console.error('Login Error:', JSON.stringify(error));
-      return {
+
+      if (response.responseCode === 200) {
+        const jsonData: ApiResponse = JSON.parse(response.result as string);
+        return ({
+          success: jsonData.code === 200,
+          code: jsonData.code,
+          message: jsonData.message
+        } as GeneratedObjectLiteralInterface_1);
+      }
+
+      return ({
         success: false,
-        message: 'fuck u!'
-      };
+        message: `HTTP Error: ${response.responseCode}`
+      } as GeneratedObjectLiteralInterface_2);
+
+    } catch (error) {
+      return ({
+        success: false,
+        message: '请求失败'
+      } as GeneratedObjectLiteralInterface_3);
     }
   }
+
   build() {
-    Stack(){
+    Stack() {
       Column() {
-        Scroll(){
-
-          Column(){
-
+        Scroll() {
+          Column() {
             Column({ space: 10 }) {
               this.buildLabelRow($r("app.media.unitName"), "领用单位", true, 0)
               this.buildLabelRow($r("app.media.supplyDate"), "出库日期", true, 1)
-              //this.buildLabelRow($r("app.media.supplyTime"), "供应时间", false, 2)
               this.buildLabelRow($r("app.media.demand"), "出库类型", true, 2)
 
-              // 条件用餐类型行
               if (this.showMealType) {
-                this.buildLabelRow($r("app.media.requirementType"), "用餐类型",false , 3)
+                this.buildLabelRow($r("app.media.requirementType"), "用餐类型", false, 3)
               }
 
               this.buildLabelRow($r("app.media.mealCategory"), "餐别", false, 4)
               this.buildLabelRow($r("app.media.remarks"), "摘要", false, 5)
-
             }
             .width('100%')
             .padding(10)
 
-            // 添加食材按钮
             Row() {
-              Button({type: ButtonType.Normal}) {
+              Button({ type: ButtonType.Normal }) {
                 Text('+添加食材')
                   .fontSize(16)
                   .fontColor(Color.White)
@@ -355,14 +364,11 @@ struct DatePickerExample {
                   })
                   .borderRadius(8)
                   .onClick(() => {
-                    // 跳转到 chuku 页面
                     router.pushUrl({
                       url: 'pages/renew'
                     });
-
                   });
               }
-
               .width('80%')
               .height(35)
               .backgroundColor('#02BC65')
@@ -376,32 +382,29 @@ struct DatePickerExample {
                 .position({ x: 137, y: 15 })
             }
 
-            Column()//渐变框
+            Column()
               .linearGradient({
                 angle: 180,
-                colors: [['#93D0B1', 0.1],['#FDFDFD',1]],
+                colors: [['#93D0B1', 0.1], ['#FDFDFD', 1]],
               })
-              .margin({top: 10})
+              .margin({ top: 10 })
               .width('100%')
               .height(20)
+
             if (this.adddal) {
-              // 显示条件用餐类型行
               Column() {
                 Stack() {
-                  // 主内容区域
                   Column() {
-                    // 第一行：图片、名称和收藏按钮
                     Row({ space: 10 }) {
                       Image($r('app.media.food'))
                         .width(70)
                         .borderRadius(0)
-                        .margin({ left: 5, top: -115 }) // 原position x:-150 → 计算实际左边距
+                        .margin({ left: 5, top: -115 })
                       Text('绿豆')
                         .fontSize(25)
                         .fontWeight(FontWeight.Bold)
                         .fontColor(Color.Black)
-                          //.margin({ left: 10, top: -65}) // 与图片保持相对位置
-                        .margin({ left: 10, top: -70 }) // 右侧固定位置
+                        .margin({ left: 10, top: -70 })
                       Image($r('app.media.del'))
                         .width(30)
                         .fillColor(Color.Red)
@@ -414,7 +417,7 @@ struct DatePickerExample {
                     .height(80)
                     .padding({ left: 20 })
                   }
-                  // 渐变分割线 (精确匹配原位置)
+
                   Row()
                     .width('86%')
                     .height(1)
@@ -428,9 +431,8 @@ struct DatePickerExample {
                       ]
                     })
                     .zIndex(1)
-                  // 采购价信息
+
                   Column() {
-                    // 采购价信息
                     Row() {
                       Text('采  购  价：')
                         .fontWeight(600)
@@ -444,7 +446,7 @@ struct DatePickerExample {
                     }
                     .margin({ top: 10 })
                     .zIndex(2)
-                    // 供应商信息
+
                     Row() {
                       Text('供  应  商：')
                         .fontWeight(600)
@@ -452,7 +454,7 @@ struct DatePickerExample {
                         .fontWeight(600)
                     }
                     .margin({ top: 10 })
-                    // 学校库存
+
                     Row() {
                       Text('学校库存：')
                         .fontWeight(600)
@@ -463,46 +465,43 @@ struct DatePickerExample {
                         .fontWeight(600)
                     }
                     .margin({ top: 10 })
-                    // 规格
-                    // 需求量
+
                     Row({ space: 10 }) {
                       Text('需 求  量：')
                         .fontWeight(600)
                       TextInput({ placeholder: '请输入需求量' })
-                        .fontColor('#000') // 输入文字颜色
+                        .fontColor('#000')
                         .fontSize(16)
-                        .width('40%') // 设置输入框宽度
+                        .width('40%')
                         .border({
-                          width: { bottom: 1 }, // 只设置底部边框
+                          width: { bottom: 1 },
                           color: '#ccc'
                         })
                         .onChange((value: string) => {
-                          // 可以在这里处理输入变化
                           console.log('输入的需求量为:', value)
                         })
                       Text('斤')
                         .fontWeight(600)
                     }
-                    // 需求量
+
                     Row({ space: 10 }) {
                       Text('需 求  量：')
                         .fontWeight(600)
                       TextInput({ placeholder: '请输入需求量' })
-                        .fontColor('#000') // 输入文字颜色
+                        .fontColor('#000')
                         .fontSize(16)
-                        .width('40%') // 设置输入框宽度
+                        .width('40%')
                         .border({
-                          width: { bottom: 1 }, // 只设置底部边框
+                          width: { bottom: 1 },
                           color: '#ccc'
                         })
                         .onChange((value: string) => {
-                          // 可以在这里处理输入变化
                           console.log('输入的需求量为:', value)
                         })
                       Text('kg')
                         .fontWeight(600)
                     }
-                    // 合计
+
                     Row() {
                       Text('合       计：')
                         .fontWeight(600)
@@ -511,42 +510,41 @@ struct DatePickerExample {
                         .fontColor(Color.Red)
                     }
                     .margin({ top: 10 })
-                    // 备注
+
                     Row() {
                       Text('备       注：')
                         .fontWeight(600)
                       TextInput({ placeholder: '请输入备注' })
-                        .fontColor('#000') // 输入文字颜色
+                        .fontColor('#000')
                         .fontSize(16)
-                        .width('70%') // 设置输入框宽度
+                        .width('70%')
                         .border({
-                          width: { bottom: 1 }, // 只设置底部边框
+                          width: { bottom: 1 },
                           color: '#ccc'
                         })
                         .onChange((value: string) => {
-                          // 可以在这里处理输入变化
                           console.log('输入的备注为:', value)
                         })
                     }
                     .margin({ top: 10 })
                   }
-                  .alignItems(HorizontalAlign.Start) // 关键：统一左对齐
+                  .alignItems(HorizontalAlign.Start)
                   .margin({ top: 100 })
-                  // 左上角三角形标签 (精确匹配)
+
                   Path()
                     .width(40)
                     .height(40)
                     .commands('M0 0 L180 0 L0 180 Z')
                     .fill('#FFA500')
                     .margin({ left: -301, top: -190 })
-                    .stroke('#FFA500') // 无边框
-                    .shadow({ radius: 0 }) // 确保无阴影
+                    .stroke('#FFA500')
+                    .shadow({ radius: 0 })
+
                   Text('称重')
                     .fontSize(15)
                     .fontColor(Color.White)
                     .rotate({ angle: -45 })
                     .margin({ left: -300, top: -190 })
-                  // 右下角三角形 (精确匹配)
                 }
                 .width('100%')
                 .height(220)
@@ -564,18 +562,13 @@ struct DatePickerExample {
               })
               .margin({ left: '2%', right: '2%' })
             }
-            //中间卡片部分
-
           }
-
           .layoutWeight(1)
-
         }
-
         .width('100%')
         .layoutWeight(1)
+
         if (this.showDialog) {
-          // 半透明背景层
           Column()
             .width('100%')
             .height('100%')
@@ -595,33 +588,30 @@ struct DatePickerExample {
               }, 300)
             })
             .zIndex(6)
-          // 对话框内容
+
           Column() {
             Text('摘要')
               .fontSize(18)
               .margin({ bottom: 16 })
 
-            TextArea({ text:this.summary,placeholder: '输入摘要'})
-
+            TextArea({ text: this.summary, placeholder: '输入摘要' })
               .onChange((value: string) => {
-                // this.summary = value
                 this.selectedText[5] = value
               })
               .height(150)
               .width('100%')
               .border({
-                width: 2,                     // 边框宽度
-                color: '#4CAF50',             // 边框颜色
-                radius: 8,                    // 圆角半径
-
+                width: 2,
+                color: '#4CAF50',
+                radius: 8,
               })
 
-            Row({space:100}) {
-              Button('取消', {type: ButtonType.Normal})
+            Row({ space: 100 }) {
+              Button('取消', { type: ButtonType.Normal })
                 .onClick(() => { this.showDialog = false })
                 .backgroundColor('#ffffffff')
                 .fontColor('#ff706f6f')
-              Button('确定', {type: ButtonType.Normal})
+              Button('确定', { type: ButtonType.Normal })
                 .backgroundColor('#ffffffff')
                 .fontColor('#5BC043')
                 .onClick(() => { this.showDialog = false })
@@ -640,7 +630,7 @@ struct DatePickerExample {
           })
           .zIndex(7)
         }
-        // 底部按钮部分
+
         Column() {
           Divider()
             .strokeWidth(1)
@@ -650,7 +640,7 @@ struct DatePickerExample {
             .fontColor('#8A96A2')
             .fontSize(16)
             .margin({ right: -250 })
-          Row({space:10}) {
+          Row({ space: 10 }) {
             Button({ type: ButtonType.Normal }) {
               Text('保存')
                 .fontSize(16)
@@ -660,7 +650,7 @@ struct DatePickerExample {
             .backgroundColor('#3282FF')
             .fontColor(Color.White)
             .borderRadius(8)
-            .width('30%') // 固定宽度
+            .width('30%')
             .padding({ left: 15, right: 15 })
 
             Button({ type: ButtonType.Normal }) {
@@ -669,20 +659,35 @@ struct DatePickerExample {
                 .fontColor(Color.White)
             }
             .onClick(async () => {
-              this.submitForm();
               const result = await this.addStaff()
-              const singleValue = this.getMappedValues(2);
-              console.log('Single Mapped Value:', this.selectedText);
+              if (result.success) {
+                promptAction.showToast({
+                  message: '保存成功',
+                  duration: 2000
+                });
+                router.pushUrl({
+                  url: 'pages/kucun',
+                  params: {
+                    token: this.receivedToken,
+                    tenantId: this.tenantId,
+                  }
+                });
+              } else {
+                promptAction.showToast({
+                  message: result.message || '保存失败',
+                  duration: 2000
+                });
+              }
             })
             .height(35)
             .backgroundColor('#02BC65')
             .fontColor(Color.White)
             .borderRadius(8)
-            .width('30%') // 固定宽度，与第一个按钮一致
+            .width('30%')
             .padding({ left: 15, right: 15 })
           }
           .width('100%')
-          .justifyContent(FlexAlign.End) // 右侧对齐
+          .justifyContent(FlexAlign.End)
           .margin({ top: 20 })
         }
         .height(55)
@@ -693,11 +698,9 @@ struct DatePickerExample {
   }
 
   @Builder
-
   buildLabelRow(iconResource: Resource, label: string, showAsterisk: boolean, index: number) {
     Column() {
       Row() {
-        // 左侧图标和标签
         Row() {
           Image(iconResource)
             .width(30)
@@ -719,10 +722,7 @@ struct DatePickerExample {
         }
         .layoutWeight(1)
 
-        // 右侧选择区域
         Row() {
-          // 使用固定宽度容器包裹 Text 组件
-
           if (label === "摘要") {
             Column() {
               Text(this.selectedText[index] === '请输入摘要' ? '请输入摘要' :
@@ -732,7 +732,6 @@ struct DatePickerExample {
                 .maxLines(1)
                 .textOverflow({ overflow: TextOverflow.Ellipsis })
                 .width('250px')
-
             }
             .alignItems(HorizontalAlign.End)
           } else {
@@ -741,31 +740,29 @@ struct DatePickerExample {
               .fontColor('#000000')
           }
 
-
           Image($r("app.media.ic_arrow_right"))
             .width(20)
             .height(20)
             .margin({ left: 5 })
             .fillColor('#8A96A2')
         }
-        .justifyContent(FlexAlign.End) // 确保文本和箭头靠右对齐
-
+        .justifyContent(FlexAlign.End)
         .onClick(() => {
-          switch (label){
+          switch (label) {
             case "领用单位":
-              this.showTextDialog(this.unitOptions,0)
+              this.showTextDialog(this.unitOptions, 0)
               break;
             case "出库日期":
               this.showDateDialog()
               break;
             case "出库类型":
-              this.showTextDialog(this.demandOptions,2)
+              this.showTextDialog(this.demandOptions, 2)
               break;
             case "用餐类型":
-              this.showTextDialog(this.mealTypeOptions,3)
+              this.showTextDialog(this.mealTypeOptions, 3)
               break;
             case "餐别":
-              this.showTextDialog(this.mealOptions,4)
+              this.showTextDialog(this.mealOptions, 4)
               break;
             case "摘要":
               this.summary = this.selectedText[5] === '请输入摘要' ? '' : this.selectedText[5]
@@ -773,15 +770,14 @@ struct DatePickerExample {
               this.opacityValue = 1
               this.scaleValue = 1
               break;
-
           }
-        })      }
+        })
+      }
       .width('100%')
       .alignItems(VerticalAlign.Center)
       .height(40)
       .padding({ right: 10 })
 
-      // 添加横线
       Divider()
         .strokeWidth(1)
         .color('#ffb1afaf')
@@ -789,7 +785,6 @@ struct DatePickerExample {
     }
     .width('100%')
   }
-  //日历函数
 
   private showDateDialog() {
     DatePickerDialog.show({
@@ -798,61 +793,29 @@ struct DatePickerExample {
       selected: this.selectDate,
       onAccept: (value: DatePickerResult) => {
         const year = value.year ?? new Date().getFullYear()
-        const month = value.month ?? new Date().getMonth()+1
+        const month = value.month ?? new Date().getMonth() + 1
         const day = value.day ?? new Date().getDate()
-        this.selectDate = new Date(year, month-1 , day)
-        this.selectedText[1] = `${year}-${(month+1).toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`
+        this.selectDate = new Date(year, month - 1, day)
+        this.selectedText[1] = `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`
       }
     })
   }
 
-  private showTextDialog(array:string[],index:number) {
+  private showTextDialog(array: string[], index: number) {
     TextPickerDialog.show({
       range: array,
       selected: array.findIndex(item => item === this.selectedText[index]),
-      canLoop:false,
       onAccept: (value: TextPickerResult) => {
         if (typeof value.index === 'number' && value.index < array.length) {
           this.selectedText[index] = array[value.index]
-          this.displayTime = this.selectedText[index] === 'forenoon' ? '上午' : this.selectedText[index]
-        }
-        switch (index){
-          case 2:
-            if(this.selectedText[index] === '学生餐')
-              this.showMealType = true
-            else{
-              this.showMealType = false
+          if (index === 2) {
+            this.showMealType = this.selectedText[index] === '学生餐'
+            if (!this.showMealType) {
               this.selectedText[3] = '其他'
             }
-            break;
-          case 3:
-            this.showMealType = true
-            break;
-          default :
-            if(!this.showMealType){
-              this.showMealType = false
-              this.selectedText[3] = '其他'
-            }
-            break;
+          }
         }
       }
     })
-  }
-
-  private submitForm() {
-    // 验证必填项
-    const isStudentMeal = this.selectedText[2] === '学生餐';
-    prompt.showToast({
-      message: '保存成功',
-      duration: 2000
-    });
-    router.pushUrl({
-      url: 'pages/kucun',
-      params: {
-        token: this.receivedToken,
-        tenantId: this.tenantId,
-      }
-    })
-    console.log('提交的参数',this.handleLogMapping())
   }
 }
