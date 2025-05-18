@@ -147,7 +147,7 @@ struct shicai {
   @State isShow: boolean[] = []
   @State categoryOptions: string[] = []
   @State unitOptions: string[] = []
-
+  @State originalFoodList: FoodItem[] = []
 
 
   private showAlert(message: string) {
@@ -177,6 +177,10 @@ struct shicai {
     const result = await this.Foodchaxun();
 
 
+    this.originalFoodList = result.result.records;  // 保存原始数据
+    this.foodList = [...this.originalFoodList];     // 初始化显示数据
+
+
     const unitNames = result.result.records.map(item => item.groupName) ?? [];
     const filteredUnitNames = unitNames.filter(Boolean);
     const uniqueUnits = Array.from(new Set(filteredUnitNames));
@@ -188,7 +192,7 @@ struct shicai {
     this.unitOptions = ['请选择供应商', ...uniqueUnits1];
 
 
-    this.foodList =result.result.records
+   // this.foodList =result.result.records
     // const filteredRecords = result.result.records.filter(item =>
     // this.selectedUnit === '所属单位' ||  // 显示全部
     //   item.groupName === this.selectedUnit // 按选中单位过滤
@@ -439,7 +443,23 @@ struct shicai {
               .width(20)
               .height(20)
               .margin(10)
+              .onClick(() => {
+                let  Surch1 = (items: FoodItem[]) => {
+                  if (!this.searchText?.trim()) {
+                    return [...this.originalFoodList];  // 返回完整副本
+                  }
+                  return items.filter(item => {
+                    const searchKey = this.searchText.toLowerCase().trim();
+                    return item.foodName.toLowerCase().includes(searchKey);
+                  });
+                };
+               this.foodList = Surch1(this.foodList)
+                for (let i = 0; i < this.foodList.length; i++) {
+                  this.isShow[i] = true;  // 重置显示状态
+                }
 
+
+              })
 
             // 输入框
             TextInput({ placeholder: '搜索商品名称' })
