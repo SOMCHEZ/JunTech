@@ -224,7 +224,11 @@ struct Index1 {
             }
             .onClick(() => {
               router.pushUrl({          // 使用push入栈一个新页面
-                url: 'pages/jibenxinxi' // 通过url指定新打开的页面
+                url: 'pages/jibenxinxi'
+                , params:{
+                  token:this.receivedToken,
+                  relTenantIds:this.tenantId
+                }// 通过url指定新打开的页面
               })
             })
             .padding({ left: 20, right: 20, top:10})
@@ -333,7 +337,7 @@ struct Index1 {
             }
             .onClick(() => {
               router.pushUrl({          // 使用push入栈一个新页面
-                url: 'pages/login'     // 通过url指定新打开的页面
+                url: 'pages/login_test'     // 通过url指定新打开的页面
               ,
                 params:{
                   token:this.receivedToken,
