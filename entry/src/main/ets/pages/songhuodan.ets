@@ -1,36 +1,16 @@
 import router from '@ohos.router'
 import promptAction from '@ohos.promptAction'
-import http from '@ohos.net.http'
-
-// API响应接口
-interface ApiResponse<T> {
-  code: number
-  message: string
-  result: T
-  success: boolean
-  timestamp: number
-}
-
-// 分页数据接口
-interface IPage<T> {
-  current: number
-  pages: number
-  records: T[]
-  size: number
-  total: number
-}
 
 // 配送单数据接口
 interface DeliveryOrder {
-  distributionNo: string      // 配送单号
-  supplyDate: string         // 供应日期
-  supplyTime: string         // 供应时间
-  schoolName: string         // 学校名称
-  unitName: string          // 需求单位
-  summary: string           // 摘要
-  status: string           // 配送状态
-  username: string         // 下单人
-  telephone: string        // 下单电话
+  orderId: string         // 单据号
+  supplyTime: string      // 供应时间
+  demandUnit: string      // 需求单位
+  orderPerson: string     // 下单人
+  orderPhone: string      // 下单电话
+  summary: string         // 摘要
+  schoolName: string      // 学校名称
+  status: DeliveryStatus
 }
 
 // 配送单页面参数接口
@@ -55,22 +35,13 @@ enum DeliveryStatus {
   CANCELED = 4            // 已取消
 }
 
-interface GeneratedObjectLiteralInterface_1 {
-  pageNo: number;
-  pageSize: number;
-  status: string;
-}
-
 @Entry
 @Component
 struct PeisongdanPage {
-  @State currentTab: number = 0
+  @State currentStatus: DeliveryStatus = DeliveryStatus.PENDING
   @State orders: DeliveryOrder[] = []
   @State isLoading: boolean = false
   @State supplyDate: string = ''
-  @State pageNo: number = 1
-  @State pageSize: number = 10
-  @State currentStatus: DeliveryStatus = DeliveryStatus.PENDING
   @State pendingUpdateOrderId: string = ''
   @State pendingUpdateStatus: DeliveryStatus = DeliveryStatus.PENDING
 
@@ -134,43 +105,53 @@ struct PeisongdanPage {
   async loadOrders() {
     this.isLoading = true
     try {
-      // 创建HTTP请求客户端
-      let httpRequest = http.createHttp()
-
-      // 构建请求URL和参数
-      let url = 'http://your-api-base-url/jeecg-supplier/supplier/gysDistributionManagement/list'
-      let params: GeneratedObjectLiteralInterface_1 = {
-        pageNo: this.pageNo,
-        pageSize: this.pageSize,
-        status: this.currentTab === 0 ? '0' : '2' // 0:未配送, 2:已收货
-      }
-
-      // 发起GET请求
-      let response = await httpRequest.request(
-        url,
+      // 模拟数据，实际应用中应调用API获取数据
+      this.orders = [
         {
-          method: http.RequestMethod.GET,
-          extraData: params,
-          header: {
-            'Content-Type': 'application/x-www-form-urlencoded'
-          }
+          orderId: 'PS20250514004',
+          supplyTime: '2025-05-12',
+          demandUnit: '实训第二学校(库房)',
+          orderPerson: '人',
+          orderPhone: '15502933673',
+          summary: '',
+          schoolName: '实训第二学校',
+          status: DeliveryStatus.PENDING
+        },
+        {
+          orderId: 'PS20250514005',
+          supplyTime: '2025-05-12上午',
+          demandUnit: '实训第二学校(库房)',
+          orderPerson: '人',
+          orderPhone: '15502933673',
+          summary: '',
+          schoolName: '实训第二学校',
+          status: DeliveryStatus.PENDING
+        },
+        {
+          orderId: 'PS20250514006',
+          supplyTime: '2025-05-12',
+          demandUnit: '实训第二学校(库房)',
+          orderPerson: '人',
+          orderPhone: '15502933673',
+          summary: '',
+          schoolName: '实训第二学校',
+          status: DeliveryStatus.PENDING
         }
-      )
+      ]
 
-      // 检查响应状态
-      if (response.responseCode === 200) {
-        let responseData = JSON.parse(response.result.toString()) as ApiResponse<IPage<DeliveryOrder>>
-        if (responseData.success) {
-          this.orders = responseData.result.records
-        } else {
-          console.error('API返回错误:', responseData.message)
-          promptAction.showToast({
-            message: responseData.message || '加载失败',
-            duration: 2000
-          })
-        }
+      console.info(`加载了 ${this.orders.length} 个订单`)
+
+      // 处理待更新的订单
+      if (this.pendingUpdateOrderId && this.pendingUpdateStatus !== DeliveryStatus.PENDING) {
+        console.info(`立即处理待更新订单: ${this.pendingUpdateOrderId} -> ${this.pendingUpdateStatus}`)
+        const success = this.updateOrderStatus(this.pendingUpdateOrderId, this.pendingUpdateStatus)
+        console.info(`处理结果: ${success ? '成功' : '失败'}`)
+
+        // 清除待更新信息
+        this.pendingUpdateOrderId = ''
+        this.pendingUpdateStatus = DeliveryStatus.PENDING
       } else {
-        throw new Error(`HTTP请求失败: ${response.responseCode}`)
+        console.info(`没有待处理的订单更新`)
       }
     } catch (error) {
       console.error('加载配送单失败:', error)
@@ -180,9 +161,6 @@ struct PeisongdanPage {
       })
     } finally {
       this.isLoading = false
-
-      // 释放HTTP客户端
-
     }
   }
 
@@ -192,8 +170,8 @@ struct PeisongdanPage {
 
     // 根据当前选中的状态筛选订单
     const filteredOrders = this.orders.filter(order => {
-      const matches = order.status === DeliveryStatus[this.currentStatus]
-      console.info(`订单 ${order.distributionNo} 状态=${order.status}, 是否匹配当前选项卡=${matches}`)
+      const matches = order.status === this.currentStatus
+      console.info(`订单 ${order.orderId} 状态=${order.status}, 是否匹配当前选项卡=${matches}`)
       return matches
     })
 
@@ -206,7 +184,7 @@ struct PeisongdanPage {
     console.info(`准备更新订单 ${orderId} 的状态为 ${newStatus}`)
 
     // 查找订单并更新状态
-    const orderIndex = this.orders.findIndex(order => order.distributionNo === orderId)
+    const orderIndex = this.orders.findIndex(order => order.orderId === orderId)
     console.info(`找到订单索引: ${orderIndex}`)
 
     if (orderIndex >= 0) {
@@ -214,16 +192,14 @@ struct PeisongdanPage {
 
       // 复制整个订单对象并修改状态，而不是直接修改
       const updatedOrder: DeliveryOrder = {
-        distributionNo: this.orders[orderIndex].distributionNo,
-        supplyDate: this.orders[orderIndex].supplyDate,
+        orderId: this.orders[orderIndex].orderId,
         supplyTime: this.orders[orderIndex].supplyTime,
-        schoolName: this.orders[orderIndex].schoolName,
-        unitName: this.orders[orderIndex].unitName,
+        demandUnit: this.orders[orderIndex].demandUnit,
+        orderPerson: this.orders[orderIndex].orderPerson,
+        orderPhone: this.orders[orderIndex].orderPhone,
         summary: this.orders[orderIndex].summary,
-        status: DeliveryStatus[newStatus],
-
-        username: this.orders[orderIndex].username,
-        telephone: this.orders[orderIndex].telephone
+        schoolName: this.orders[orderIndex].schoolName,
+        status: newStatus
       }
 
       // 创建新数组而不使用扩展运算符
@@ -241,7 +217,7 @@ struct PeisongdanPage {
 
       // 打印所有订单状态
       this.orders.forEach((order, index) => {
-        console.info(`更新后订单 ${index}: ID=${order.distributionNo}, 状态=${order.status}`)
+        console.info(`更新后订单 ${index}: ID=${order.orderId}, 状态=${order.status}`)
       })
 
       // 切换到对应的选项卡
@@ -277,19 +253,26 @@ struct PeisongdanPage {
           .fontColor('#333333')
           .margin({ left: 16 })
           .onClick(() => {
-            router.back()
+            router.pushUrl({
+              url: 'pages/gongyingshangshouye'
+            })
           })
 
-        Text('配送单')
+        Text('送货单')
           .fontSize(18)
           .fontWeight(FontWeight.Medium)
           .margin({ left: 16 })
           .layoutWeight(1)
           .textAlign(TextAlign.Center)
+
+        Text('⋮')
+          .fontSize(24)
+          .fontColor('#333333')
+          .margin({ right: 16 })
       }
       .width('100%')
       .height(56)
-      .backgroundColor('#FFFFFF')
+      .backgroundColor('#ffffffff')
 
       // 状态选项卡
       Row() {
@@ -297,11 +280,11 @@ struct PeisongdanPage {
           Column() {
             Text(item)
               .fontSize(16)
-              .fontColor(this.currentTab === index ? '#31B46A' : '#999999')
-              .fontWeight(this.currentTab === index ? FontWeight.Medium : FontWeight.Normal)
+              .fontColor(this.currentStatus === index ? '#31B46A' : '#999999')
+              .fontWeight(this.currentStatus === index ? FontWeight.Medium : FontWeight.Normal)
               .padding({ left: 12, right: 12, top: 12, bottom: 8 })
 
-            if (this.currentTab === index) {
+            if (this.currentStatus === index) {
               Divider()
                 .width(80)
                 .height(2)
@@ -309,129 +292,222 @@ struct PeisongdanPage {
             }
           }
           .onClick(() => {
-            this.currentTab = index
-            this.loadOrders()
+            this.currentStatus = index
           })
         })
       }
       .width('100%')
       .justifyContent(FlexAlign.SpaceAround)
-      .backgroundColor('#FFFFFF')
+      .backgroundColor('#fffaf3f3')
 
       // 日期筛选
       Row() {
-        Text('请选择供应日期 ▼')
-          .fontSize(14)
-          .fontColor('#333333')
-          .onClick(() => {
-            DatePickerDialog.show({
-              start: new Date('2020-01-01'),
-              end: new Date('2030-12-31'),
-              selected: new Date(this.supplyDate),
-              onAccept: (value) => {
-                if (value && value.year !== undefined && value.month !== undefined && value.day !== undefined) {
-                  const year = value.year
-                  const month = String(value.month + 1).padStart(2, '0')
-                  const day = String(value.day).padStart(2, '0')
-                  this.supplyDate = `${year}-${month}-${day}`
-                  this.loadOrders()
-                }
+        Row() {
+          Text('请选择供应日期')
+            .fontSize(14)
+            .fontColor('#333333')
+
+          Text('▼')
+            .fontSize(14)
+            .fontColor('#333333')
+            .margin({ left: 8 })
+        }
+        .onClick(() => {
+          // 显示日期选择器
+          DatePickerDialog.show({
+            start: new Date('2020-01-01'),
+            end: new Date('2030-12-31'),
+            selected: new Date(this.supplyDate),
+            onAccept: (value) => {
+              // 确保value.month不是undefined
+              if (value && value.year !== undefined && value.month !== undefined && value.day !== undefined) {
+                const year = value.year
+                const month = String(value.month + 1).padStart(2, '0')
+                const day = String(value.day).padStart(2, '0')
+                this.supplyDate = `${year}-${month}-${day}`
+                this.loadOrders()
               }
-            })
+            }
           })
+        })
       }
       .width('100%')
-      .padding(16)
-      .backgroundColor('#F5F5F5')
+      .padding({ left: 16, right: 16, top: 12, bottom: 12 })
+      .justifyContent(FlexAlign.SpaceBetween)
+      .backgroundColor('#F4F4F4')
 
       // 订单列表
       List() {
         ForEach(this.getFilteredOrders(), (order: DeliveryOrder) => {
           ListItem() {
             Column() {
-              Row() {
-                Text('单据号：')
-                  .fontSize(16)
-                  .fontWeight(FontWeight.Bold)
-                Text(order.distributionNo)
-                  .fontSize(16)
-                  .fontWeight(FontWeight.Bold)
-              }
-              .width('100%')
-              .margin({ bottom: 12 })
+              // 学校名称
+              Text(order.schoolName)
+                .fontSize(20)
+                .fontWeight(FontWeight.Bold)
+                .alignSelf(ItemAlign.Start)
+                .margin({ bottom: 12 })
 
+              // 订单信息
               Row() {
-                Text('供应日期：')
+                Text('单 据 号:')
                   .fontSize(14)
                   .fontColor('#666666')
+                  .width(80)
+
+                Text(order.orderId)
+                  .fontSize(14)
+                  .fontColor('#333333')
+              }
+              .width('100%')
+              .margin({ top: 6, bottom: 6 })
+              .alignItems(VerticalAlign.Center)
+
+              Row() {
+                Text('供应时间:')
+                  .fontSize(14)
+                  .fontColor('#666666')
+                  .width(80)
+
                 Text(order.supplyTime)
                   .fontSize(14)
                   .fontColor('#333333')
               }
               .width('100%')
-              .margin({ bottom: 8 })
+              .margin({ top: 6, bottom: 6 })
+              .alignItems(VerticalAlign.Center)
 
               Row() {
-                Text('下单学校：')
+                Text('需求单位:')
                   .fontSize(14)
                   .fontColor('#666666')
-                Text(order.schoolName)
+                  .width(80)
+
+                Text(order.demandUnit)
                   .fontSize(14)
                   .fontColor('#333333')
               }
               .width('100%')
-              .margin({ bottom: 8 })
+              .margin({ top: 6, bottom: 6 })
+              .alignItems(VerticalAlign.Center)
 
               Row() {
-                Text('需求单位：')
+                Text('下 单 人:')
                   .fontSize(14)
                   .fontColor('#666666')
-                Text(order.unitName)
+                  .width(80)
+
+                Text(order.orderPerson)
                   .fontSize(14)
                   .fontColor('#333333')
               }
               .width('100%')
-              .margin({ bottom: 8 })
+              .margin({ top: 6, bottom: 6 })
+              .alignItems(VerticalAlign.Center)
 
               Row() {
-                Text('摘要：')
+                Text('下单电话:')
                   .fontSize(14)
                   .fontColor('#666666')
+                  .width(80)
+
+                Text(order.orderPhone)
+                  .fontSize(14)
+                  .fontColor('#333333')
+              }
+              .width('100%')
+              .margin({ top: 6, bottom: 6 })
+              .alignItems(VerticalAlign.Center)
+
+              Row() {
+                Text('摘    要:')
+                  .fontSize(14)
+                  .fontColor('#666666')
+                  .width(80)
+
                 Text(order.summary || '-')
                   .fontSize(14)
                   .fontColor('#333333')
               }
               .width('100%')
-              .margin({ bottom: 8 })
+              .margin({ top: 6, bottom: 6 })
+              .alignItems(VerticalAlign.Center)
+
+              // 添加确认货已送达按钮，只在"配送中"状态显示
+              if (order.status === DeliveryStatus.DELIVERING) {
+                Row() {
+                  Button('确认货已送达')
+                    .fontSize(16)
+                    .fontColor('#fffaf7f7')
+                    .backgroundColor('#1E88E5')
+                    .borderRadius(4)
+                    .padding({ left: 16, right: 16, top: 8, bottom: 8 })
+                    .margin({ top: 12 })
+                    .onClick(() => {
+                      // 更新订单状态为已收货
+                      this.updateOrderStatus(order.orderId, DeliveryStatus.RECEIVED)
+
+                      promptAction.showToast({
+                        message: '已确认收货',
+                        duration: 2000
+                      })
+
+                      // 返回 true 阻止事件继续传播
+                      return true
+                    })
+                }
+                .width('100%')
+                .justifyContent(FlexAlign.Center)
+                // 添加事件拦截
+                .onClick(() => {
+                  // 空事件处理器，拦截冒泡事件
+                  return true
+                })
+              }
             }
             .width('100%')
             .padding(16)
-            .backgroundColor('#FFFFFF')
+            .backgroundColor('#ffffffff')
             .borderRadius(8)
-            .margin({ bottom: 12 })
+            .borderWidth(1)
+            .borderColor('#31B46A')
             .onClick(() => {
-              router.pushUrl({
-                url: 'pages/songhuodan1',
-                params: {
-                  orderDetail: order
-                } as RouterParams
-              })
+              // 添加日志输出，帮助调试
+              console.info(`准备跳转到详情页，订单号: ${order.orderId}`)
+
+              try {
+                router.pushUrl({
+                  url: 'pages/songhuodan1', // 使用带有gh标记的页面
+                  params: {
+                    orderDetail: order
+                  } as RouterParams
+                })
+                  .then(() => {
+                    console.info('跳转成功')
+                  })
+                  .catch((err: Error) => {
+                    console.error(`导航失败: ${JSON.stringify(err)}`)
+                    promptAction.showToast({
+                      message: '跳转失败，请重试',
+                      duration: 2000
+                    })
+                  })
+              } catch (e) {
+                console.error(`跳转异常: ${JSON.stringify(e)}`)
+                promptAction.showToast({
+                  message: '跳转发生异常，请重试',
+                  duration: 2000
+                })
+              }
             })
           }
+          .margin({ bottom: 12 })
         })
       }
       .width('100%')
       .layoutWeight(1)
-      .padding(16)
-      .backgroundColor('#F5F5F5')
-
-      if (this.isLoading) {
-        LoadingProgress()
-          .color('#31B46A')
-          .width(30)
-          .height(30)
-          .position({ x: '50%', y: '50%' })
-      }
+      .padding({ left: 16, right: 16, top: 12 })
+      .backgroundColor('#F4F4F4')
     }
     .width('100%')
     .height('100%')
