@@ -6,7 +6,7 @@ interface PageParams {
   schoolName?: string;
   mealDate?: string;
   mealCategory?: string;
-  dutposition?: string;
+  position?: string;
 }
 
 interface XXMealRecordInfo {
@@ -20,7 +20,13 @@ interface XXMealRecordDetail {
   mealCategory: string;
   xxMealRecordInfoList: Array<XXMealRecordInfo>;
 }
-
+interface DetailParams {
+  schoolName?: string;
+  mealDate?: string;
+  mealCategory?: string;
+  dutposition?: string;
+  photoUrl?: string;
+}
 @Entry
 @Component
 struct DetailPage {
@@ -32,12 +38,21 @@ struct DetailPage {
   @State private receivedToken: string = '';
 
   aboutToAppear() {
-    const params = router.getParams() as PageParams;
-    this._id = params.id ?? '';
-    this.schoolName = params.schoolName ?? '';
-    this.mealDate = params.mealDate ?? '';
-    this.mealCategory = params.mealCategory ?? '';
-    this.dutposition = params.dutposition ?? '';
+    const params = router.getParams() as DetailParams;
+    if (params) {
+      this.schoolName = params.schoolName ?? '未知学校';
+      this.mealDate = params.mealDate ?? '未知日期';
+      this.mealCategory = params.mealCategory ?? '未知餐别';
+      this.dutposition = params.dutposition ?? '未知职位';
+    }
+    // const params = router.getParams() as PageParams;
+    // this._id = params.id ?? '';
+    // this.schoolName = params.schoolName ?? '';
+    // this.mealDate = params.mealDate ?? '';
+    // this.mealCategory = params.mealCategory ?? '';
+    // this.dutposition = params.position ?? '';
+    console.log('1111:', params.schoolName)
+    console.log('1111:', this.schoolName)
   }
 
   build() {
