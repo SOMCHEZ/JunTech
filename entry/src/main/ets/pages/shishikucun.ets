@@ -508,7 +508,8 @@ struct kucun {
 
         // 原有名称搜索保持不变
         if (this.searchText?.trim() &&
-          !item.name.toLowerCase().includes(this.searchText.toLowerCase().trim())) {
+          !item.name.toLowerCase().includes(this.searchText.toLowerCase().trim()))
+        {
           return false;
         }
 
@@ -779,9 +780,11 @@ struct kucun {
                 })
               })
             }
-            .height('100%')
+            .justifyContent(FlexAlign.Start)
           }
-          .height('100%')
+          .height(550)
+          .scrollable(ScrollDirection.Vertical) // 明确垂直滚动方向
+          .scrollBar(BarState.On) // 按需显示滚动条
           .margin({ bottom: 8 })
 
           Button('去出库')
@@ -791,12 +794,18 @@ struct kucun {
             .onClick(() => {
               Router.push({
                 uri: 'pages/kucun',
+                params: {
+                  token: this.token,
+                  relTenantIds: this.tenantId,
+                 // unitId:this.unitId
+                }
               });
             })
             .fontColor('#a3000000')
             .backgroundColor('#6ff8f2f2')
         }
         .padding(0)
+        .justifyContent(FlexAlign.Start)
         .height('100%')
         .width('100%')
       }
@@ -973,9 +982,10 @@ struct kucun {
                 })
               })
             }
-            .height('100%')
+            .width('100%')
+            .justifyContent(FlexAlign.Start)
           }
-          .height('100%')
+          .height(550)
           .margin({ bottom: 8 })
 
           Button('去出库')
@@ -985,6 +995,11 @@ struct kucun {
             .onClick(() => {
               Router.push({
                 uri: 'pages/chuku',
+                params: {
+                  token: this.token,
+                  relTenantIds: this.tenantId,
+                  //unitId:this.unitId
+                }
               });
             })
             .fontColor('#a3000000')

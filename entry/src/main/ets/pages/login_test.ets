@@ -39,8 +39,8 @@ interface LoginHandlerResult {
 @Component
 struct Index {
   @State typeid: string = '';
-  @State userUsername: string = '15502933673';//15502933673
-  @State userPassword: string = '123456';//123456
+  @State userUsername: string = '15502933673';//15502933673//18991274264
+  @State userPassword: string = '123456';//123456//123456
 
 
   build() {
@@ -55,18 +55,18 @@ struct Index {
       .position({x:0,y:0})
       Text('您好！')
         .fontColor(Color.White)
-        .fontSize(50)
+        .fontSize(60)
         .zIndex(100)
-        .position({x:20,y:90})
+        .position({x:20,y:50})
       Text('欢迎使用')
-        .fontSize(30)
+        .fontSize(40)
         .zIndex(100)
         .fontColor(Color.White)
-        .position({x:150,y:110})
+        .position({x:150,y:120})
       Image($r('app.media.biaoti'))
         .width(200)
         .zIndex(100)
-        .position({x:2,y:2})
+        .position({x:75,y:210})
 
       RelativeContainer() {
         Image("")

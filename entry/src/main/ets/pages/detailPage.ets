@@ -6,12 +6,12 @@ interface PageParams {
   schoolName?: string;
   mealDate?: string;
   mealCategory?: string;
-  dutposition?: string;
+  position?: string;
 }
 
 interface XXMealRecordInfo {
   position: string;
-  images: string;
+  images: string[];
 }
 
 interface XXMealRecordDetail {
@@ -20,7 +20,13 @@ interface XXMealRecordDetail {
   mealCategory: string;
   xxMealRecordInfoList: Array<XXMealRecordInfo>;
 }
-
+interface DetailParams {
+  schoolName?: string;
+  mealDate?: string;
+  mealCategory?: string;
+  dutposition?: string;
+  photoUrl?: string;
+}
 @Entry
 @Component
 struct DetailPage {
@@ -32,12 +38,21 @@ struct DetailPage {
   @State private receivedToken: string = '';
 
   aboutToAppear() {
-    const params = router.getParams() as PageParams;
-    this._id = params.id ?? '';
-    this.schoolName = params.schoolName ?? '';
-    this.mealDate = params.mealDate ?? '';
-    this.mealCategory = params.mealCategory ?? '';
-    this.dutposition = params.dutposition ?? '';
+    const params = router.getParams() as DetailParams;
+    if (params) {
+      this.schoolName = params.schoolName ?? '未知学校';
+      this.mealDate = params.mealDate ?? '未知日期';
+      this.mealCategory = params.mealCategory ?? '未知餐别';
+      this.dutposition = params.dutposition ?? '未知职位';
+    }
+    // const params = router.getParams() as PageParams;
+    // this._id = params.id ?? '';
+    // this.schoolName = params.schoolName ?? '';
+    // this.mealDate = params.mealDate ?? '';
+    // this.mealCategory = params.mealCategory ?? '';
+    // this.dutposition = params.position ?? '';
+    console.log('1111:', params.schoolName)
+    console.log('1111:', this.schoolName)
   }
 
   build() {
@@ -45,46 +60,89 @@ struct DetailPage {
       Text('陪餐记录详情')
         .fontSize(24)
         .fontWeight(FontWeight.Bold)
-        .margin({ top: 20, bottom: 20 })
+        .margin({ top: 20, bottom: 30 })
+        .textAlign(TextAlign.Center)
+        .width('100%')
 
       Row() {
         Text('学校：')
+          .width(80)
+          .fontSize(16)
+          .fontColor('#333')
         TextInput({ placeholder: this.schoolName })
           .onChange((value: string) => {
             this.schoolName = value;
           })
+          .width('100%')
+          .padding({ left: 10 })
+          .borderWidth(1)
+          .borderColor('#ccc')
           .layoutWeight(1)
       }
+      .width('100%')
+      .margin({ bottom: 15 })
 
       Row() {
         Text('时间：')
+          .width(80)
+          .fontSize(16)
+          .fontColor('#333')
         TextInput({ placeholder: this.mealDate })
           .onChange((value: string) => {
             this.mealDate = value;
           })
+          .width('100%')
+          .padding({ left: 10 })
+          .borderWidth(1)
+          .borderColor('#ccc')
           .layoutWeight(1)
       }
+      .width('100%')
+      .margin({ bottom: 15 })
 
       Row() {
         Text('餐别：')
+          .width(80)
+          .fontSize(16)
+          .fontColor('#333')
         TextInput({ placeholder: this.mealCategory })
           .onChange((value: string) => {
             this.mealCategory = value;
           })
+          .width('100%')
+          .padding({ left: 10 })
+          .borderWidth(1)
+          .borderColor('#ccc')
           .layoutWeight(1)
       }
+      .width('100%')
+      .margin({ bottom: 15 })
 
       Row() {
         Text('陪餐人职务：')
+          .width(100)
+          .fontSize(16)
+          .fontColor('#333')
         TextInput({ placeholder: this.dutposition })
           .onChange((value: string) => {
             this.dutposition = value;
           })
+          .width('100%')
+          .padding({ left: 10 })
+          .borderWidth(1)
+          .borderColor('#ccc')
           .layoutWeight(1)
       }
+      .width('100%')
+      .margin({ bottom: 15 })
 
       Button('提交')
-        .margin({ top: 20 })
+        .width('100%')
+        .height(45)
+        .backgroundColor('#FF0CE730')
+        .fontColor('#fff')
+        .fontSize(16)
+        .margin({ top: 360})
         .onClick(async () => {
           await this.submitData();
         })
@@ -92,6 +150,7 @@ struct DetailPage {
     }
     .width('100%')
     .padding(20)
+    .backgroundColor('#f9f9f9') // 背景色
   }
 
   private async submitData(): Promise<void> {
@@ -106,13 +165,13 @@ struct DetailPage {
             'X-Access-Token': this.receivedToken
           },
           extraData: JSON.stringify({
-            id: this._id,
+            id: this.id,
             schoolName: this.schoolName,
             mealDate: this.mealDate,
             mealCategory: this.mealCategory,
             xxMealRecordInfoList: [{
               position: this.dutposition,
-              images: "https://admin.suoeryun.com/pcUpload/32-32-0430180520.png"
+              images: ["https://admin.suoeryun.com/pcUpload/32-32-0430180520.png"]
             }] satisfies Array<XXMealRecordInfo>
           })
         }

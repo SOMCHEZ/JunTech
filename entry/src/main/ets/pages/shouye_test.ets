@@ -1,3 +1,4 @@
+//这里是接口参数传递以及，路由界面
 import router from '@ohos.router';
 import http from '@ohos.net.http';
 import { promptAction, Router } from '@kit.ArkUI';
@@ -9,142 +10,89 @@ interface RouteParams {
   relTenantIds?: number;
 }
 
-interface ImageCount {
-  url: string
-  count: number
-  text: string
-  route: string
+
+interface ImageCount{
+  url:string
+  count:number
+  text:string
+  route:string
+}
+interface cuku{
+  url1:string
+  count1:number
+  text1:string
+  route1:string
+}
+interface pingfen{
+   pinfen:number
+   baifenbi:number
+   fenxian:string
 }
 
-interface cuku {
-  url1: string
-  count1: number
-  text1: string
-  route1: string
-}
-
-interface pingfen {
-  pinfen: number
-  baifenbi: number
-  fenxian: string
-}
-
-interface TabData {
+interface TabData  {
   pinfen: number,
   baifenbi: number,
   fenxian: string
-}
-
-interface LogoutResponse {
-  success: boolean;
-  message: string;
-  code: number;
-  result: string;
-  timestamp: number;
-}
-
-interface GeneratedObjectLiteralInterface_1 {
-  'Content-Type': string;
-  'Tenant-Id': string;
-  'X-Access-Token': string;
-  'Accept': string;
 }
 
 @Entry
 @Component
 struct Index1 {
   @State image: ImageCount[] = [
-    { url: 'app.media.education_3', count: 0, text: '每日工作', route: 'pages/kitchenStaff' },
-    { url: 'app.media.home_1', count: 0, text: '上报计划', route: 'pages/uploadPlan' },
-    { url: 'app.media.home_2', count: 0, text: '需求审批', route: 'pages/ApprovalPage' },
-    { url: 'app.media.home_4', count: 0, text: '新品审批', route: 'pages/addStaff_test' },
-    { url: 'app.media.home_recipe_reporting', count: 0, text: '今日菜品', route: 'pages/food_day' },
-    { url: 'app.media.education_6', count: 0, text: '后厨人员', route: 'pages/kitchenStaff' },
-    { url: 'app.media.education_4', count: 0, text: '每日留样', route: 'pages/remain_day' },
-    { url: 'app.media.home_9', count: 0, text: '晨检记录', route: 'pages/chenjianjilu' },
-    { url: 'app.media.home_3', count: 0, text: '陪餐记录', route: 'pages/peicanRecords' },
-    { url: 'app.media.home_13', count: 0, text: '陪餐评价', route: 'pages/addStaff' },
+    { url: 'app.media.education_3', count: 0, text: '每日工作' ,route:'pages/kitchenStaff'},
+    { url: 'app.media.home_1', count: 0, text: '上报计划' ,route:'pages/uploadPlan'},
+    { url: 'app.media.home_2', count: 0, text: '需求审批' ,route:'pages/ApprovalPage'},
+    { url: 'app.media.home_4', count: 0, text: '新品审批' ,route:'pages/addStaff_test'},
+    { url: 'app.media.home_recipe_reporting', count: 0, text: '今日菜品' ,route:'pages/food_day'},
+    { url: 'app.media.education_6', count: 0, text: '后厨人员',route:'pages/kitchenStaff' },
+    { url: 'app.media.education_4', count: 0, text: '每日留样' ,route:'pages/remain_day'},
+    { url: 'app.media.home_9', count: 0, text: '晨检记录' ,route:'pages/chenjianjilu'},
+    { url: 'app.media.home_3', count: 0, text: '陪餐记录' ,route:'pages/peicanRecords'},
+    { url: 'app.media.home_13', count: 0, text: '陪餐评价' ,route:'pages/addStaff'},
   ];
-  @State image1: cuku[] = [
-    { url1: 'app.media.home_6', count1: 0, text1: '供应出库', route1: 'pages/kucun' },
-    { url1: 'app.media.home_12', count1: 0, text1: '实时库存', route1: 'pages/shishikucun' },
+  @State image1:cuku[]=[
+    {url1:'app.media.home_6',count1:0,text1:'供应出库',route1:'pages/kucun' },
+    {url1:'app.media.home_12',count1:0,text1:'实时库存',route1:'pages/shishikucun'},
   ]
 
+  // 直接通过 AppStorage 获取
   @StorageLink(AppKeys.TOKEN) storageToken: string = '';
   @StorageLink(AppKeys.TENANT_ID) storageTenantId: number = 0;
   @State selectedTab: number = 0
-  private tabs: Array<string> = ['今日', '本周', '本月', '本年']
+  private tabs: Array<string> = ['今日','本周','本月','本年']
 
-  @State tabData: TabData[] = [
+  // 每个tab对应的数据
+  @State tabData:TabData[]= [
     { pinfen: 0, baifenbi: 0, fenxian: '安全' },    // 今日
     { pinfen: 2, baifenbi: 30, fenxian: '低风险' },  // 本周
-    { pinfen: 8, baifenbi: 70, fenxian: '中风' },   // 本月
-    { pinfen: 9, baifenbi: 95, fenxian: '高风险' }   // 本年
+    { pinfen: 8, baifenbi: 70, fenxian: '中风' },  // 本月
+    { pinfen: 9, baifenbi: 95, fenxian: '高风险' }     // 本年
   ]
 
-  @State receivedToken: string = '';
-  @State tenantId: number = 0;
 
-  onPageShow() {
-    this.receivedToken = this.storageToken;
+  @State receivedToken: string = '';//参数传递
+  @State tenantId: number = 0;//同上
+
+  onPageShow() {//这是一个接收传递参数的方法
+    // 使用接口类型断言
+    // const params = router.getParams() as RouteParams;
+    // console.log('shouye', params?.token);// 打印接收到的参数
+    // console.log('shouye', params?.relTenantIds);//  打印接收到的参数
+    //
+    // // 安全取值
+    // if (params?.token) {
+    //   this.receivedToken = params.token;
+    // }
+    //
+    // if (params?.relTenantIds) {
+    //   this.tenantId = params.relTenantIds;
+    // }
+    // console.log('shouye', this.storageToken);
+    // console.log('shouye', this.storageTenantId.toString());
+    this.receivedToken  = this.storageToken;
     this.tenantId = this.storageTenantId;
   }
 
-  // 退出登录方法
-  private async handleLogout() {
-    try {
-      const httpRequest = http.createHttp();
-
-      // 准备请求头
-      const headers: GeneratedObjectLiteralInterface_1 = {
-        'Content-Type': 'application/json;charset=UTF-8',
-        'Tenant-Id': this.storageTenantId?.toString() || '100001',
-        'X-Access-Token': this.storageToken || '',
-        'Accept': 'application/json, text/plain, */*'
-      };
-
-      const response = await httpRequest.request(
-        'https://api.suoeryun.com/ifood/jeecg-system/sys/logout',
-        {
-          method: http.RequestMethod.POST,
-          header: headers,
-          connectTimeout: 60000,
-          readTimeout: 60000
-        }
-      );
-
-      const jsonData = JSON.parse(response.result as string) as LogoutResponse;
-
-      if (jsonData.success) {
-        // 清除本地存储的token和租户ID
-        AppStorage.delete(AppKeys.TOKEN);
-        AppStorage.delete(AppKeys.TENANT_ID);
-
-        // 显示退出成功提示
-        promptAction.showToast({
-          message: '退出登录成功',
-          duration: 2000,
-          bottom: 670
-        });
-
-        // 跳转到登录页面
-        router.pushUrl({ url: 'pages/login_test' });
-      } else {
-        promptAction.showToast({
-          message: jsonData.message || '退出登录失败',
-          duration: 2000,
-          bottom: 670
-        });
-      }
-    } catch (error) {
-      console.error('退出登录错误:', error);
-      promptAction.showToast({
-        message: '退出登录失败，请稍后重试',
-        duration: 2000,
-        bottom: 670
-      });
-    }
-  }
 
   build() {
     Tabs() {
@@ -284,7 +232,7 @@ struct Index1 {
                         .onClick(() => {
                           router.pushUrl({          // 使用push入栈一个新页面
                             url: item.route // 通过url指定新打开的页面
-                          ,
+                            ,
                             params:{
                               token:this.receivedToken,
                               relTenantIds:this.tenantId,
@@ -331,7 +279,7 @@ struct Index1 {
                         .onClick(() => {
                           router.pushUrl({          // 使用push入栈一个新页面
                             url: item1.route1 // 通过url指定新打开的页面
-                          ,
+                            ,
                             params:{
                               token:this.receivedToken,
                               relTenantIds:this.tenantId,
@@ -399,7 +347,9 @@ struct Index1 {
               .padding({ top: 20 });
             }
             .onClick(() => {
-              router.pushUrl({ url: 'pages/gerenxinxi' });
+              router.pushUrl({          // 使用push入栈一个新页面
+                url: 'pages/gerenxinxi' // 通过url指定新打开的页面
+              })
             })
 
             // 修改密码
@@ -417,7 +367,9 @@ struct Index1 {
               .padding({ top: 20 });
             }
             .onClick(() => {
-              router.pushUrl({ url: 'pages/mima' });
+              router.pushUrl({          // 使用push入栈一个新页面
+                url: 'pages/mima' // 通过url指定新打开的页面
+              })
             })
 
             // 常见问题解答
@@ -435,7 +387,9 @@ struct Index1 {
               .padding({ top: 20 });
             }
             .onClick(() => {
-              router.pushUrl({ url: 'pages/wentijieda' });
+              router.pushUrl({          // 使用push入栈一个新页面
+                url: 'pages/wentijieda' // 通过url指定新打开的页面
+              })
             })
 
             // 退出登录
@@ -453,23 +407,11 @@ struct Index1 {
               .padding({ top: 20 });
             }
             .onClick(() => {
-              AlertDialog.show({
-                title: '提示',
-                message: '确定要退出登录吗？',
-                primaryButton: {
-                  value: '取消',
-                  action: () => {
-                    console.info('取消退出登录');
-                  }
-                },
-                secondaryButton: {
-                  value: '确定',
-                  action: () => {
-                    this.handleLogout();
-                  }
-                }
-              });
-            })
+              console.info('Clicked on 退出登录');
+              router.pushUrl({          // 使用push入栈一个新页面
+                url: 'pages/login' // 通过url指定新打开的页面
+              })
+            });
           }
           .margin({ top: 20 })
           .width('100%')
@@ -489,4 +431,4 @@ struct Index1 {
     }
     .barPosition(BarPosition.End)
   }
-} 
+}
