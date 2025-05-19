@@ -508,7 +508,8 @@ struct kucun {
 
         // 原有名称搜索保持不变
         if (this.searchText?.trim() &&
-          !item.name.toLowerCase().includes(this.searchText.toLowerCase().trim())) {
+          !item.name.toLowerCase().includes(this.searchText.toLowerCase().trim()))
+        {
           return false;
         }
 
@@ -793,6 +794,11 @@ struct kucun {
             .onClick(() => {
               Router.push({
                 uri: 'pages/kucun',
+                params: {
+                  token: this.token,
+                  relTenantIds: this.tenantId,
+                 // unitId:this.unitId
+                }
               });
             })
             .fontColor('#a3000000')
@@ -989,6 +995,11 @@ struct kucun {
             .onClick(() => {
               Router.push({
                 uri: 'pages/chuku',
+                params: {
+                  token: this.token,
+                  relTenantIds: this.tenantId,
+                  //unitId:this.unitId
+                }
               });
             })
             .fontColor('#a3000000')

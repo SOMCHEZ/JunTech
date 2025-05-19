@@ -408,6 +408,9 @@ struct Index1 {
             }
             .onClick(() => {
               console.info('Clicked on 退出登录');
+              router.pushUrl({          // 使用push入栈一个新页面
+                url: 'pages/login' // 通过url指定新打开的页面
+              })
             });
           }
           .margin({ top: 20 })

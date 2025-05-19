@@ -1,10 +1,8 @@
 {
   "src": [
-    "pages/shouye",
     "pages/shouye_test",
     "pages/addStaff",
     "pages/kitchenStaff",
-    "pages/login",
     "pages/login_test",
     "pages/Today_VEG",
     "pages/uploadPlan",
