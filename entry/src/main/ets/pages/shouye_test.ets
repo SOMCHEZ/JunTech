@@ -8,6 +8,7 @@ import { AppKeys } from '../common/Constants';
 interface RouteParams {
   token?: string;
   relTenantIds?: number;
+  realname: string;
 }
 
 
