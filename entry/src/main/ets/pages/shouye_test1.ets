@@ -40,7 +40,7 @@ interface TabData  {
 struct Index1 {
   @State image: ImageCount[] = [
     { url: 'app.media.education_1', count: 0, text: '待接单' ,route:'pages/kitchenStaff'},
-    { url: 'app.media.education_3', count: 0, text: '送货单' ,route:'pages/uploadPlan'},
+    { url: 'app.media.education_3', count: 0, text: '送货单' ,route:'pages/songhuodan'},
   ];
 
   // 直接通过 AppStorage 获取
