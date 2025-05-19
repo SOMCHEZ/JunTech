@@ -335,7 +335,6 @@ struct DatePickerExample {
               this.buildLabelRow($r("app.media.remarks"), "摘要", false, 6)
 
             }
-
             .width('100%')
             .padding(10)
             // 添加食材按钮
