@@ -222,6 +222,11 @@ struct Index1 {
                 .padding({bottom:5})
               Text('基本信息')
             }
+            .onClick(() => {
+              router.pushUrl({          // 使用push入栈一个新页面
+                url: 'pages/jibenxinxi' // 通过url指定新打开的页面
+              })
+            })
             .padding({ left: 20, right: 20, top:10})
             Column(){
               Image($r('app.media.information2'))
@@ -229,6 +234,11 @@ struct Index1 {
                 .padding({bottom:5})
               Text('供应范围')
             }
+            .onClick(() => {
+              router.pushUrl({          // 使用push入栈一个新页面
+                url: 'pages/gongyingfanwei' // 通过url指定新打开的页面
+              })
+            })
             .padding({ left: 20, right: 20,top:10 })
             Column(){
               Image($r('app.media.information3'))
