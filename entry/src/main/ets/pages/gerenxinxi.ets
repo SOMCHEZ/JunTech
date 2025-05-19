@@ -1,3 +1,5 @@
+import { router } from '@kit.ArkUI'
+
 @Entry
 @Component
 struct gerenxinxi {
@@ -6,17 +8,29 @@ struct gerenxinxi {
   @State  gender: string = '女' // 添加性别状态
   @State  name: string = ''
   private genders: Array<string> = ['男', '女']
+  @State realname: string = '';
+  @State telephone: string = '';
+  @State organizationName: string = '';
+
+  aboutToAppear() {
+    // 获取参数
+    let params = router.getParams() as Record<string, string>
+    this.realname  = params.realname || ''
+    this.telephone  = params.telephone || ''
+    this.organizationName  = params.organizationName || ''
+  }
 
   build() {
     Column() {
       Row() {
-        Text('姓名')
+        Text('姓名：')
           .width(100)
           .padding(10)
-        TextInput({ placeholder: '请输入姓名', text: this.name })
+        TextInput({ placeholder: '请输入姓名', text: this.realname })
           .onChange((value: string) => {
-            this.name = value
+            this.realname = value
           })
+          .textAlign(TextAlign.End)
           .width(240)
           .padding(10)
       }
@@ -24,10 +38,10 @@ struct gerenxinxi {
       .margin(10)
 
       Row() {
-        Text('性别')
-          .width(60)
+        Text('性别：')
+          .width(70)
           .padding(10)
-          .margin({right: 140})
+          .margin({right: 130})
         Row() {
           ForEach(this.genders, (item: string) => {
             Row() {
@@ -49,25 +63,27 @@ struct gerenxinxi {
       .margin(10)
 
       Row() {
-        Text('邮箱')
+        Text('邮箱：')
           .width(100)
           .padding(10)
         TextInput({ placeholder: '请输入邮箱', text: this.email })
           .onChange((value: string) => {
             this.email = value
           })
+          .textAlign(TextAlign.End)
           .width(240)
           .padding(10)
       }.width('100%').margin(10)
 
       Row() {
-        Text('手机号')
+        Text('手机号：')
           .width(100)
           .padding(10)
-        TextInput({ placeholder: '请输入手机号码', text: this.phoneNumber })
+        TextInput({ placeholder: '请输入手机号码', text: this.telephone })
           .onChange((value: string) => {
-            this.phoneNumber = value
+            this.telephone = value
           })
+          .textAlign(TextAlign.End)
           .width(240)
           .padding(10)
       }

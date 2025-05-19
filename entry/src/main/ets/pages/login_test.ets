@@ -205,7 +205,7 @@ struct Index {
 
 
       case "3"://跳供应商的首页页面夹带token等私货
-        router.pushUrl({ url: 'pages/Today_VEG',
+        router.pushUrl({ url: 'pages/shouye_test1',
           params:{
             realname:this.realname
           ,telephone:this.telephone

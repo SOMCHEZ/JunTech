@@ -40,6 +40,7 @@ interface TabData  {
 struct Index1 {
   @State image: ImageCount[] = [
     { url: 'app.media.education_1', count: 0, text: '待接单' ,route:'pages/kitchenStaff'},
+    { url: 'app.media.education_2', count: 0, text: '配送单' ,route:'pages/peisongdan'},
     { url: 'app.media.education_3', count: 0, text: '送货单' ,route:'pages/songhuodan'},
   ];
 
@@ -47,6 +48,10 @@ struct Index1 {
   @StorageLink(AppKeys.TOKEN) storageToken: string = '';
   @StorageLink(AppKeys.TENANT_ID) storageTenantId: number = 0;
   @State selectedTab: number = 0
+
+  @State realname: string = '';
+  @State telephone: string = '';
+  @State organizationName: string = '';
 
   @State gonggao: string[] = []//公告内容
 
@@ -213,14 +218,14 @@ struct Index1 {
               Image($r('app.media.information2'))
                 .width(40)
                 .padding({bottom:5})
-              Text('基本信息')
+              Text('供应范围')
             }
             .padding({ left: 20, right: 20,top:10 })
             Column(){
               Image($r('app.media.information3'))
                 .width(40)
                 .padding({bottom:5})
-              Text('基本信息')
+              Text('供应商品')
             }
             .padding({ left: 20, right: 20 ,top:10})
           }
@@ -242,7 +247,14 @@ struct Index1 {
             }
             .onClick(() => {
               router.pushUrl({          // 使用push入栈一个新页面
-                url: 'pages/gerenxinxi' // 通过url指定新打开的页面
+                url: 'pages/gerenxinxi', // 通过url指定新打开的页面
+                params:{
+                  token:this.receivedToken,
+                  relTenantIds:this.tenantId,
+                  realname:this.realname,
+                  telephone:this.telephone,
+                  organizationName:this.organizationName
+                }
               })
             })
 
