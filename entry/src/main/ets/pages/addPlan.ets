@@ -89,6 +89,8 @@ interface SelectFoodList {
   supplyName:string;
   images: Resource ;
   groupName:string;
+  kg:string;
+  jin:string
 }
 interface UserInfo {
   id: string;
@@ -113,7 +115,6 @@ interface GeneratedObjectLiteralInterface_1 {
 }
 
 
-
 @Entry
 @Component
 struct DatePickerExample {
@@ -125,7 +126,7 @@ struct DatePickerExample {
   @State receivedToken: string = '';//参数传递
   @State tenantId: number = 0;//同上
   @State displayTime: string = ''
-  @State unitId: string  ="";
+  @State unitId: string  ='';
   @State summary: string = ''// 摘要内容
   @State selectedText: string[] = ['请选择','请选择','请选择','请选择','请选择','请选择','请输入摘要']
   @State private showMealType: boolean = false // 控制是否显示用餐类型
@@ -192,27 +193,32 @@ struct DatePickerExample {
       AppStorage.set('unitId', params.unitId);
       //this.UnitId = params.unitId;
     }
+
     // 同步到组件状态
     this.SelectFoodList = params.SelectFoodList??[];
+    this.receivedToken = AppStorage.get('token')??'';
+    this.tenantId = AppStorage.get('tenantId')??0;
+    this.unitId = AppStorage.get('unitId') ?? '';
+
+    console.log("recToken_add",this.receivedToken);
+    console.log("tenantId_add",this.tenantId);
+    console.log("unitId_add",this.unitId);
+
     if (this.SelectFoodList) {
       this.selectedFoodslenth =this.SelectFoodList.length;
       console.log("selectedFoodss",this.selectedFoodslenth);
       console.log("selectedFoods",this.SelectFoodList[0].foodName);
-      console.log("selectedFoods11111",this.SelectFoodList[1].foodName);
     }else {
       this.selectedFoodslenth == 0;
     }
     this.AA=params.AA;
     console.log("Plan2",this.AA);
-    this.receivedToken = AppStorage.get('token')??'';
-    this.tenantId = AppStorage.get('tenantId')??0;
-    this.unitId = AppStorage.get('unitId') ?? '';
   }
 
   private async addStaff(): Promise<addHandlerResult> {
     try {
       const httpRequest = http.createHttp();
-     // let a:string = '1'
+      // let a:string = '1'
       const response = await httpRequest.request(
         'https://api.suoeryun.com/ifood/jeecg-school/school/xxDemandPlanning/addOrUpdate',
         {
@@ -292,7 +298,7 @@ struct DatePickerExample {
       const jsonData = JSON.parse(response.result as string) as addResponse;
       //console.log('', response.responseCode);
       //console.log('',jsonData.code);
-      console.log('ssssssssss',this.unitId);
+      console.log('UnitId:',this.unitId);
       return {
         success: jsonData.code === 200,
         code: jsonData.code,
@@ -377,193 +383,194 @@ struct DatePickerExample {
               .height(20)
             if (this.selectedFoodslenth) {
               // 显示条件用餐类型行
-              Column() {
-                Stack() {
-                  // 主内容区域
+              Column({space:  10}){
+                ForEach(this.SelectFoodList,(item: SelectFoodList, index: number)=>{
                   Column() {
-                    // 第一行：图片、名称和收藏按钮
-                    Row({ space: 10 }) {
-                      Image($r('app.media.food'))
-                        .width(70)
-                        .borderRadius(0)
-                        .margin({ left: 5, top: -115 }) // 原position x:-150 → 计算实际左边距
-                      Text(this.SelectFoodList[0].foodName)
-                        .fontSize(25)
-                        .fontWeight(FontWeight.Bold)
-                        .fontColor(Color.Black)
-                          //.margin({ left: 10, top: -65}) // 与图片保持相对位置
-                        .margin({ left: 10, top: -70 }) // 右侧固定位置
-                      Image($r('app.media.del'))
-                        .width(30)
-                        .fillColor(Color.Red)
-                        .position({ x: 270, y: -25 })
-                        .onClick(() => {
-                          this.selectedFoodslenth=0
+                    Stack() {
+                      // 主内容区域
+                      Column() {
+                        // 第一行：图片、名称和收藏按钮
+                        Row({ space: 10 }) {
+                          Image(item.images)
+                            .width(70)
+                            .borderRadius(0)
+                            .margin({ left: 5, top: -115 }) // 原position x:-150 → 计算实际左边距
+                          Text(item.foodName)
+                            .fontSize(25)
+                            .fontWeight(FontWeight.Bold)
+                            .fontColor(Color.Black)
+                            .margin({ left: 10, top: -70 }) // 右侧固定位置
+                          Image($r('app.media.del'))
+                            .width(30)
+                            .fillColor(Color.Red)
+                            .position({ x: 270, y: -25 })
+                            .onClick(() => {
+                              this.SelectFoodList.splice(index, 1); // 删除当前项
+                              this.selectedFoodslenth = this.SelectFoodList.length;
+                            })
+                        }
+                        .width('100%')
+                        .height(80)
+                        .padding({ left: 20 })
+                      }
+                      // 渐变分割线 (精确匹配原位置)
+                      Row()
+                        .width('86%')
+                        .height(1)
+                        .margin({ top: -10, left: 8 })
+                        .linearGradient({
+                          angle: 90,
+                          colors: [
+                            ['#FCE4CF', 0],
+                            ['#F5A35F', 0.5],
+                            ['#FCE4CF', 1]
+                          ]
                         })
+                        .zIndex(1)
+                      // 采购价信息
+                      Column() {
+                        // 采购价信息
+                        Row() {
+                          Text('采  购  价：')
+                            .fontWeight(600)
+                          Text(item.procurementPricing ?? '0')
+                            .fontSize(21)
+                            .fontWeight(FontWeight.Bold)
+                            .fontColor(Color.Red)
+                          Text('元/Kg')
+                            .fontWeight(600)
+                            .fontColor(Color.Red)
+                        }
+                        .margin({ top: 10 })
+                        .zIndex(2)
+                        // 供应商信息
+                        Row() {
+                          Text('供  应  商：')
+                            .fontWeight(600)
+                          Text(item.supplyName)
+                            .fontWeight(600)
+                        }
+                        .margin({ top: 10 })
+                        // 学校库存
+                        Row() {
+                          Text('学校库存：')
+                            .fontWeight(600)
+                          Text(item.stock ?? '0')
+                            .fontSize(21)
+                            .fontWeight(FontWeight.Bold)
+                          Text('Kg')
+                            .fontWeight(600)
+                        }
+                        .margin({ top: 10 })
+                        // 斤输入框
+                        // 斤输入框
+                        Row({ space: 10 }) {
+                          Text('需 求  量：')
+                            .fontWeight(600)
+                          TextInput({ placeholder: '请输入斤数', text: item.jin })
+                            .width('40%')
+                            .onChange((value: string) => {
+                              const jinNum = parseFloat(value);
+                              this.SelectFoodList[index].jin = value;
+                              if (!isNaN(jinNum)) {
+                                this.SelectFoodList[index].kg = (jinNum / 2).toString();
+
+                              } else {
+                                this.SelectFoodList[index].kg = '';
+                              }
+                            })
+                          Text('斤')
+                        }
+
+
+                        //kg 输入框
+                        Row({ space: 10 }) {
+                          Text('需 求  量：')
+                            .fontWeight(600)
+                          TextInput({ placeholder: '请输入kg数', text: item.kg })
+                            .width('40%')
+                            .onChange((value: string) => {
+                              const kgNum = parseFloat(value);
+                              this.SelectFoodList[index].kg = value;
+                              if (!isNaN(kgNum)) {
+                                this.SelectFoodList[index].jin = (kgNum * 2).toString();
+                              } else {
+                                this.SelectFoodList[index].jin = '';
+                              }
+                            })
+                          Text('kg')
+                        }
+
+                        // 合计
+                        Row() {
+                          Text('合       计：')
+                            .fontWeight(600)
+                          Text(this.calculateTotal())
+                            .fontSize(21)
+                            .fontWeight(FontWeight.Bold)
+                            .fontColor(Color.Red)
+                          Text('元')
+                            .fontWeight(600)
+                            .fontColor(Color.Red)
+                        }
+                        .margin({ top: 10 })
+                        // 备注
+                        Row() {
+                          Text('备       注：')
+                            .fontWeight(600)
+                          TextInput({ placeholder: '请输入备注' })
+                            .fontColor('#000') // 输入文字颜色
+                            .fontSize(16)
+                            .width('70%') // 设置输入框宽度
+                            .border({
+                              width: { bottom: 1 }, // 只设置底部边框
+                              color: '#ccc'
+                            })
+                            .onChange((value: string) => {
+                              // 可以在这里处理输入变化
+                              console.log(`第${index}个食材备注:`, value);
+                            })
+                        }
+                        .margin({ top: 10 })
+                      }
+                      .alignItems(HorizontalAlign.Start) // 关键：统一左对齐
+                      .margin({ top: 100 })
+                      // 左上角三角形标签 (精确匹配)
+                      Path()
+                        .width(40)
+                        .height(40)
+                        .commands('M0 0 L180 0 L0 180 Z')
+                        .fill('#FFA500')
+                        .margin({ left: -301, top: -190 })
+                        .stroke('#FFA500') // 无边框
+                        .shadow({ radius: 0 }) // 确保无阴影
+                      Text('称重')
+                        .fontSize(15)
+                        .fontColor(Color.White)
+                        .rotate({ angle: -45 })
+                        .margin({ left: -300, top: -190 })
+                      // 右下角三角形 (精确匹配)
                     }
                     .width('100%')
-                    .height(80)
-                    .padding({ left: 20 })
+                    .height(220)
                   }
-                  // 渐变分割线 (精确匹配原位置)
-                  Row()
-                    .width('86%')
-                    .height(1)
-                    .margin({ top: -10, left: 8 })
-                    .linearGradient({
-                      angle: 90,
-                      colors: [
-                        ['#FCE4CF', 0],
-                        ['#F5A35F', 0.5],
-                        ['#FCE4CF', 1]
-                      ]
-                    })
-                    .zIndex(1)
-                  // 采购价信息
-                  Column() {
-                    // 采购价信息
-                    Row() {
-                      Text('采  购  价：')
-                        .fontWeight(600)
-                      Text(this.SelectFoodList[0].procurementPricing)
-                        .fontSize(21)
-                        .fontWeight(FontWeight.Bold)
-                        .fontColor(Color.Red)
-                      Text('元/Kg')
-                        .fontWeight(600)
-                        .fontColor(Color.Red)
-                    }
-                    .margin({ top: 10 })
-                    .zIndex(2)
-                    // 供应商信息
-                    Row() {
-                      Text('供  应  商：')
-                        .fontWeight(600)
-                      Text(this.SelectFoodList[0].supplyName)
-                        .fontWeight(600)
-                    }
-                    .margin({ top: 10 })
-                    // 学校库存
-                    Row() {
-                      Text('学校库存：')
-                        .fontWeight(600)
-                      Text(this.SelectFoodList[0].stock)
-                        .fontSize(21)
-                        .fontWeight(FontWeight.Bold)
-                      Text('Kg')
-                        .fontWeight(600)
-                    }
-                    .margin({ top: 10 })
-                    // 斤输入框
-                    Row({ space: 10 }) {
-                      Text('需 求  量：')
-                        .fontWeight(600)
-                      TextInput({ placeholder: '请输入需求量' ,text: this.jinValue })
-                        .fontColor('#000')
-                        .fontSize(16)
-                        .width('40%')
-                        .border({ width: { bottom: 1 }, color: '#ccc' })
-                        .onChange((value: string) => {
-                          this.jinValue = value;
-                          this.lastChanged = 'jin';  // 标记是斤输入框触发的
-                          const jinNum = parseFloat(value);
-                          if (!isNaN(jinNum)) {
-                            this.kgValue = (jinNum / 2).toString();  // 计算 kg
-                          } else {
-                            this.kgValue = '';
-                          }
-                        })
-                      Text('斤')
-                        .fontWeight(600)
-                    }
-                    //kg 输入框
-                    Row({ space: 10 }) {
-                      Text('需 求  量：')
-                        .fontWeight(600)
-                      TextInput({ placeholder: '请输入需求量' ,text: this.kgValue })
-                        .fontColor('#000')
-                        .fontSize(16)
-                        .width('40%')
-                        .border({ width: { bottom: 1 }, color: '#ccc' })
+                  .borderWidth(2)
+                  .borderColor(Color.Orange)
+                  .width('96%')
+                  .height(390)
+                  .padding(5)
+                  .shadow({
+                    radius: 10,
+                    color: '#fffabc85',
+                    offsetX: 20,
+                    offsetY: 20
+                  })
+                  .margin({ left: '2%', right: '2%' })
+                }, (item: SelectFoodList) => item.foodName)
 
-                        .onChange((value: string) => {
-                          this.kgValue = value;
-                          this.lastChanged = 'kg';  // 标记是 kg 输入框触发的
-                          const kgNum = parseFloat(value);
-                          if (!isNaN(kgNum)) {
-                            this.jinValue = (kgNum * 2).toString();  // 计算斤
-                          } else {
-                            this.jinValue = '';
-                          }
-                        })
-                      Text('kg')
-                        .fontWeight(600)
-                    }
-                    // 合计
-                    Row() {
-                      Text('合       计：')
-                        .fontWeight(600)
-                      Text(this.calculateTotal())
-                        .fontSize(21)
-                        .fontWeight(FontWeight.Bold)
-                        .fontColor(Color.Red)
-                      Text('元')
-                        .fontWeight(600)
-                        .fontColor(Color.Red)
-                    }
-                    .margin({ top: 10 })
-                    // 备注
-                    Row() {
-                      Text('备       注：')
-                        .fontWeight(600)
-                      TextInput({ placeholder: '请输入备注' })
-                        .fontColor('#000') // 输入文字颜色
-                        .fontSize(16)
-                        .width('70%') // 设置输入框宽度
-                        .border({
-                          width: { bottom: 1 }, // 只设置底部边框
-                          color: '#ccc'
-                        })
-                        .onChange((value: string) => {
-                          // 可以在这里处理输入变化
-                          console.log('输入的备注为:', value)
-                        })
-                    }
-                    .margin({ top: 10 })
-                  }
-                  .alignItems(HorizontalAlign.Start) // 关键：统一左对齐
-                  .margin({ top: 100 })
-                  // 左上角三角形标签 (精确匹配)
-                  Path()
-                    .width(40)
-                    .height(40)
-                    .commands('M0 0 L180 0 L0 180 Z')
-                    .fill('#FFA500')
-                    .margin({ left: -301, top: -190 })
-                    .stroke('#FFA500') // 无边框
-                    .shadow({ radius: 0 }) // 确保无阴影
-                  Text('称重')
-                    .fontSize(15)
-                    .fontColor(Color.White)
-                    .rotate({ angle: -45 })
-                    .margin({ left: -300, top: -190 })
-                  // 右下角三角形 (精确匹配)
-                }
-                .width('100%')
-                .height(220)
               }
-              .borderWidth(2)
-              .borderColor(Color.Orange)
-              .width('96%')
-              .height(390)
-              .padding(5)
-              .shadow({
-                radius: 10,
-                color: '#fffabc85',
-                offsetX: 20,
-                offsetY: 20
-              })
-              .margin({ left: '2%', right: '2%' })
+              .width('100%')
+
             }
             //中间卡片部分
           }
@@ -645,9 +652,9 @@ struct DatePickerExample {
         // 底部按钮部分
         Column() {
           Divider()
-          .strokeWidth(1)
-          .color('#ffb1afaf')
-          .margin({ top: 0, bottom: 7 })
+            .strokeWidth(1)
+            .color('#ffb1afaf')
+            .margin({ top: 0, bottom: 7 })
           Row() {
 
             Text('总计：')
@@ -681,7 +688,9 @@ struct DatePickerExample {
             }
             .onClick(async() => {
               const result = await this.addStaff()
-              console.log('Single Mapped Value:', this.getMappedValues());
+              // 获取 selectedText[1] 对应的映射值
+              const singleValue = this.handleLogMapping()
+              console.log('singleValue:', singleValue)
               //this.submitForm();
               // if(this.selectedText[2]==='请选择')
               //   this.selectedText[2] = ''
