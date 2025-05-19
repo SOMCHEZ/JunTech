@@ -2,13 +2,29 @@ import router from '@ohos.router';
 import http from '@ohos.net.http';
 //这里是接口数据类型的声明
 
-
+interface SelectFoodList {
+  foodName: string;
+  procurementPricing: string;
+  unit: string;
+  stock: string;
+  supplyName:string;
+  images: Resource ;
+  groupName:string;
+}
+interface RouteParams {//接口传递参数定义
+  token?: string;
+  relTenantIds?: number;
+  SelectFoodList?: SelectFoodList[];
+  //unitId?: string;
+}
 @Entry
 @Component
 struct d {
   @State isSelected: boolean = false
   @State isBothClicked: boolean = false
   @State showToast: boolean = false
+  @State SelectFoodList: SelectFoodList []= []
+  @State selectedFoodslenth :  number = 0
   @State toastMessage: string = ''
   @State adddal: boolean = true
 
