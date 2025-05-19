@@ -227,13 +227,6 @@ struct KitchenStaffList {
     } else {
       this.kitchenNumbers = 0;
     }
-
-
-
-
-
-
-
     console.log('当前tel:', this.unitId)//打印uid
     // console.debug('所有unitIds:',//打印所有uid
     // result.records?.map(item => item.unitId).filter(Boolean)

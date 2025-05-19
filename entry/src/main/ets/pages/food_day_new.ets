@@ -5,7 +5,6 @@ import picker from '@ohos.file.picker';
 import http from '@ohos.net.http';
 import { AppKeys } from '../common/Constants';
 
-
 interface GeneratedObjectLiteralInterface_1 {
   id?:string;
 
@@ -73,14 +72,12 @@ struct food_day_new {
             Text(this.selectedDate)
               .width('60%')
               .height(40)
-              .textAlign(TextAlign.Center)
-              .borderRadius(4)
-              .borderWidth(1)
+              .textAlign(TextAlign.End)
               .borderColor('#CCCCCC')
               .onClick(() => {
                 this.showDateDialog()
               })
-              .width('70%')
+              .width('60%')
             FormItem('食谱日期', true)
           }
           .margin({top: 5, bottom: 5 })
@@ -92,12 +89,10 @@ struct food_day_new {
             TextInput({text: this.recipeName, placeholder: '请输入食谱名称' })
               .width('60%')
               .height(40)
-              .textAlign(TextAlign.Start)
-              .borderRadius(4)
-              .borderWidth(1)
+              .textAlign(TextAlign.End)
               .borderColor('#CCCCCC')
               .onChange(value => this.recipeName = value)
-              .width('70%')
+              .width('60%')
             FormItem('食谱名称', true)
           }
           .margin({top: 5, bottom: 5 })
@@ -147,13 +142,13 @@ struct food_day_new {
           .margin({top: 5, bottom: 5 })
 
           Row({ space: 10 }) {
-              Text('上传食谱照片 *')
-                .fontSize(16)
-                .width('40%')
-                .margin({right:110})
-              Text(`${this.photoCount}/20`)
-                .width('60%')
-                .height(40)
+            Text('上传食谱照片 *')
+              .fontSize(16)
+              .width('40%')
+              .margin({right:110})
+            Text(`${this.photoCount}/20`)
+              .width('60%')
+              .height(40)
           }
           .margin({top: 5, bottom: 5 })
 
@@ -204,7 +199,7 @@ struct food_day_new {
       let photoSelectOptions = new picker.PhotoSelectOptions();
       photoSelectOptions.MIMEType = picker.PhotoViewMIMETypes.IMAGE_TYPE;
       photoSelectOptions.maxSelectNumber = 20 - this.photoCount;
-      
+
       let photoPickerResult = await this.photoPicker.select(photoSelectOptions);
       if (photoPickerResult && photoPickerResult.photoUris && photoPickerResult.photoUris.length > 0) {
         this.photoCount += photoPickerResult.photoUris.length;
@@ -230,8 +225,8 @@ struct food_day_new {
       !this.recipeName ||
       !this.mealType ||
       !this.diningType
-      // ||
-      // !this.photoUri
+    // ||
+    // !this.photoUri
     ) {
       prompt.showToast({
         message: '请填写所有必填项',

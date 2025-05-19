@@ -113,6 +113,7 @@ interface GeneratedObjectLiteralInterface_1 {
 }
 
 
+
 @Entry
 @Component
 struct DatePickerExample {
@@ -197,6 +198,7 @@ struct DatePickerExample {
       this.selectedFoodslenth =this.SelectFoodList.length;
       console.log("selectedFoodss",this.selectedFoodslenth);
       console.log("selectedFoods",this.SelectFoodList[0].foodName);
+      console.log("selectedFoods11111",this.SelectFoodList[1].foodName);
     }else {
       this.selectedFoodslenth == 0;
     }
@@ -679,9 +681,7 @@ struct DatePickerExample {
             }
             .onClick(async() => {
               const result = await this.addStaff()
-           // 获取 selectedText[1] 对应的映射值
-              const singleValue = this.getMappedValues(2); // 获取 日期 对应的映射值
-              console.log('Single Mapped Value:', singleValue);
+              console.log('Single Mapped Value:', this.getMappedValues());
               //this.submitForm();
               // if(this.selectedText[2]==='请选择')
               //   this.selectedText[2] = ''
