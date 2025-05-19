@@ -335,7 +335,7 @@ struct shicai {
                     Text('供  应  价：')
                       .fontWeight(600)
                       .width(90)
-                    Text(item.modifyPrice.toString())
+                    Text(item.modifyPrice.toString()+'元/')
                       .fontSize(21)
                       .fontWeight(FontWeight.Bold)
                       .fontColor(Color.Red)
@@ -350,7 +350,7 @@ struct shicai {
                     Text('库  存  量：')
                       .fontWeight(600)
                       .width(90)
-                    Text(item.supplierName)
+                    Text(item.totalNum.toString())
                       .fontWeight(600)
                   }
                   .margin({ top: 10 })
@@ -370,7 +370,7 @@ struct shicai {
                     Text('餐     别：')
                       .fontWeight(600)
                       .width(90)
-                    Text(item.supplierName)
+                    Text(item.mealCategory_dictText)
                       .fontWeight(600)
                   }
                   .margin({ top: 10 })
