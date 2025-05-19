@@ -62,6 +62,16 @@ interface RouteParams {//接口传递参数定义
   token?: string;
   relTenantIds?: number;
   unitId?: string;
+  SelectFoodList?: SelectFoodList[];
+}
+interface SelectFoodList {
+  foodName: string;
+  procurementPricing: string;
+  unit: string;
+  stock: string;
+  supplyName:string;
+  images: Resource ;
+  groupName:string;
 }
 interface UserInfo {
   id: string;
@@ -107,6 +117,7 @@ struct DatePickerExample {
   private demandOptions = ['学生餐', '教师餐']
   private mealTypeOptions = ['其他','营养餐']
   private mealOptions = ['其他', '早餐', '午餐', '晚餐']
+  @State SelectFoodList: SelectFoodList []= []
 
   // 修改 getMappedValues 函数：显式声明返回类型
   private mapping: Record<string, string> = {
@@ -165,6 +176,8 @@ struct DatePickerExample {
     console.log('UID', params?.unitId);
     //const result = await this.Houchuchaxun();// 调用Houchuchaxun方法这个函数是用来查数据的
     //console.log('houchu1', result); // 打印返回结果
+    this.SelectFoodList = params.SelectFoodList??[];
+
   }
 
   private async addStaff(): Promise<addHandlerResult> {
@@ -294,7 +307,12 @@ struct DatePickerExample {
                   .onClick(() => {
                     // 跳转到 chuku 页面
                     router.pushUrl({
-                      url: 'pages/renew'
+                      url: 'pages/chukudanshicai',
+                      params: {
+                        token: this.receivedToken,
+                        tenantId: this.tenantId,
+                        unitId: this.unitId,
+                      }
                     });
 
                   });

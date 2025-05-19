@@ -2,70 +2,174 @@ import router from '@ohos.router';
 import prompt from '@ohos.prompt';
 import http from '@ohos.net.http';
 // 定义一个菜品的数据结构
-interface FoodItem {
-  name: string;
-  price: string;
-  unit: string;
-  stock: string;
-  meal: string;
-  supplier: string;
-  imageResId: Resource ; // 图片资源 ID，例如 $r('app.media.food')
-  isFavorite: boolean;
-  isSelected: boolean;
+AppStorage.setOrCreate('token', 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJwd2QiOiIyZjg5NWM4NDI2MWFlNzJiYmUyMjVkMjllOWJhZjVjZCIsImV4cCI6MTc0NzM1NjI1NywidXNlcm5hbWUiOiIxNTUwMjkzMzY3MyJ9.iSwsSTRgMclL_ZHLy0NUNvyQ-DJukzsOPhBxbQWxdsc');
+AppStorage.setOrCreate('tenantId', 10021011);
+AppStorage.setOrCreate('unitId', '');
 
+
+
+// interface FoodItem {
+//   foodName: string;
+//   price: string;
+//   unit: string;
+//   expirationDay: string;
+//   meal: string;
+//   supplier: string;
+//   imageResId: Resource ; // 图片资源 ID，例如 $r('app.media.food')
+
+//
+// }
+interface RouteParams {//接口传递参数定义
+  token?: string;
+  relTenantIds?: number;
+  unitId?: string;
 }
+interface FoodResponse{
+  success: boolean;
+  code: number;
+  result:FoodResult;
+  message: string;
+}//  接口返回外层
+interface FoodResult{
+  records:  records[];
+  total:number;
+  size: number;
+  current: number;
+  orders: [];
+  optimizeCountSql: boolean;
+  searchCount: boolean;
+  countId: string;
+  maxLimit: string;
+  pages: number;
+}//接口返回中层
+interface records{
+  id: string,
+  createBy: string,
+  createTime: string,
+  updateBy: string,
+  updateTime: string,
+  schoolId: string,
+  demandUnit: string,
+  demandUnitName?: string,
+  foodId: string,
+  foodName: string,
+  encoding: string,
+  groupId: string,
+  groupName: string,
+  unit: string,
+  specification: string,
+  brandLevel: string,
+  modifyPrice: number,
+  supplyPricing: number,
+  totalNum: number,
+  totalWeight?: number,
+  storageLocation?: string,
+  supplyWay: string,
+  supplierId: string,
+  supplierName: string,
+  producedDate: string,
+  batch: string,
+  izRemind: string,
+  images: string,
+  detailList?: string,
+  expirationDay: number,
+  izConvert: string,
+  failureTime: string,
+  tenantId: string,
+  requirementType: string,
+  realSpecification?: string,
+  placeOrigin: string,
+  izExpired: string,
+  internationalCode: string,
+  residueDay: string,
+  expirationDate: string,
+  mealType: string,
+  mealCategory: string,
+  accountingDate: string,
+  requirementType_dictText: string,
+  mealType_dictText: string,
+  mealCategory_dictText: string
+}//列表数据
+interface FoodItem extends records {
+  id: string,
+  createBy: string,
+  createTime: string,
+  updateBy: string,
+  updateTime: string,
+  schoolId: string,
+  demandUnit: string,
+  demandUnitName?: string,
+  foodId: string,
+  foodName: string,
+  encoding: string,
+  groupId: string,
+  groupName: string,
+  unit: string,
+  specification: string,
+  brandLevel: string,
+  modifyPrice: number,
+  supplyPricing: number,
+  totalNum: number,
+  totalWeight?: number,
+  storageLocation?: string,
+  supplyWay: string,
+  supplierId: string,
+  supplierName: string,
+  producedDate: string,
+  batch: string,
+  izRemind: string,
+  images: string,
+  detailList?: string,
+  expirationDay: number,
+  izConvert: string,
+  failureTime: string,
+  tenantId: string,
+  requirementType: string,
+  realSpecification?: string,
+  placeOrigin: string,
+  izExpired: string,
+  internationalCode: string,
+  residueDay: string,
+  expirationDate: string,
+  mealType: string,
+  mealCategory: string,
+  accountingDate: string,
+  requirementType_dictText: string,
+  mealType_dictText: string,
+  mealCategory_dictText: string
+}//继承records的数据
+
+
 @Entry
 @Component
 struct shicai {
-  @State foodList: FoodItem[] = [
-    {
-      name: '绿豆',
-      price: '12.96',
-      unit: '元/Kg',
-      stock: '1',
-      meal:'早餐',
-      supplier: '彦红粮油有限公司',
-      imageResId: $r('app.media.food'),
-      isFavorite: false,
-      isSelected: false
-    },
-    {
-      name: '大米',
-      price: '5.88',
-      unit: '元/Kg',
-      stock: '10',
-      meal:'早餐',
-      supplier: '彦红粮油有限公司',
-      imageResId: $r('app.media.food'),
-      isFavorite: false,
-      isSelected: false
-    },
-    {
-      name: '小肉',
-      price: '15.00',
-      unit: '元/Kg',
-      stock: '0',
-      meal:'早餐',
-      supplier: '小杨肉食店',
-      imageResId: $r('app.media.food'),
-      isFavorite: false,
-      isSelected: false
-    },
-    {
-      name: '广红萝卜',
-      price: '5.76',
-      unit: '元/Kg',
-      stock: '0',
-      meal:'早餐',
-      supplier: '蔬菜批发门市',
-      imageResId: $r('app.media.food'),
-      isFavorite: false,
-      isSelected: false
+  @State receivedToken: string = '';//参数传递
+  @State tenantId: number = 0;//同上
+  @State originalFoodList: FoodItem[] = []
+  async onPageShow() {
+
+    const params = router.getParams() as RouteParams;//接收传参
+    if (!AppStorage.get('token') && params?.token) {
+      AppStorage.set('token', params.token);
+      //this.receivedToken = params.token;
     }
-  ];
+    if (!AppStorage.get('tenantId') && params?.relTenantIds) {
+      AppStorage.set('tenantId', params.relTenantIds);
+      //this.tenantId = params.relTenantIds;
+    }
+    this.receivedToken = AppStorage.get('token')??'';
+    this.tenantId = AppStorage.get('tenantId')??0;
+    //console.log('tokena:', this.receivedToken);
+    const result = await this. Foodchaxun();
+    this.originalFoodList = result.result.records;  // 保存原始数据
+    this.foodList = [...this.originalFoodList];     // 初始化显示数据
+  }
+
+  @State foodList: FoodItem[] = [];
+
   @State x: number = 0
   @State s: number = 0
-  @State name: string = ''
+  @State foodName: string = ''
   @State x2: boolean = false //分类判断
   @State x3: boolean = false //分类判断
   @State selectedcategory: string = '全部分类'
@@ -198,14 +302,14 @@ struct shicai {
                 // 第一行：图片、名称和收藏按钮
                 Row({ space: 10 }) {
                   Row(){
-                    Image(item.imageResId)
+                    Image(item.images)
                       .width(70)
                       .borderRadius(0)
                       .margin({ left: 5, top: -150 })
                   }.width('30%').margin({top:20})
 
                   Row(){
-                    Text(item.name)
+                    Text(item.foodName)
                       .fontSize(25)
                       .fontWeight(FontWeight.Bold)
                       .fontColor(Color.Black)
@@ -231,7 +335,7 @@ struct shicai {
                     Text('供  应  价：')
                       .fontWeight(600)
                       .width(90)
-                    Text(item.price)
+                    Text(item.modifyPrice.toString())
                       .fontSize(21)
                       .fontWeight(FontWeight.Bold)
                       .fontColor(Color.Red)
@@ -246,7 +350,7 @@ struct shicai {
                     Text('库  存  量：')
                       .fontWeight(600)
                       .width(90)
-                    Text(item.supplier)
+                    Text(item.supplierName)
                       .fontWeight(600)
                   }
                   .margin({ top: 10 })
@@ -255,7 +359,7 @@ struct shicai {
                     Text('保  质  期：')
                       .fontWeight(600)
                       .width(90)
-                    Text(item.stock)
+                    Text(item.expirationDay.toString())
                       .fontSize(21)
                       .fontWeight(FontWeight.Bold)
                     Text('天')
@@ -266,7 +370,7 @@ struct shicai {
                     Text('餐     别：')
                       .fontWeight(600)
                       .width(90)
-                    Text(item.supplier)
+                    Text(item.supplierName)
                       .fontWeight(600)
                   }
                   .margin({ top: 10 })
@@ -302,7 +406,7 @@ struct shicai {
                   .width(60)
                   .height(30)
                   .commands('M230 0 L230 230 L0 230 Z')
-                  .fill((this.isBothClicked[index] &&this.foodList[index].isSelected) ? '#16B76A' : '#CCCCCC')// 点击后绿色，默认灰色
+                  .fill((this.isBothClicked[index]) ? '#16B76A' : '#CCCCCC')// 点击后绿色，默认灰色
                   .margin({ left: 240, top: 163 })
                   .stroke(Color.White)// 无边框
                   .shadow({ radius: 0 })// 确保无阴影s
@@ -322,12 +426,11 @@ struct shicai {
               })
               .onClick(() => {
                 this.isBothClicked[index] = !this.isBothClicked[index]
-                this.foodList[index].isSelected  = !this.foodList[index].isSelected
                 this.showAlert(this.isBothClicked[index] ? '已选择' : '取消选择')
               })
               .backgroundColor(this.life ? '#80ffb9b9' : Color.White)
             }
-          }, (item: FoodItem) => item.name.toString())
+          }, (item: FoodItem) => item.foodName.toString())
         }
         .margin({right:5})
       }
@@ -350,10 +453,19 @@ struct shicai {
           .fontColor(Color.White)
           .backgroundColor('#16B76A')
           .borderRadius(5)
-          .onClick(() => {
+          .onClick(() => {  let SelectFoodList:FoodItem[] = []
+            for(let i = 0; i < this.isBothClicked.length; i++){
+              if(this.isBothClicked[i]){
+                SelectFoodList.push(this.foodList[i])
+              }
+            }
+            console.log('ses:',JSON.stringify(SelectFoodList))
             router.back({
-              url: 'pages/chukudan'
-            });
+              url:'pages/chukudan',
+              params:{
+                SelectFoodList:SelectFoodList
+              }
+            })
           })
         }
         .height(45)
@@ -362,4 +474,76 @@ struct shicai {
       .height('10%')//底部按钮
     }
   }
+
+
+  private async Foodchaxun(): Promise<FoodResponse> { //这个请求是针对查询后厨人员列表的
+    try {
+      const httpRequest = http.createHttp();
+
+      const response = await httpRequest.request(
+        'https://api.suoeryun.com/ifood/school/xxRealTimeInventory/listRealTimeInventoryPage',
+        {
+          method: http.RequestMethod.GET,
+          header: {
+            //'Content-Type': 'application/json',
+            'Tenant-Id': this.tenantId.toString(),
+            'X-Access-Token': this.receivedToken
+          },
+        }
+      );
+      const emptyResult: FoodResult = {
+        records: [],
+        total: 0,
+        size: 0,
+        current: 0,
+        orders: [],
+        optimizeCountSql: false,
+        searchCount: false,
+        countId: '',
+        maxLimit: '',
+        pages: 0
+      };
+
+      if (response.responseCode !== 200) {
+        //console.error('Login Error:'+response.responseCode);
+        return {
+          success: false,
+          code: response.responseCode,
+          result: emptyResult,
+          message: `HTTP Error: ${response.responseCode}`
+          // 添加其他错误处理逻辑
+        };
+      }
+      console.log('没有报错奥' + response.result.toString())
+      const jsonData = JSON.parse(response.result as string) as FoodResponse;
+      console.log('好耶', jsonData.result.records[1].id);
+      return {
+        success: jsonData.code === 200,
+        code: jsonData.code,
+        result: jsonData.result,
+        message: jsonData.message,
+        //relTenantIds:jsonData.result.userInfo.relTenantIds
+      };
+
+    } catch (error) {
+      //console.error('Login Error:', JSON.stringify(error));
+      return {
+        success: false,
+        code: 500,
+        result: { // 符合 liuyangResult 的空结构
+          records: [],
+          total: 0,
+          size: 0,
+          current: 0,
+          orders: [],
+          optimizeCountSql: false,
+          searchCount: false,
+          countId: '',
+          maxLimit: '',
+          pages: 0
+        },
+        message: '服务器繁忙'
+      }
+    }
+  }//接口函数
 }
