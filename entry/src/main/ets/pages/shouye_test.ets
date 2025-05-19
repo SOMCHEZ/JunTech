@@ -58,6 +58,10 @@ struct Index1 {
   // 直接通过 AppStorage 获取
   @StorageLink(AppKeys.TOKEN) storageToken: string = '';
   @StorageLink(AppKeys.TENANT_ID) storageTenantId: number = 0;
+
+  @State realname: string = '';
+  @State telephone: string = '';
+  @State organizationName: string = '';
   @State selectedTab: number = 0
   private tabs: Array<string> = ['今日','本周','本月','本年']
 
@@ -70,8 +74,19 @@ struct Index1 {
   ]
 
 
+  @State gonggao: string[] = []//公告内容
+
   @State receivedToken: string = '';//参数传递
   @State tenantId: number = 0;//同上
+
+
+  aboutToAppear() {
+    // 获取参数
+    let params = router.getParams() as Record<string, string>
+    this.realname  = params.realname || ''
+    this.telephone  = params.telephone || ''
+    this.organizationName  = params.organizationName || ''
+  }
 
   onPageShow() {//这是一个接收传递参数的方法
     // 使用接口类型断言
@@ -117,7 +132,7 @@ struct Index1 {
               Image($r('app.media.notice'))
                 .height(25)
                 .layoutWeight(1)
-              Text('')
+              Text(this.gonggao+'')
                 .height(40)
                 .layoutWeight(4.5)
                 .animation({duration: 3000})
@@ -348,7 +363,14 @@ struct Index1 {
             }
             .onClick(() => {
               router.pushUrl({          // 使用push入栈一个新页面
-                url: 'pages/gerenxinxi' // 通过url指定新打开的页面
+                url: 'pages/gerenxinxi', // 通过url指定新打开的页面
+                   params:{
+                    token:this.receivedToken,
+                    relTenantIds:this.tenantId,
+                     realname:this.realname,
+                     telephone:this.telephone,
+                     organizationName:this.organizationName
+                  }
               })
             })
 
@@ -407,11 +429,16 @@ struct Index1 {
               .padding({ top: 20 });
             }
             .onClick(() => {
-              console.info('Clicked on 退出登录');
               router.pushUrl({          // 使用push入栈一个新页面
-                url: 'pages/login' // 通过url指定新打开的页面
+                url: 'pages/login'     // 通过url指定新打开的页面
+              ,
+                params:{
+                  token:this.receivedToken,
+                  relTenantIds:this.tenantId
+
+                }
               })
-            });
+            })
           }
           .margin({ top: 20 })
           .width('100%')

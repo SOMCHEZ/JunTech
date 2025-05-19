@@ -58,6 +58,15 @@ struct Index1 {
   @State receivedToken: string = '';//参数传递
   @State tenantId: number = 0;//同上
 
+
+  aboutToAppear() {
+    // 获取参数
+    let params = router.getParams() as Record<string, string>
+    this.realname  = params.realname || ''
+    this.telephone  = params.telephone || ''
+    this.organizationName  = params.organizationName || ''
+  }
+
   onPageShow() {//这是一个接收传递参数的方法
     // 使用接口类型断言
     // const params = router.getParams() as RouteParams;
