@@ -34,7 +34,9 @@
     "pages/easterEgg",
     "pages/chukudanshicai",
     "pages/editChuku",
-    "pages/uploadcase"
+    "pages/uploadcase",
+    "pages/order",
+    "pages/unaccepted"
 
 
 
