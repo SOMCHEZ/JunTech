@@ -102,6 +102,7 @@ struct ReportPlanPage {
   @State tenantId: number = 0;//同上
   @State unitId: string  ="";
   @State upload:boolean  = false;
+  @State showPopup: boolean=false;
   private unitOptions = [
     '选择需求单位',
     '实验第二学校（库房）',
@@ -487,6 +488,9 @@ struct ReportPlanPage {
                             color: '#4CAF50',
                             width: 1
                           })
+                          .onClick(() => {
+                            this.showPopup=true
+                          })
                         Button('删除单据')
                           .backgroundColor('#ffffffff')
                           .fontColor('#4CAF50')
@@ -555,7 +559,104 @@ struct ReportPlanPage {
       .width('100%')
       //.backgroundColor('#f2dbdada')
       .layoutWeight(1)
+      if (this.showPopup) {
 
+        Stack({ alignContent: Alignment.Bottom }) {
+          // 半透明遮罩层
+          Column()
+            .width('100%')
+            .height('100%')
+            .backgroundColor(Color.White)
+            .onClick(() => {
+              this.showPopup = false
+            })
+          // 弹窗内容
+          Column() {
+            // 顶部拖拽指示条
+            Divider()
+              .width(40)
+              .color('#CCCCCC')
+              .margin({ top: 8, bottom: 12 })
+            Text('单据日志')
+              .fontSize(17)
+              .fontWeight(500)
+            Column(){
+              Text('新建计划')
+                .fontSize(15)
+                .fontWeight(240)
+                .fontColor(Color.Gray)
+                .margin({top:10,right:230,bottom:10})
+              Column(){
+                Row({space:12}){
+                  Text('操作时间:')
+                    .fontSize(14)
+                  Text('2025-05-18 08:52:52')
+                    .width('70%')
+                    .fontSize(14)
+                }.padding(12)
+                Text('人')
+                  .fontSize(14)
+                  .padding({ left: 10, right: 10, bottom: 10})
+              }
+              .borderStyle(BorderStyle.Solid)
+              .borderColor('#16B76A')
+              .borderWidth(2)
+              .borderRadius(7)
+              .shadow({
+                radius: 10,
+                color: '#16B76A',
+                offsetX: 0,
+                offsetY: 4
+              })
+              .alignItems(HorizontalAlign.Start)
+              Text('审批')
+                .fontSize(15)
+                .fontWeight(240)
+                .fontColor('#16B76A')
+
+                .margin({top:10,right:230,bottom:10})
+              Column(){
+                Row({space:12}){
+                  Text('操作时间:')
+                    .fontSize(14)
+                  Text('2025-05-18 08:52:52')
+                    .width('70%')
+                    .fontSize(14)
+                }.padding(12)
+                Text('人')
+                  .fontSize(14)
+                  .padding({ left: 10, right: 10, bottom: 10})
+              }
+              .borderStyle(BorderStyle.Solid)
+              .borderColor('#16B76A')
+              .borderWidth(2)
+              .borderRadius(7)
+              .shadow({
+                radius: 10,
+                color: '#16B76A',
+                offsetX: 0,
+                offsetY: 4
+              })
+              .alignItems(HorizontalAlign.Start)
+            }
+            .alignItems(HorizontalAlign.Start)
+          }
+          .width('100%')
+          .height('100%')
+          .backgroundColor(Color.White)
+          .borderRadius(16)
+          .shadow({ radius: 24, color: '#33000000' })
+          .position({
+            y:40
+          })
+
+        }
+        .width('100%')
+        .height('50%')
+        .zIndex(999)
+
+
+      }
       Button('新建上报计划', { type: ButtonType.Capsule })
         .width('100%')
         .height(50)
