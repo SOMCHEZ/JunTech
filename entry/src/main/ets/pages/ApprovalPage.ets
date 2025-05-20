@@ -321,7 +321,6 @@ struct ReportPlanPage {
             const statusMatch = this.upload === 0 ?
               item.planningStatus === '1' :
               item.planningStatus === '5';
-            item.planningStatus === '0';
             const unitMatch = this.selectedUnit === '选择需求单位' ||
               item.photoUri === this.selectedUnit;
             const dateMatch = this.selectedDate === '请选择供应日期' ||
@@ -334,7 +333,6 @@ struct ReportPlanPage {
                 const statusMatch = this.upload === 0 ?
                   item.planningStatus === '1' :
                   item.planningStatus === '5';
-                item.planningStatus === '0';
 
                 // 添加单位筛选（默认选项时显示全部）
                 const unitMatch = this.selectedUnit === '选择需求单位' ||
@@ -596,6 +594,10 @@ struct ReportPlanPage {
                   offsetY: 10
                 })
                 .onClick(() => {
+                  router.pushUrl({
+                    url: 'pages/uploadcase',
+              });
+
                 })
               }
               .width('100%')

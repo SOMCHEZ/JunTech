@@ -39,7 +39,7 @@ interface TabData  {
 @Component
 struct Index1 {
   @State image: ImageCount[] = [
-    { url: 'app.media.education_1', count: 0, text: '待接单' ,route:'pages/kitchenStaff'},
+    { url: 'app.media.education_1', count: 0, text: '待接单' ,route:'pages/unaccepted'},
     { url: 'app.media.education_2', count: 0, text: '配送单' ,route:'pages/peisongdan'},
     { url: 'app.media.education_3', count: 0, text: '送货单' ,route:'pages/songhuodan'},
   ];
