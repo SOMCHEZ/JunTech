@@ -3,15 +3,62 @@ import { image } from '@kit.ImageKit'
 import prompt from '@ohos.prompt';
 import router from '@ohos.router';
 import http from '@ohos.net.http';
+import { ConfigurationConstant } from '@kit.AbilityKit';
 
 
 //永久存储token和租户id
 AppStorage.setOrCreate('token', '');
 AppStorage.setOrCreate('tenantId', 0);
 AppStorage.setOrCreate('unitId', '');
+AppStorage.setOrCreate('Id', '');
 //AppStorage.setOrCreate('selectedFoods', []);
 
-interface PlanningFoodItem {
+interface UpdateDate{
+  id: string,
+  createBy: string,
+  createTime: string,
+  updateBy: string,
+  updateTime: string,
+  schoolId: string,
+  schoolName: string,
+  unitId: string,
+  unitName: string,
+  unitType: string,
+  documentNo: string,
+  supplyDate: string,
+  supplyTime: string,
+  reportUserPhone: string,
+  auditTime: string,
+  supplyTime_dictText: string,
+  planningStatus: string,
+  rejectOpinion: string,
+  summary: string,
+  preparedBy: string,
+  reportUserName: string,
+  reportUserId: string,
+  reportDate: string,
+  requirementType: string,
+  requirementType_dictText: string,
+  planningFoodList: RecipeFormData[]
+  izReplenishment: string,
+  stockId: string,
+  distributionId: string,
+  supplierRemark: string,
+  totalPrice: string,
+  izPastDue: string,
+  mealType: string,
+  mealType_dictText: string,
+  mealCategory: string,
+  mealCategory_dictText: string
+}
+
+interface ResponseDate{
+  code: number;
+  message: string;
+  result: UpdateDate|null;
+}
+
+interface RecipeFormData {
   id: string;
   storehouseId: number | null;
   foodAndSupplierId: string;
@@ -77,9 +124,8 @@ interface RouteParams {//接口传递参数定义
   token?: string;
   relTenantIds?: number;
   unitId?: string;
-  SelectFoodList?: SelectFoodList[];
-  AA: string;
-  adddal:boolean;
+  SelectFoodList: RecipeFormData[];
+  id: string;
 }
 interface SelectFoodList {
   foodName: string;
@@ -89,8 +135,8 @@ interface SelectFoodList {
   supplyName:string;
   images: Resource ;
   groupName:string;
-  kg:string;
-  jin:string
+  // kg:string;
+  // jin:string
 }
 interface UserInfo {
   id: string;
@@ -101,10 +147,7 @@ interface UserInfo {
   relTenantIds:number;
   // 其他字段根据实际API响应补充...
 }
-interface SelectOption{
-  value: string;
-  label: string;
-}
+
 interface GeneratedObjectLiteralInterface_1 {
   date: string;
   recipeName: string;
@@ -114,6 +157,8 @@ interface GeneratedObjectLiteralInterface_1 {
   photoUri: string;
 }
 
+
+interface GeneratedObjectLiteralInterface_2 {}
 
 @Entry
 @Component
@@ -126,16 +171,25 @@ struct DatePickerExample {
   @State receivedToken: string = '';//参数传递
   @State tenantId: number = 0;//同上
   @State displayTime: string = ''
-  @State unitId: string  ='';
+  @State unitId: string  ="";
+  @State isBothClicked: boolean[] = []
   @State summary: string = ''// 摘要内容
   @State selectedText: string[] = ['请选择','请选择','请选择','请选择','请选择','请选择','请输入摘要']
   @State private showMealType: boolean = false // 控制是否显示用餐类型
-  @State kgValue: string = ''//千克值
-  @State jinValue: string = ''//斤值
-  @State SelectFoodList: SelectFoodList []= []
-  @State AA :  string = ''
+  @State kgValue: string[] = []//千克值
+  @State jinValue: string[] = []//斤值
+  @State SelectFoodList: RecipeFormData []= []
+  @State totalPrice:string[]  = [];
+  @State ID: string = ''
+
+
   @State selectedFoodslenth :  number = 0
-  @State lastChanged: 'jin' | 'kg' | null = null;
+  // @State lastChanged: 'jin' | 'kg' | null = null;
+  @State A :  string = ''
+  // @State b :  string = ''
+  // @State AA:string= ''
+
+
   private unitOptions = ['实验第二学校（库房）', '实验第二学校餐厅']
   private selectedTime = ['上午', '下午']
   private demandOptions = ['学生餐', '教师餐']
@@ -153,13 +207,13 @@ struct DatePickerExample {
     '其他': '0',
     '早餐': '1',
     '午餐': '2',
-    '晚餐': '3'
+    '晚餐': '3',
+    '请选择': '1'
   };
 
   private getMappedValues(index?: number): string | string[] {
     if (index !== undefined) {
       const text = this.selectedText[index];
-      console.log('')
       return this.mapping[text] || text;
     }
     return this.selectedText.map(text => this.mapping[text] || '');
@@ -173,11 +227,11 @@ struct DatePickerExample {
 
   async onPageShow() {
     const params = router.getParams() as RouteParams;
-    console.log('AAAAA',params.AA);
-    console.log('1234',params.adddal);
-    //console.log('houchu', params?.token);// 打印接收到的参数
-    //console.log('houchu', params?.relTenantIds);//  打印接收到的参数
 
+    if (params.id) {
+      AppStorage.set('Id',params.id)
+    }
+    if(params.SelectFoodList)
     // 安全取值如果返回值空，则使用appsetcreat中所预保存的token和id
     if (!AppStorage.get('token') && params?.token) {
       AppStorage.set('token', params.token);
@@ -196,13 +250,23 @@ struct DatePickerExample {
 
     // 同步到组件状态
     this.SelectFoodList = params.SelectFoodList??[];
+
+    if (this.SelectFoodList) {
+      this.selectedFoodslenth =this.SelectFoodList.length;
+
+    }else {
+      this.selectedFoodslenth == 0;
+    }
+
     this.receivedToken = AppStorage.get('token')??'';
     this.tenantId = AppStorage.get('tenantId')??0;
-    this.unitId = AppStorage.get('unitId') ?? '';
+    this.unitId = AppStorage.get('unitId') ?? '1';
+    this.ID  = AppStorage.get('Id')??'';
 
-    console.log("recToken_add",this.receivedToken);
-    console.log("tenantId_add",this.tenantId);
-    console.log("unitId_add",this.unitId);
+    console.log('66')
+    const result = await queryById(this.receivedToken,this.tenantId,this.ID)
+    if(result.result) this.SelectFoodList = result.result?.planningFoodList
+    console.log('date:',result.result?.supplyDate)
 
     if (this.SelectFoodList) {
       this.selectedFoodslenth =this.SelectFoodList.length;
@@ -211,9 +275,10 @@ struct DatePickerExample {
     }else {
       this.selectedFoodslenth == 0;
     }
-    this.AA=params.AA;
-    console.log("Plan2",this.AA);
+
   }
+
+
 
   private async addStaff(): Promise<addHandlerResult> {
     try {
@@ -228,66 +293,23 @@ struct DatePickerExample {
             'X-Access-Token':this.receivedToken
           },
           extraData: JSON.stringify({
-            "unitId": this.unitId,
-            "supplyDate": this.selectedText[1],
-            "supplyTime": this.getMappedValues(2),
-            "requirementType": this.getMappedValues(4),
-            "planningFoodList": [
-              {
-                "id": "",
-                "storehouseId": null,
-                "foodAndSupplierId": "",
-                "foodId": "",
-                "supplyWay": "",
-                "superiorLimit": null,
-                "lowerLimit": null,
-                "storageLocation": null,
-                "stock": null,
-                "storehouseStatus": null,
-                "izCollect": "",
-                "encoding": "",
-                "groupId": "",
-                "groupName": "",
-                "foodName": "",
-                "forShort": "",
-                "internationalCode": null,
-                "pinyinCode": "",
-                "specification": "",
-                "expirationDay": null,
-                "brandLevel": "",
-                "minDeclare": null,
-                "unit": "",
-                "packageQuantity": null,
-                "procurementPricing": null,
-                "supplyPricing": null,
-                "marketPrice": null,
-                "modifyPrice": null,
-                "supplyNames": "",
-                "supplyName": "",
-                "supplierId": "",
-                "aggregatePurchasePrice": null,
-                "images": "",
-                "izConvert": null,
-                "realSpecification": "",
-                "placeOrigin": "",
-                "remarks": null,
-                "remark": null,
-                "testReport": null,
-                "supplyWay_dictText": "",
-                "quantitySupplied": "",
-                "marketWeight": null
-              }
-            ] as  Array<PlanningFoodItem>,
-            "summary": this.selectedText[6],
-            "mealType": this.getMappedValues(3),
-            "mealCategory": this.getMappedValues(5),
-            "unitName": this.getMappedValues(0),
-            "unitType": "1",
-            "planningStatus": "1"
+            // unitId: this.unitId,
+            unitId: '1917168448072851458',
+
+            supplyDate: this.selectedText[1],
+            supplyTime: this.getMappedValues(2),
+            requirementType: this.getMappedValues(4),
+            planningFoodList: this.SelectFoodList,
+            summary: this.selectedText[6],
+            mealType: this.getMappedValues(3),
+            mealCategory: this.getMappedValues(5),
+            unitName: this.getMappedValues(0),
+            unitType: "1",
+            planningStatus: "1"
           })
         }
       );
-
+      console.log('result:', response.result)
       if (response.responseCode !== 200) {
         return {
           success: false,
@@ -296,19 +318,15 @@ struct DatePickerExample {
         };
       }
       const jsonData = JSON.parse(response.result as string) as addResponse;
-      //console.log('', response.responseCode);
-      //console.log('',jsonData.code);
-      console.log('UnitId:',this.unitId);
+
       return {
         success: jsonData.code === 200,
         code: jsonData.code,
-        //userInfo: jsonData.result.userInfo,
-        // token: jsonData.result.token,
+
         message: jsonData.message,
         relTenantIds:jsonData.result.userInfo.relTenantIds
       };
     } catch (error) {
-      //console.error('Login Error:', JSON.stringify(error));
       return {
         success: false,
         message: 'fuck u!'
@@ -335,6 +353,7 @@ struct DatePickerExample {
               this.buildLabelRow($r("app.media.remarks"), "摘要", false, 6)
 
             }
+
             .width('100%')
             .padding(10)
             // 添加食材按钮
@@ -353,7 +372,11 @@ struct DatePickerExample {
                   .onClick(() => {
                     // 跳转到 chuku 页面
                     router.pushUrl({
-                      url: 'pages/renew'
+                      url: 'pages/renew',
+                      params:{
+                        token:this.receivedToken,
+                        relTenantIds:this.tenantId,
+                      }
                     });
                   });
               }
@@ -369,7 +392,6 @@ struct DatePickerExample {
               Text(`已选中${this.selectedFoodslenth}种食材`)
                 .fontColor('#8A96A2')
                 .position({ x: 137, y: 15 })
-
             }
 
             Column()//渐变框
@@ -406,6 +428,10 @@ struct DatePickerExample {
                             .onClick(() => {
                               this.SelectFoodList.splice(index, 1); // 删除当前项
                               this.selectedFoodslenth = this.SelectFoodList.length;
+                              this.kgValue.splice(index, 1)
+                              this.jinValue.splice(index, 1)
+                              this.totalPrice.splice(index, 1)
+                              this.A = this.calculateTotal(this.totalPrice)
                             })
                         }
                         .width('100%')
@@ -432,7 +458,7 @@ struct DatePickerExample {
                         Row() {
                           Text('采  购  价：')
                             .fontWeight(600)
-                          Text(item.procurementPricing ?? '0')
+                          Text(item.procurementPricing.toString() ?? '0')
                             .fontSize(21)
                             .fontWeight(FontWeight.Bold)
                             .fontColor(Color.Red)
@@ -466,45 +492,51 @@ struct DatePickerExample {
                         Row({ space: 10 }) {
                           Text('需 求  量：')
                             .fontWeight(600)
-                          TextInput({ placeholder: '请输入斤数', text: item.jin })
+                          TextInput({ placeholder: '请输入斤数',text: this.jinValue[index]})
                             .width('40%')
                             .onChange((value: string) => {
-                              const jinNum = parseFloat(value);
-                              this.SelectFoodList[index].jin = value;
-                              if (!isNaN(jinNum)) {
-                                this.SelectFoodList[index].kg = (jinNum / 2).toString();
+                              if(value){
+                                this.jinValue[index] = value;
+                                this.kgValue[index] = (parseFloat(value) / 2).toString();
+                                this.totalPrice[index] = ((parseFloat(this.kgValue[index]) *  parseFloat(item.procurementPricing)).toFixed(3)) + ''
 
-                              } else {
-                                this.SelectFoodList[index].kg = '';
+                                this.A = this.calculateTotal(this.totalPrice)
+                              }else{
+                                this.kgValue[index] = '';
+                                this.totalPrice[index] = '';
+                                this.A = this.calculateTotal(this.totalPrice)
                               }
                             })
                           Text('斤')
                         }
 
-
                         //kg 输入框
                         Row({ space: 10 }) {
                           Text('需 求  量：')
                             .fontWeight(600)
-                          TextInput({ placeholder: '请输入kg数', text: item.kg })
+                          TextInput({ placeholder: '请输入kg数', text: this.kgValue[index] })
                             .width('40%')
                             .onChange((value: string) => {
-                              const kgNum = parseFloat(value);
-                              this.SelectFoodList[index].kg = value;
-                              if (!isNaN(kgNum)) {
-                                this.SelectFoodList[index].jin = (kgNum * 2).toString();
-                              } else {
-                                this.SelectFoodList[index].jin = '';
+                              if(value){
+                                this.kgValue[index] = value;
+                                this.jinValue[index] = (parseFloat(value) * 2).toString()
+                                this.totalPrice[index] = ((parseFloat(value) *  parseFloat(item.procurementPricing)).toFixed(3)) + ''
+                                this.A = this.calculateTotal(this.totalPrice)
+                              }else {
+                                this.jinValue[index] = '';
+                                this.totalPrice[index] = '';
+                                this.A = this.calculateTotal(this.totalPrice)
                               }
+
                             })
+
                           Text('kg')
                         }
-
                         // 合计
                         Row() {
                           Text('合       计：')
                             .fontWeight(600)
-                          Text(this.calculateTotal())
+                          Text(this.totalPrice[index])
                             .fontSize(21)
                             .fontWeight(FontWeight.Bold)
                             .fontColor(Color.Red)
@@ -660,7 +692,7 @@ struct DatePickerExample {
               .fontColor('#8A96A2')
               .fontSize(16)
               .margin({ right: 10 })
-            Text(this.calculateTotal())
+            Text(this.A)
               .fontColor('#8A96A2')
               .fontSize(16)
               .margin({ right: -10 })
@@ -686,14 +718,9 @@ struct DatePickerExample {
                 .fontColor(Color.White)
             }
             .onClick(async() => {
-              const result = await this.addStaff()
-              // 获取 selectedText[1] 对应的映射值
-              const singleValue = this.handleLogMapping()
-              console.log('singleValue:', singleValue)
-              //this.submitForm();
-              // if(this.selectedText[2]==='请选择')
-              //   this.selectedText[2] = ''
-              this.submitForm()
+                await this.addStaff()
+                this.submitForm()
+
             })
             .height(35)
             .backgroundColor('#02BC65')
@@ -863,16 +890,14 @@ struct DatePickerExample {
     })
   }
   //合计乘积函数
-  private calculateTotal(): string {
-    const price = parseFloat(this.SelectFoodList[0]?.procurementPricing ?? '0');
-    const kg = parseFloat(this.kgValue ?? '0');
-
-    if (isNaN(price) || isNaN(kg)) {
-      return '0.00';
+  private calculateTotal(totalPriceList:string[]): string {
+    let sum = 0
+    for (let index = 0; index < totalPriceList.length; index++) {
+      if (totalPriceList[index] !== '') {
+        sum += parseFloat(totalPriceList[index]);
+      }
     }
-
-    const total = price * kg;
-    return total.toFixed(2); // 保留两位小数
+    return sum.toFixed(3);
   }
   private submitForm() {
     // 验证必填项
@@ -906,6 +931,7 @@ struct DatePickerExample {
       params: {
         token: this.receivedToken,
         tenantId: this.tenantId,
+        SelectFoodList:this.SelectFoodList
       } })
 
     // 创建表单数据对象
@@ -927,3 +953,43 @@ struct DatePickerExample {
     });
   }
 }
+
+async function queryById(token:string,tenantId:number,id:string): Promise<ResponseDate>{
+
+  try {
+    const httpRequest = http.createHttp();
+    const response = await httpRequest.request(
+      'https://api.suoeryun.com/ifood/jeecg-school/school/xxDemandPlanning/queryById',
+      {
+        method: http.RequestMethod.GET,
+        header: { 'Content-Type': 'application/json',
+          'Tenant-Id': '10021011',
+          'X-Access-Token': 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJwd2QiOiIyZjg5NWM4NDI2MWFlNzJiYmUyMjVkMjllOWJhZjVjZCIsImV4cCI6MTc0ODI0NzQ1OSwidXNlcm5hbWUiOiIxNTUwMjkzMzY3MyJ9.iruguAQcTZ6fKX3vzhEj99lFBhoWGB5dbEFEfstExPg'
+        },
+        extraData: `id=${id}`
+      }
+    );
+    if (response.responseCode !== 200) {
+      return {
+        code: response.responseCode,
+        message: `HTTP Error: ${response.responseCode}`,
+        result: null
+      };
+    }
+    const jsonData = JSON.parse(response.result as string) as ResponseDate;
+    return {
+      code: jsonData.code,
+      message: jsonData.message,
+      result: jsonData.result
+    };
+
+  }catch (e){
+    return {
+      code: 500,
+      message: 'Internal Server Error',
+      result: null
+    };
+  }
+
+}
+

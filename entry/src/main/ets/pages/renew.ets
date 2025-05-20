@@ -111,10 +111,6 @@ interface FoodItem extends records {
   supplyWay_dictText: string,
 }//继承records的数据
 
-// interface categoryOptions extends records{
-//   groupName:string
-//
-// }
 
 interface RouteParams {//接口传递参数定义
   token?: string;
@@ -129,7 +125,7 @@ struct shicai {
   @State tenantId: number = 0;//同上
   @State foodList: FoodItem[] = []
 
-  @State FavoriteFoodList: FoodItem[] = []
+  // @State FavoriteFoodList: FoodItem[] = []
   // @State categoryOptions: categoryOptions[]=[]
 
   @State x: number = 0
@@ -148,6 +144,8 @@ struct shicai {
   @State categoryOptions: string[] = []
   @State unitOptions: string[] = []
   @State originalFoodList: FoodItem[] = []
+  @State unitId: string  = '';
+
 
 
   private showAlert(message: string) {
@@ -170,8 +168,13 @@ struct shicai {
       AppStorage.set('tenantId', params.relTenantIds);
       //this.tenantId = params.relTenantIds;
     }
+    if (!AppStorage.get('unitId') && params?.unitId) {
+      AppStorage.set('unitId', params.unitId);
+      //this.tenantId = params.relTenantIds;
+    }
     this.receivedToken = AppStorage.get('token')??'';
     this.tenantId = AppStorage.get('tenantId')??0;
+    this.unitId = AppStorage.get('unitId')??'2';
 
 
     const result = await this.Foodchaxun();
@@ -685,7 +688,8 @@ struct shicai {
             router.back({
               url:'pages/addPlan',
               params:{
-                SelectFoodList:SelectFoodList
+                SelectFoodList:SelectFoodList,
+                unitId:this.unitId
               }
             })
           })

@@ -145,14 +145,13 @@ struct ReportPlanPage {
         summary: item.summary,
         place: item.mealType_dictText,
         photoUri:  item.unitName,
-        planningStatus: item.planningStatus
+        planningStatus: item.planningStatus,
+        planningFoodList:item.planningFoodList
       } as RecipeFormData));
 
     }else {
       console.error('数据加载失败:', result.message);
     }
-
-
 
     // const filteredRecords = result.records?.filter(item =>
     // this.selectedUnit === '选择需求单位' ||  // 显示全部
@@ -358,7 +357,7 @@ struct ReportPlanPage {
                         .width('30%')
                         .fontSize(12)
                         .fontColor('#333333')
-                      Text(formData.documentNo)
+                      Text('XQ20250510006')
                         .width('70%')
                         .fontSize(12)
                         .fontColor('#666666')
@@ -470,10 +469,12 @@ struct ReportPlanPage {
                             width: 1
                           })
                           .onClick(() => {
-                            console.log('CACACACCACACACAC',this.unitId);
+                            console.log('id:',formData.id)
                             router.pushUrl({
-                              url: 'pages/addPlan',  params: {
-                                unitId:this.unitId
+                              url: 'pages/addPlan',
+                              params: {
+                                unitId:this.unitId,
+                                id:formData.id,
                               } })
 
                           })
@@ -497,6 +498,8 @@ struct ReportPlanPage {
                           })
                           .onClick(() => {
                             this.RecipeFormData = this.RecipeFormData.filter(item => item !== formData)
+                            console.log('id:',formData.id)
+                            if(formData.id) DeleteById(this.receivedToken,this.tenantId,formData.id)
                           })
                       }
                     }
@@ -604,6 +607,32 @@ struct ReportPlanPage {
       }
 
     })
+  }
+
+}
+async function DeleteById(token:string,tenantId:number,id:string): Promise<void>{
+  console.log('to',token)
+  console.log('id',id)
+  console.log('ten',tenantId)
+  try {
+    const httpRequest = http.createHttp();
+    const response = await httpRequest.request(
+      `https://api.suoeryun.com/ifood/jeecg-school/school/xxDemandPlanning/deleteBatch?ids=${id}`,
+      {
+        method: http.RequestMethod.POST,
+        header: { 'Content-Type': 'application/json',
+          'Tenant-Id': tenantId.toString(),
+          'X-Access-Token': token
+        },
+      }
+    );
+    console.log('delete:',response.result)
+    console.log('delete:',response.responseCode)
+    if (response.responseCode !== 200) {
+      console.log('queryById:',response.responseCode)
+    }
+
+  }catch (e){
   }
 
 }
