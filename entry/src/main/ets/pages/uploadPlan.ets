@@ -358,7 +358,7 @@ struct ReportPlanPage {
                         .width('30%')
                         .fontSize(12)
                         .fontColor('#333333')
-                      Text('XQ20250510006')
+                      Text(formData.documentNo)
                         .width('70%')
                         .fontSize(12)
                         .fontColor('#666666')

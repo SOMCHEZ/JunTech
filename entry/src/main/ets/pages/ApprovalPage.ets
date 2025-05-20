@@ -1,5 +1,9 @@
 import router from '@ohos.router';
 import http from '@ohos.net.http';
+
+AppStorage.setOrCreate('token', '');
+AppStorage.setOrCreate('tenantId', 0);
+
 interface RecipeFormData extends records{
   photoUri: string;//卡片名对应地点
   id?: string;
@@ -9,8 +13,11 @@ interface RecipeFormData extends records{
   human: string;
   diningType: string;//用餐类型
   summary:  string;
+  documentNo:  string;
   place: string;//餐别
   planningStatus:string;
+  preparedBy: string;
+  reportDate:  string;
 
 }
 interface records{//定义接口返回类型
@@ -54,6 +61,28 @@ interface records{//定义接口返回类型
   planningStatus_dictText: string
   // 其他字段根据实际API响应补充...
 }
+interface RouteParams {//接口传递参数定义
+  token?: string;
+  relTenantIds?: number;
+  //unitId?: string;
+}
+interface XuqiuResult {
+  records: records[];
+  //token: string;
+}
+interface XuqiuResponse {
+  code: number;
+  message: string;
+  result: XuqiuResult;
+  timestamp: number;
+}
+interface XuqiuHandlerResult {
+  success: boolean;
+  code?: number;
+  records?: records[];
+  message?: string;
+}
+
 @Entry
 @Component
 struct ReportPlanPage {
@@ -68,11 +97,136 @@ struct ReportPlanPage {
   @State upload:number  = 0;//审核栏的状态量
   @State showPopup: boolean = false//判断单据日志打印不是我写的
   @State selectedFoodslenth :  number = 0//根据读到数据加载卡片，现在没接仅测试使用
+  @State receivedToken: string = '';
+  @State tenantId: number = 0;
+  @State RecipeFormData: RecipeFormData[] = [];
+
   private unitOptions = [
     '选择需求单位',
     '实验第二学校（库房）',
     '实验第二学校餐厅'
   ]
+
+  async onPageShow() {
+
+    // 使用接口类型断言
+    const params = router.getParams() as RouteParams;
+    //console.log('houchu', params?.token);// 打印接收到的参数
+    //console.log('houchu', params?.relTenantIds);//  打印接收到的参数
+
+    // 安全取值如果返回值空，则使用appsetcreat中所预保存的token和id
+    if (!AppStorage.get('token') && params?.token) {
+      AppStorage.set('token', params.token);
+    }
+
+    if (!AppStorage.get('tenantId') && params?.relTenantIds) {
+      AppStorage.set('tenantId', params.relTenantIds);
+    }
+    // 同步到组件状态
+    this.receivedToken = AppStorage.get('token')??'';
+    this.tenantId = AppStorage.get('tenantId')??0;
+
+    const result = await this.Xuqiuchaxun();
+   // this.unitId = result?.records?.[0]?.unitId ?? '';
+   // console.log('laofushinanniang', this.unitId);
+    //const result = await this.Houchuchaxun();// 调用Houchuchaxun方法这个函数是用来查数据的
+    //console.log('houchu1', result); // 打印返回结果
+
+    if (result.success && result.records) {
+      this.RecipeFormData = result.records?.map((item: records) => ({
+        id: item.id,
+        date: item.supplyDate,
+        recipeName: item.createTime,
+        documentNo:  item.documentNo,
+        mealType: item.mealType_dictText,
+        diningType: item.requirementType_dictText,
+        human:item.reportUserName,
+        summary: item.summary,
+        place: item.mealType_dictText,
+        photoUri:  item.unitName,
+        planningStatus: item.planningStatus,
+        preparedBy:item.preparedBy,
+        reportDate:item.reportDate
+
+      } as RecipeFormData));
+
+    }else {
+      console.error('数据加载失败:', result.message);
+    }
+
+
+
+    // const filteredRecords = result.records?.filter(item =>
+    // this.selectedUnit === '选择需求单位' ||  // 显示全部
+    //   item.unitName === this.selectedUnit // 按选中单位过滤
+    // ) ?? [];
+    //
+    // if (result.success && filteredRecords) {
+    //   this.RecipeFormData = filteredRecords.map((item: records) => ({
+    //     id: item.id,
+    //     date: item.supplyDate,
+    //     recipeName: item.createTime,
+    //     mealType: item.mealType_dictText,
+    //     diningType: item.requirementType_dictText,
+    //   } as RecipeFormData));
+    //   console.log('444',this.RecipeFormData[1].id);
+    //
+    //
+    //   const unitNames = result.records?.map(item => item.unitName) ?? [];
+    //   const filteredUnitNames = unitNames.filter(Boolean);
+    //   const uniqueUnits = Array.from(new Set(filteredUnitNames));
+    //   this.unitOptions = ['所属单位', ...uniqueUnits];
+    // }
+  }
+
+
+
+
+
+
+  private async Xuqiuchaxun(): Promise<XuqiuHandlerResult> { //这个请求是针对查询后厨人员列表的
+    try {
+      const httpRequest = http.createHttp();
+
+      const response = await httpRequest.request(
+        'https://api.suoeryun.com/ifood/jeecg-school/school/xxDemandPlanning/list',
+        {
+          method: http.RequestMethod.GET,
+          header: {
+            //'Content-Type': 'application/json',
+            'Tenant-Id': this.tenantId.toString(),
+            'X-Access-Token': this.receivedToken
+          },
+        }
+      );
+
+      if (response.responseCode !== 200) {
+        //console.error('Login Error:'+response.responseCode);
+        return {
+          success: false,
+          message: `HTTP Error: ${response.responseCode}`
+          // 添加其他错误处理逻辑
+        };
+      }
+      console.log('slfj' + response.result.toString())
+      const jsonData = JSON.parse(response.result as string) as XuqiuResponse;
+      console.log('11', jsonData.result.records[1]);
+      return {
+        success: jsonData.code === 200,
+        code: jsonData.code,
+        records: jsonData.result.records,
+        message: jsonData.message,
+        //relTenantIds:jsonData.result.userInfo.relTenantIds
+      };
+
+    } catch (error) {
+      console.error('Login Error:', JSON.stringify(error));
+      return {
+        success: false,
+        message: '服务器繁忙'
+      }
+    }
+  }
 
   private showAlert(message: string) {
     this.toastMessage = message
@@ -161,16 +315,43 @@ struct ReportPlanPage {
       .width('100%')
       .margin({ bottom: 15 })
       Scroll(){
-        Column() {
-          if (this.selectedFoodslenth == 0) {
-            List(){
 
+        Column() {
+          if (this.RecipeFormData.filter(item => {
+            const statusMatch = this.upload === 0 ?
+              item.planningStatus === '1' :
+              item.planningStatus === '5';
+            item.planningStatus === '0';
+            const unitMatch = this.selectedUnit === '选择需求单位' ||
+              item.photoUri === this.selectedUnit;
+            const dateMatch = this.selectedDate === '请选择供应日期' ||
+              item.date === this.selectedDate;
+            return statusMatch && unitMatch && dateMatch;
+          }).length > 0) {
+            List(){
+              ForEach(this.RecipeFormData.filter(item => {
+                // 核心筛选逻辑
+                const statusMatch = this.upload === 0 ?
+                  item.planningStatus === '1' :
+                  item.planningStatus === '5';
+                item.planningStatus === '0';
+
+                // 添加单位筛选（默认选项时显示全部）
+                const unitMatch = this.selectedUnit === '选择需求单位' ||
+                  item.photoUri === this.selectedUnit;
+
+                // 添加日期筛选（默认选项时显示全部）
+                const dateMatch = this.selectedDate === '请选择供应日期' ||
+                  item.date === this.selectedDate;
+
+                return statusMatch && unitMatch && dateMatch;
+              }), (formData: RecipeFormData) => {
               ListItem()
               {
                 //中间卡片部分神中神
                 Column() {
                   // Text(formData.photoUri?? 'N/A')
-                  Text('实训第二学校餐厅')
+                  Text(formData.photoUri?? 'N/A')
                     .width('100%')
                     .height(30)
                     .padding({ left: 10 })
@@ -185,8 +366,8 @@ struct ReportPlanPage {
                         .width('30%')
                         .fontSize(12)
                         .fontColor('#333333')
-                      // Text(formData.date ?? 'N/A')
-                      Text('2025-05-14 上午')
+                      Text(formData.date ?? 'N/A')
+                     // Text('2025-05-14 上午')
                         .width('70%')
                         .fontSize(12)
                         .fontColor('#666666')
@@ -214,7 +395,7 @@ struct ReportPlanPage {
                         .width('30%')
                         .fontSize(12)
                         .fontColor('#333333')
-                      Text('XQ20250510006')
+                      Text(formData.documentNo)
                         .width('70%')
                         .fontSize(12)
                         .fontColor('#666666')
@@ -227,8 +408,8 @@ struct ReportPlanPage {
                           .width('30%')
                           .fontSize(12)
                           .fontColor('#333333')
-                        // Text(formData.mealType ?? 'N/A')
-                        Text('学生餐')
+                         Text(formData.mealType ?? 'N/A')
+                       // Text('学生餐')
                           .width('70%')
                           .fontSize(12)
                           .fontColor('#666666')
@@ -242,8 +423,8 @@ struct ReportPlanPage {
                         .width('30%')
                         .fontSize(12)
                         .fontColor('#333333')
-                      // Text(formData.diningType ?? 'N/A')
-                      Text('营养餐')
+                       Text(formData.diningType ?? 'N/A')
+                     // Text('营养餐')
                         .width('70%')
                         .fontSize(12)
                         .fontColor('#666666')
@@ -255,8 +436,8 @@ struct ReportPlanPage {
                           .width('30%')
                           .fontSize(12)
                           .fontColor('#333333')
-                        // Text(formData.place ?? 'N/A')
-                        Text('早餐')
+                         Text(formData.place ?? 'N/A')
+                        //Text('早餐')
                           .width('70%')
                           .fontSize(12)
                           .fontColor('#666666')
@@ -268,8 +449,8 @@ struct ReportPlanPage {
                         .width('30%')
                         .fontSize(12)
                         .fontColor('#333333')
-                      // Text(formData.human??'人')
-                      Text('人')
+                      Text(formData.preparedBy??'人')
+                      //Text('人')
                         .width('70%')
                         .fontSize(12)
                         .fontColor('#666666')
@@ -279,8 +460,8 @@ struct ReportPlanPage {
                         .width('30%')
                         .fontSize(12)
                         .fontColor('#333333')
-                      // Text(formData.recipeName ?? 'N/A')
-                      Text('2025-05-18 123456')
+                       Text(formData.recipeName ?? 'N/A')
+                      //Text('2025-05-18 123456')
                         .width('70%')
                         .fontSize(12)
                         .fontColor('#666666')
@@ -290,8 +471,8 @@ struct ReportPlanPage {
                         .width('30%')
                         .fontSize(12)
                         .fontColor('#333333')
-                      // Text(formData.recipeName ?? 'N/A')
-                      Text('人')
+                       Text(formData.human ?? 'N/A')
+                      //Text('人')
                         .width('70%')
                         .fontSize(12)
                         .fontColor('#666666')
@@ -301,8 +482,8 @@ struct ReportPlanPage {
                         .width('30%')
                         .fontSize(12)
                         .fontColor('#333333')
-                      // Text(formData.recipeName ?? 'N/A')
-                      Text('2025-05-18 654321')
+                       Text(formData.reportDate ?? 'N/A')
+                      //Text('2025-05-18 654321')
                         .width('70%')
                         .fontSize(12)
                         .fontColor('#666666')
@@ -313,8 +494,8 @@ struct ReportPlanPage {
                           .width('30%')
                           .fontSize(12)
                           .fontColor('#333333')
-                        // Text(formData.summary??'无')
-                        Text('11')
+                         Text(formData.summary??'无')
+                        //Text('11')
                           .width('70%')
                           .fontSize(12)
                           .fontColor('#666666')
@@ -419,10 +600,11 @@ struct ReportPlanPage {
               }
               .width('100%')
               .margin({left:2,right: 10, bottom:10 })
-
+              })
             }
             .width('100%')
             .borderRadius(8)
+
           }
           else {
             Column() {
@@ -438,7 +620,8 @@ struct ReportPlanPage {
         .width('100%')
         //.backgroundColor('#f2dbdada')
         .layoutWeight(1)
-      }
+
+        }
       if (this.showPopup) {
 
         Stack({ alignContent: Alignment.Bottom }) {
@@ -558,7 +741,7 @@ struct ReportPlanPage {
         const day = value.day ?? new Date().getDate()
 
         this.selectDate = new Date(year, month - 1, day)
-        this.selectedDate = `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`
+        this.selectedDate = `${year}-${(month+1).toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`
       }
     })
   }

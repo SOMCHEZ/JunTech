@@ -234,7 +234,7 @@ struct peisongdan {
             .onClick(() => {
               this.selectedStatusIndex = index;
               this.selectedStatus = index.toString(); // 如果你还需要传递状态给接口
-              this.currentPage = 1;
+             // this.currentPage = 1;
               this.Liuyangchaxun(index.toString());
             });
         });
