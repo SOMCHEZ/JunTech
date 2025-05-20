@@ -40,8 +40,9 @@
     "pages/songhuodan",
     "pages/peisongdan",
     "pages/jibenxinxi",
-    "pages/gongyingfanwei"
-
+    "pages/gongyingfanwei",
+    "pages/order",
+    "pages/unaccepted"
 
 
   ]
