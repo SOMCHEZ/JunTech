@@ -35,9 +35,14 @@
     "pages/chukudanshicai",
     "pages/editChuku",
     "pages/uploadcase",
+    "pages/detailPage",
+    "pages/shouye_test1",
+    "pages/songhuodan",
+    "pages/peisongdan",
+    "pages/jibenxinxi",
+    "pages/gongyingfanwei",
     "pages/order",
     "pages/unaccepted"
-
 
 
   ]

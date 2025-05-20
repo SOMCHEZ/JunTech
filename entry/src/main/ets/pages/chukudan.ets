@@ -62,6 +62,18 @@ interface RouteParams {//接口传递参数定义
   token?: string;
   relTenantIds?: number;
   unitId?: string;
+  SelectFoodList?: SelectFoodList[];
+}
+interface SelectFoodList {
+  foodName: string;
+  supplyPricing: string;
+  modifyPrice:  number;
+  unit: string;
+  stock: string;
+  supplyName:string;
+  images: Resource ;
+  totalNum:  number;
+  groupName:string;
 }
 interface UserInfo {
   id: string;
@@ -107,6 +119,7 @@ struct DatePickerExample {
   private demandOptions = ['学生餐', '教师餐']
   private mealTypeOptions = ['其他','营养餐']
   private mealOptions = ['其他', '早餐', '午餐', '晚餐']
+  @State SelectFoodList: SelectFoodList []= []//回传数据
 
   // 修改 getMappedValues 函数：显式声明返回类型
   private mapping: Record<string, string> = {
@@ -165,6 +178,8 @@ struct DatePickerExample {
     console.log('UID', params?.unitId);
     //const result = await this.Houchuchaxun();// 调用Houchuchaxun方法这个函数是用来查数据的
     //console.log('houchu1', result); // 打印返回结果
+    this.SelectFoodList = params.SelectFoodList??[];
+
   }
 
   private async addStaff(): Promise<addHandlerResult> {
@@ -294,7 +309,12 @@ struct DatePickerExample {
                   .onClick(() => {
                     // 跳转到 chuku 页面
                     router.pushUrl({
-                      url: 'pages/renew'
+                      url: 'pages/chukudanshicai',
+                      params: {
+                        token: this.receivedToken,
+                        tenantId: this.tenantId,
+                        unitId: this.unitId,
+                      }
                     });
 
                   });
@@ -323,8 +343,10 @@ struct DatePickerExample {
               .height(20)
             if (this.adddal) {
               // 显示条件用餐类型行
+              ForEach(this.SelectFoodList, (item:SelectFoodList, index:number) => {
               Column() {
                 Stack() {
+
                   // 主内容区域
                   Column() {
                     // 第一行：图片、名称和收藏按钮
@@ -333,11 +355,10 @@ struct DatePickerExample {
                         .width(70)
                         .borderRadius(0)
                         .margin({ left: 5, top: -115 }) // 原position x:-150 → 计算实际左边距
-                      Text('绿豆')
+                      Text(item.foodName)
                         .fontSize(25)
                         .fontWeight(FontWeight.Bold)
-                        .fontColor(Color.Black)
-                          //.margin({ left: 10, top: -65}) // 与图片保持相对位置
+                        .fontColor(Color.Black)//.margin({ left: 10, top: -65}) // 与图片保持相对位置
                         .margin({ left: 10, top: -70 }) // 右侧固定位置
                       Image($r('app.media.del'))
                         .width(30)
@@ -351,6 +372,7 @@ struct DatePickerExample {
                     .height(80)
                     .padding({ left: 20 })
                   }
+                  .align(Alignment.Top)
                   // 渐变分割线 (精确匹配原位置)
                   Row()
                     .width('86%')
@@ -371,7 +393,7 @@ struct DatePickerExample {
                     Row() {
                       Text('采  购  价：')
                         .fontWeight(600)
-                      Text('12.96')
+                      Text(item.modifyPrice.toString())
                         .fontSize(21)
                         .fontWeight(FontWeight.Bold)
                         .fontColor(Color.Red)
@@ -381,34 +403,37 @@ struct DatePickerExample {
                     }
                     .margin({ top: 10 })
                     .zIndex(2)
+
                     // 供应商信息
                     Row() {
                       Text('供  应  商：')
                         .fontWeight(600)
-                      Text('彦红粮油有限公司')
+                      Text(item.supplyName)
                         .fontWeight(600)
                     }
                     .margin({ top: 10 })
+
                     // 学校库存
                     Row() {
                       Text('学校库存：')
                         .fontWeight(600)
-                      Text('1')
+                      Text(item.totalNum.toString())
                         .fontSize(21)
                         .fontWeight(FontWeight.Bold)
-                      Text('Kg')
+                      Text(item.unit)
                         .fontWeight(600)
                     }
                     .margin({ top: 10 })
+
                     // 规格
                     // 需求量
                     Row({ space: 10 }) {
                       Text('需 求  量：')
                         .fontWeight(600)
                       TextInput({ placeholder: '请输入需求量' })
-                        .fontColor('#000') // 输入文字颜色
+                        .fontColor('#000')// 输入文字颜色
                         .fontSize(16)
-                        .width('40%') // 设置输入框宽度
+                        .width('40%')// 设置输入框宽度
                         .border({
                           width: { bottom: 1 }, // 只设置底部边框
                           color: '#ccc'
@@ -420,14 +445,15 @@ struct DatePickerExample {
                       Text('斤')
                         .fontWeight(600)
                     }
+
                     // 需求量
                     Row({ space: 10 }) {
                       Text('需 求  量：')
                         .fontWeight(600)
                       TextInput({ placeholder: '请输入需求量' })
-                        .fontColor('#000') // 输入文字颜色
+                        .fontColor('#000')// 输入文字颜色
                         .fontSize(16)
-                        .width('40%') // 设置输入框宽度
+                        .width('40%')// 设置输入框宽度
                         .border({
                           width: { bottom: 1 }, // 只设置底部边框
                           color: '#ccc'
@@ -438,7 +464,8 @@ struct DatePickerExample {
                         })
                       Text('kg')
                         .fontWeight(600)
-                    }
+                    } //标识1233211234567
+
                     // 合计
                     Row() {
                       Text('合       计：')
@@ -448,14 +475,15 @@ struct DatePickerExample {
                         .fontColor(Color.Red)
                     }
                     .margin({ top: 10 })
+
                     // 备注
                     Row() {
                       Text('备       注：')
                         .fontWeight(600)
                       TextInput({ placeholder: '请输入备注' })
-                        .fontColor('#000') // 输入文字颜色
+                        .fontColor('#000')// 输入文字颜色
                         .fontSize(16)
-                        .width('70%') // 设置输入框宽度
+                        .width('70%')// 设置输入框宽度
                         .border({
                           width: { bottom: 1 }, // 只设置底部边框
                           color: '#ccc'
@@ -467,8 +495,12 @@ struct DatePickerExample {
                     }
                     .margin({ top: 10 })
                   }
-                  .alignItems(HorizontalAlign.Start) // 关键：统一左对齐
-                  .margin({ top: 100 })
+
+
+                    //COLOME
+                    .alignItems(HorizontalAlign.Start) // 关键：统一左对齐
+                    .margin({ top: 100 })
+
                   // 左上角三角形标签 (精确匹配)
                   Path()
                     .width(40)
@@ -500,6 +532,7 @@ struct DatePickerExample {
                 offsetY: 20
               })
               .margin({ left: '2%', right: '2%' })
+              })
             }
             //中间卡片部分
 
@@ -508,7 +541,7 @@ struct DatePickerExample {
           .layoutWeight(1)
 
         }
-
+        .align(Alignment.Top)
         .width('100%')
         .layoutWeight(1)
         if (this.showDialog) {

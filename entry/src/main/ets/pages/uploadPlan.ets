@@ -225,365 +225,365 @@ struct ReportPlanPage {
 
 
   build() {
-      Column() {
-        Row() {
-          Button('未上报')
-            .width('50%')
-            .height(40)
-            .backgroundColor(this.x === 0 ? '#E8F5E9' : '#F5F5F5')
-            .fontColor(this.x === 0 ? '#07C160' : '#666666')
-            .fontWeight(this.x ===0?FontWeight.Bold : FontWeight.Normal)
-            .borderRadius(0)// 去除圆角
-            .borderWidth(0)// 去除边框
-            .onClick(() => {
-              this.x = 0
-              this.upload=false
-              this.onPageShow() // 重新加载数据
-            })
-
-          Button('已上报')
-            .width('50%')
-            .height(40)
-            .backgroundColor(this.x === 1 ? '#E8F5E9' : '#F5F5F5')
-            .fontColor(this.x === 1 ? '#07C160' : '#666666')
-            .fontWeight(this.x ===1?FontWeight.Bold : FontWeight.Normal)
-            .borderRadius(0)
-            .borderWidth(0)
-            .onClick(() => {
-              this.x = 1
-              this.upload=true
-              this.onPageShow() // 重新加载数据
-            })
-        }
-        .width('100%')
-        .margin({ bottom: 20 })
-
-
-        Row({space:40}) {
-          Select(this.unitOptions.map<SelectOption>((item: string) => ({ value: item })))
-            .value(this.unitOptions[0])
-            .onSelect((index: number) => {
-              this.selectedUnit = this.unitOptions[index]
-              this.onPageShow() // 选择单位后自动刷新
-            })
-
-            .margin(10)
-            .width('40%')
-            .height(40)
-            .font({ size: 10 })
-
-          Select([])
-            .value(this.selectedDate)
-            .onClick(() => {
-              this.showDateDialog()
-            })
-            .margin(10)
-            .width('40%')
-            .height(40)
-            .font({ size: 10 })
-
-        }
-        .width('100%')
-        .margin({ bottom: 15 })
-
-
-        Column() {
-
-          if (this.RecipeFormData.filter(item => {
-            const statusMatch = this.x === 0 ?
-              item.planningStatus === '1' :
-              item.planningStatus === '5';
-            const unitMatch = this.selectedUnit === '选择需求单位' ||
-              item.photoUri === this.selectedUnit;
-            const dateMatch = this.selectedDate === '请选择供应日期' ||
-              item.date === this.selectedDate;
-            return statusMatch && unitMatch && dateMatch;
-          }).length > 0) {
-              List(){
-                ForEach(this.RecipeFormData.filter(item => {
-                  // 核心筛选逻辑
-                  const statusMatch = this.x === 0 ?
-                    item.planningStatus === '1' :
-                    item.planningStatus === '5';
-
-                  // 添加单位筛选（默认选项时显示全部）
-                  const unitMatch = this.selectedUnit === '选择需求单位' ||
-                    item.photoUri === this.selectedUnit;
-
-                  // 添加日期筛选（默认选项时显示全部）
-                  const dateMatch = this.selectedDate === '请选择供应日期' ||
-                    item.date === this.selectedDate;
-
-                  return statusMatch && unitMatch && dateMatch;
-                }), (formData: RecipeFormData) => {
-                    ListItem()
-                    {
-                      //中间卡片部分神中神
-                        Column() {
-                          Text(formData.photoUri?? 'N/A')
-                            .width('100%')
-                            .height(30)
-                            .padding({ left: 10 })
-                            .backgroundColor('#E8F5E9') // 背景色区分标题
-                            .fontColor('#2E7D32') // 深绿色字体
-                            .fontSize(14)
-                            .fontWeight(FontWeight.Bold)
-
-                          Column({ space: 10 }) {
-                            Row() {
-                              Text('供应时间：')
-                                .width('30%')
-                                .fontSize(12)
-                                .fontColor('#333333')
-                              Text(formData.date ?? 'N/A')
-                                .width('70%')
-                                .fontSize(12)
-                                .fontColor('#666666')
-                              if (this.upload) {
-                                Image($r('app.media.approved'))
-                                  .width('30%')
-                                  .position({ top: -20, right: 1})
-                              }else  {
-                                Image($r('app.media.notReported'))
-                                  .width('30%')
-                                  .position({ top: -20, right: 1})
-                                //.visible(formData.status === '已上报')
-                              }
-                            }
-
-                            .justifyContent(FlexAlign.Start)
-
-                            Row() {
-                              Text('需求单号：')
-                                .width('30%')
-                                .fontSize(12)
-                                .fontColor('#333333')
-                              Text('XQ20250510006')
-                                .width('70%')
-                                .fontSize(12)
-                                .fontColor('#666666')
-
-                            }
-                            .justifyContent(FlexAlign.Start)
-
-                            Row() {
-                              Text('需求类型：')
-                                .width('30%')
-                                .fontSize(12)
-                                .fontColor('#333333')
-                              Text(formData.mealType ?? 'N/A')
-                                .width('70%')
-                                .fontSize(12)
-                                .fontColor('#666666')
-
-                            }
-                            .justifyContent(FlexAlign.Start)
-                            Row() {
-                              Text('用餐类型：')
-                                .width('30%')
-                                .fontSize(12)
-                                .fontColor('#333333')
-                              Text(formData.diningType ?? 'N/A')
-                                .width('70%')
-                                .fontSize(12)
-                                .fontColor('#666666')
-                            }
-                            .justifyContent(FlexAlign.Start)
-                            Row() {
-                              Text('餐别：')
-                                .width('30%')
-                                .fontSize(12)
-                                .fontColor('#333333')
-                              Text(formData.place ?? 'N/A')
-                                .width('70%')
-                                .fontSize(12)
-                                .fontColor('#666666')
-                            }
-                            .justifyContent(FlexAlign.Start)
-                            Row() {
-                              Text('制单人：')
-                                .width('30%')
-                                .fontSize(12)
-                                .fontColor('#333333')
-                              Text(formData.human??'人')
-                                .width('70%')
-                                .fontSize(12)
-                                .fontColor('#666666')
-                            }
-                            Row() {
-                              Text('制单时间：')
-                                .width('30%')
-                                .fontSize(12)
-                                .fontColor('#333333')
-                              Text(formData.recipeName ?? 'N/A')
-                                .width('70%')
-                                .fontSize(12)
-                                .fontColor('#666666')
-                            }
-                            Row() {
-                              Text('摘要：')
-                                .width('30%')
-                                .fontSize(12)
-                                .fontColor('#333333')
-                              Text(formData.summary??'无')
-                                .width('70%')
-                                .fontSize(12)
-                                .fontColor('#666666')
-                            }
-                            //以上报按钮
-                            if (this.upload){
-                              Row({space:83}){
-                                Button('复制订单')
-                                .backgroundColor('#ffffffff')
-                                .fontColor('#4CAF50')
-                                .fontSize(10)
-                                .borderRadius(12)
-                                .border({
-                                  color: '#4CAF50',
-                                  width: 1
-                                })
-                                .onClick(() => {
-                                })
-                                Button('单据日志')
-                                  .backgroundColor('#ffffffff')
-                                  .fontColor('#4CAF50')
-                                  .fontSize(10)
-                                  .borderRadius(12)
-                                  .border({
-                                    color: '#4CAF50',
-                                    width: 1
-                                  })
-                                  .onClick(() => {
-                                  })
-                              }
-                            }
-                            else {
-                              // 操作按钮
-                              Row({ space: 5 }) {
-                                Button('重新编辑')
-                                  .backgroundColor('#ffffffff')
-                                  .fontColor('#4CAF50')
-                                  .fontSize(10)
-                                  .borderRadius(12)
-                                  .border({
-                                    color: '#4CAF50',
-                                    width: 1
-                                  })
-                                  .onClick(() => {
-                                    console.log('CACACACCACACACAC',this.unitId);
-                                    router.pushUrl({
-                                      url: 'pages/addPlan',  params: {
-                                        unitId:this.unitId
-                                      } })
-
-                                  })
-                                Button('单据日志')
-                                  .backgroundColor('#ffffffff')
-                                  .fontColor('#4CAF50')
-                                  .fontSize(10)
-                                  .borderRadius(12)
-                                  .border({
-                                    color: '#4CAF50',
-                                    width: 1
-                                  })
-                                Button('删除单据')
-                                  .backgroundColor('#ffffffff')
-                                  .fontColor('#4CAF50')
-                                  .fontSize(10)
-                                  .borderRadius(12)
-                                  .border({
-                                    color: '#4CAF50',
-                                    width: 1
-                                  })
-                                  .onClick(() => {
-                                    this.RecipeFormData = this.RecipeFormData.filter(item => item !== formData)
-                                  })
-                              }
-                            }
-                          }
-                          .padding({ left: 10, right: 10, top: 5, bottom: 10 })
-                          .backgroundColor(Color.White)
-                          .width('100%')
-                          .justifyContent(FlexAlign.Start)
-                        }
-                        //.padding({ left: 1, right: 10, top: 5, bottom: 10 })
-                        .backgroundColor('#4CAF50')
-                        .width('90%')
-                        .height('auto')
-                        .alignItems(HorizontalAlign.Center)
-                        .border({
-                          width: 2,
-                          color: '#4CAF50',
-                          radius: 8
-                        })
-                        .shadow({
-                          radius: 5,
-                          color: '#4CAF50',
-                          offsetX: 10,
-                          offsetY: 10
-                        })
-                      .onClick(() => {
-                        if (this.upload) {
-                          router.pushUrl({
-                            url: 'pages/uploadcase' })
-
-                        }
-
-                      })
-                    }
-                    .width('100%')
-                    .margin({left:10,right: 10, bottom:10 })
-                })
-              }
-
-              .width('100%')
-              .borderRadius(8)
-          } else {
-              Column() {
-                Text('- 暂无相关数据 -')
-                .position({
-                  x: 110,
-                  y: 180
-                })
-            }
-          }
-
-        }
-        .width('100%')
-        //.backgroundColor('#f2dbdada')
-        .layoutWeight(1)
-
-        Button('新建上报计划', { type: ButtonType.Capsule })
-          .width('100%')
-          .height(50)
-          .backgroundColor('#02BC65')
-          .fontColor('#FFFFFF')
-          .margin({ top: 20 })
+    Column() {
+      Row() {
+        Button('未上报')
+          .width('50%')
+          .height(40)
+          .backgroundColor(this.x === 0 ? '#E8F5E9' : '#F5F5F5')
+          .fontColor(this.x === 0 ? '#07C160' : '#666666')
+          .fontWeight(this.x ===0?FontWeight.Bold : FontWeight.Normal)
+          .borderRadius(0)// 去除圆角
+          .borderWidth(0)// 去除边框
           .onClick(() => {
-            // 手动构造一个新的单据对象并添加进数组
-            // const newForm: RecipeFormData = {
-            //   date: '2025-04-05',
-            //   recipeName: '新菜谱',
-            //   mealType: '早餐',
-            //   diningType: '堂食',
-            //   place: '食堂A'
-            // };
-            // this.RecipeFormData.push(newForm);
-            router.pushUrl({
-              url: 'pages/addPlan',
-              params: {
-                token: this.receivedToken,
-                tenantId: this.tenantId,
-                unitId: this.unitId,
-              }})
-            console.log('rel111',this.unitId);
+            this.x = 0
+            this.upload=false
+            this.onPageShow() // 重新加载数据
+          })
+
+        Button('已上报')
+          .width('50%')
+          .height(40)
+          .backgroundColor(this.x === 1 ? '#E8F5E9' : '#F5F5F5')
+          .fontColor(this.x === 1 ? '#07C160' : '#666666')
+          .fontWeight(this.x ===1?FontWeight.Bold : FontWeight.Normal)
+          .borderRadius(0)
+          .borderWidth(0)
+          .onClick(() => {
+            this.x = 1
+            this.upload=true
+            this.onPageShow() // 重新加载数据
           })
       }
-
       .width('100%')
-      .height('100%')
-      .padding(20)
-      .backgroundColor('#F5F5F5')
+      .margin({ bottom: 20 })
+
+
+      Row({space:40}) {
+        Select(this.unitOptions.map<SelectOption>((item: string) => ({ value: item })))
+          .value(this.unitOptions[0])
+          .onSelect((index: number) => {
+            this.selectedUnit = this.unitOptions[index]
+            this.onPageShow() // 选择单位后自动刷新
+          })
+
+          .margin(10)
+          .width('40%')
+          .height(40)
+          .font({ size: 10 })
+
+        Select([])
+          .value(this.selectedDate)
+          .onClick(() => {
+            this.showDateDialog()
+          })
+          .margin(10)
+          .width('40%')
+          .height(40)
+          .font({ size: 10 })
+
+      }
+      .width('100%')
+      .margin({ bottom: 15 })
+
+
+      Column() {
+
+        if (this.RecipeFormData.filter(item => {
+          const statusMatch = this.x === 0 ?
+            item.planningStatus === '1' :
+            item.planningStatus === '5';
+          const unitMatch = this.selectedUnit === '选择需求单位' ||
+            item.photoUri === this.selectedUnit;
+          const dateMatch = this.selectedDate === '请选择供应日期' ||
+            item.date === this.selectedDate;
+          return statusMatch && unitMatch && dateMatch;
+        }).length > 0) {
+          List(){
+            ForEach(this.RecipeFormData.filter(item => {
+              // 核心筛选逻辑
+              const statusMatch = this.x === 0 ?
+                item.planningStatus === '1' :
+                item.planningStatus === '5';
+
+              // 添加单位筛选（默认选项时显示全部）
+              const unitMatch = this.selectedUnit === '选择需求单位' ||
+                item.photoUri === this.selectedUnit;
+
+              // 添加日期筛选（默认选项时显示全部）
+              const dateMatch = this.selectedDate === '请选择供应日期' ||
+                item.date === this.selectedDate;
+
+              return statusMatch && unitMatch && dateMatch;
+            }), (formData: RecipeFormData) => {
+              ListItem()
+              {
+                //中间卡片部分神中神
+                Column() {
+                  Text(formData.photoUri?? 'N/A')
+                    .width('100%')
+                    .height(30)
+                    .padding({ left: 10 })
+                    .backgroundColor('#E8F5E9') // 背景色区分标题
+                    .fontColor('#2E7D32') // 深绿色字体
+                    .fontSize(14)
+                    .fontWeight(FontWeight.Bold)
+
+                  Column({ space: 10 }) {
+                    Row() {
+                      Text('供应时间：')
+                        .width('30%')
+                        .fontSize(12)
+                        .fontColor('#333333')
+                      Text(formData.date ?? 'N/A')
+                        .width('70%')
+                        .fontSize(12)
+                        .fontColor('#666666')
+                      if (this.upload) {
+                        Image($r('app.media.approved'))
+                          .width('30%')
+                          .position({ top: -20, right: 1})
+                      }else  {
+                        Image($r('app.media.notReported'))
+                          .width('30%')
+                          .position({ top: -20, right: 1})
+                        //.visible(formData.status === '已上报')
+                      }
+                    }
+
+                    .justifyContent(FlexAlign.Start)
+
+                    Row() {
+                      Text('需求单号：')
+                        .width('30%')
+                        .fontSize(12)
+                        .fontColor('#333333')
+                      Text('XQ20250510006')
+                        .width('70%')
+                        .fontSize(12)
+                        .fontColor('#666666')
+
+                    }
+                    .justifyContent(FlexAlign.Start)
+
+                    Row() {
+                      Text('需求类型：')
+                        .width('30%')
+                        .fontSize(12)
+                        .fontColor('#333333')
+                      Text(formData.mealType ?? 'N/A')
+                        .width('70%')
+                        .fontSize(12)
+                        .fontColor('#666666')
+
+                    }
+                    .justifyContent(FlexAlign.Start)
+                    Row() {
+                      Text('用餐类型：')
+                        .width('30%')
+                        .fontSize(12)
+                        .fontColor('#333333')
+                      Text(formData.diningType ?? 'N/A')
+                        .width('70%')
+                        .fontSize(12)
+                        .fontColor('#666666')
+                    }
+                    .justifyContent(FlexAlign.Start)
+                    Row() {
+                      Text('餐别：')
+                        .width('30%')
+                        .fontSize(12)
+                        .fontColor('#333333')
+                      Text(formData.place ?? 'N/A')
+                        .width('70%')
+                        .fontSize(12)
+                        .fontColor('#666666')
+                    }
+                    .justifyContent(FlexAlign.Start)
+                    Row() {
+                      Text('制单人：')
+                        .width('30%')
+                        .fontSize(12)
+                        .fontColor('#333333')
+                      Text(formData.human??'人')
+                        .width('70%')
+                        .fontSize(12)
+                        .fontColor('#666666')
+                    }
+                    Row() {
+                      Text('制单时间：')
+                        .width('30%')
+                        .fontSize(12)
+                        .fontColor('#333333')
+                      Text(formData.recipeName ?? 'N/A')
+                        .width('70%')
+                        .fontSize(12)
+                        .fontColor('#666666')
+                    }
+                    Row() {
+                      Text('摘要：')
+                        .width('30%')
+                        .fontSize(12)
+                        .fontColor('#333333')
+                      Text(formData.summary??'无')
+                        .width('70%')
+                        .fontSize(12)
+                        .fontColor('#666666')
+                    }
+                    //以上报按钮
+                    if (this.upload){
+                      Row({space:83}){
+                        Button('复制订单')
+                          .backgroundColor('#ffffffff')
+                          .fontColor('#4CAF50')
+                          .fontSize(10)
+                          .borderRadius(12)
+                          .border({
+                            color: '#4CAF50',
+                            width: 1
+                          })
+                          .onClick(() => {
+                          })
+                        Button('单据日志')
+                          .backgroundColor('#ffffffff')
+                          .fontColor('#4CAF50')
+                          .fontSize(10)
+                          .borderRadius(12)
+                          .border({
+                            color: '#4CAF50',
+                            width: 1
+                          })
+                          .onClick(() => {
+                          })
+                      }
+                    }
+                    else {
+                      // 操作按钮
+                      Row({ space: 5 }) {
+                        Button('重新编辑')
+                          .backgroundColor('#ffffffff')
+                          .fontColor('#4CAF50')
+                          .fontSize(10)
+                          .borderRadius(12)
+                          .border({
+                            color: '#4CAF50',
+                            width: 1
+                          })
+                          .onClick(() => {
+                            console.log('CACACACCACACACAC',this.unitId);
+                            router.pushUrl({
+                              url: 'pages/addPlan',  params: {
+                                unitId:this.unitId
+                              } })
+
+                          })
+                        Button('单据日志')
+                          .backgroundColor('#ffffffff')
+                          .fontColor('#4CAF50')
+                          .fontSize(10)
+                          .borderRadius(12)
+                          .border({
+                            color: '#4CAF50',
+                            width: 1
+                          })
+                        Button('删除单据')
+                          .backgroundColor('#ffffffff')
+                          .fontColor('#4CAF50')
+                          .fontSize(10)
+                          .borderRadius(12)
+                          .border({
+                            color: '#4CAF50',
+                            width: 1
+                          })
+                          .onClick(() => {
+                            this.RecipeFormData = this.RecipeFormData.filter(item => item !== formData)
+                          })
+                      }
+                    }
+                  }
+                  .padding({ left: 10, right: 10, top: 5, bottom: 10 })
+                  .backgroundColor(Color.White)
+                  .width('100%')
+                  .justifyContent(FlexAlign.Start)
+                }
+                //.padding({ left: 1, right: 10, top: 5, bottom: 10 })
+                .backgroundColor('#4CAF50')
+                .width('90%')
+                .height('auto')
+                .alignItems(HorizontalAlign.Center)
+                .border({
+                  width: 2,
+                  color: '#4CAF50',
+                  radius: 8
+                })
+                .shadow({
+                  radius: 5,
+                  color: '#4CAF50',
+                  offsetX: 10,
+                  offsetY: 10
+                })
+                .onClick(() => {
+                  if (this.upload) {
+                    router.pushUrl({
+                      url: 'pages/uploadcase' })
+
+                  }
+
+                })
+              }
+              .width('100%')
+              .margin({left:10,right: 10, bottom:10 })
+            })
+          }
+
+          .width('100%')
+          .borderRadius(8)
+        } else {
+          Column() {
+            Text('- 暂无相关数据 -')
+              .position({
+                x: 110,
+                y: 180
+              })
+          }
+        }
+
+      }
+      .width('100%')
+      //.backgroundColor('#f2dbdada')
+      .layoutWeight(1)
+
+      Button('新建上报计划', { type: ButtonType.Capsule })
+        .width('100%')
+        .height(50)
+        .backgroundColor('#02BC65')
+        .fontColor('#FFFFFF')
+        .margin({ top: 20 })
+        .onClick(() => {
+          // 手动构造一个新的单据对象并添加进数组
+          // const newForm: RecipeFormData = {
+          //   date: '2025-04-05',
+          //   recipeName: '新菜谱',
+          //   mealType: '早餐',
+          //   diningType: '堂食',
+          //   place: '食堂A'
+          // };
+          // this.RecipeFormData.push(newForm);
+          router.pushUrl({
+            url: 'pages/addPlan',
+            params: {
+              token: this.receivedToken,
+              tenantId: this.tenantId,
+              unitId: this.unitId,
+            }})
+          console.log('rel111',this.unitId);
+        })
+    }
+
+    .width('100%')
+    .height('100%')
+    .padding(20)
+    .backgroundColor('#F5F5F5')
 
   }
 

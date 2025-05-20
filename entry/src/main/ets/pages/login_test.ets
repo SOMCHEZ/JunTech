@@ -11,6 +11,8 @@ interface UserInfo {
   realname: string;
   avatar: string | null;
   relTenantIds:number;
+  telephone:string;
+  organizationName:string;
   // 其他字段根据实际API响应补充...
 }
 
@@ -39,9 +41,11 @@ interface LoginHandlerResult {
 @Component
 struct Index {
   @State typeid: string = '';
-  @State userUsername: string = '15502933673';//15502933673//18991274264
+  @State userUsername: string = '18991274264';//15502933673//18991274264
   @State userPassword: string = '123456';//123456//123456
-
+  @State realname: string = '';
+  @State telephone: string = '';
+  @State organizationName: string = '';
 
   build() {
     Stack() {
@@ -114,7 +118,9 @@ struct Index {
             if (result.success) {
               AppStorage.setOrCreate<string>(AppKeys.TOKEN, result.token!)
               AppStorage.setOrCreate<number>(AppKeys.TENANT_ID, result.relTenantIds!)
-
+                this.realname=result.userInfo?.realname??'';
+              this.telephone=result.userInfo?.telephone??'';
+              this.organizationName=result.userInfo?.organizationName??'';
               // 路由逻辑
               this.handleUserRedirection(result.userInfo?.clientType);
 
@@ -189,12 +195,22 @@ struct Index {
   private handleUserRedirection(clientType?: string) {
     switch(clientType) {
       case "2"://跳学校的首页，夹带token等私货
-        router.pushUrl({ url: 'pages/shouye_test'});
+        router.pushUrl({ url: 'pages/shouye_test',
+          params:{
+            realname:this.realname
+            ,telephone:this.telephone
+            ,organizationName:this.organizationName
+          }});
         break;
 
 
       case "3"://跳供应商的首页页面夹带token等私货
-        router.pushUrl({ url: 'pages/Today_VEG'});
+        router.pushUrl({ url: 'pages/shouye_test1',
+          params:{
+            realname:this.realname
+          ,telephone:this.telephone
+          ,organizationName:this.organizationName
+          }});
         break;
       default:
         console.error("未定义的用户类型:", clientType);

@@ -9,19 +9,17 @@ interface RouteParams {
   token?: string;
   relTenantIds?: number;
 }
-
 interface PeiCanMessage {
+  id: string;
   mealDate: string;
   schoolName: string;
   mealCategory_dictText: string;
   dutposition: string;
 }
-
 interface ResultData {
   total: number;
   records: PeiCanMessage[];
 }
-
 interface ResponseData {
   success: boolean;
   message: string;
@@ -31,6 +29,28 @@ interface ResponseData {
 interface PageParams {
   record?: string;
 }
+
+interface XxMealRecord {
+  id: string;
+  schoolName: string;
+  mealDate: string;
+  mealCategory_dictText: string;
+  xxMealRecordInfoList: XxMealRecordInfo[];
+}
+interface XxMealRecordInfo {
+  position: string; // 职称
+  images: string;   // 图片地址
+  positionName?: string; // 姓名（可选）
+  evaluate?: string;     // 评价（可选）
+}
+
+interface ApiResponse<T>{
+  success: boolean;
+  message: string;
+  code: number;
+  result: T| null;
+}
+
 @Entry
 @Component
 struct CalendarPage {
@@ -41,6 +61,7 @@ struct CalendarPage {
   @State private unitId: string = '';
   @State private DataList: PeiCanMessage[] = [];
   @State private TempDataList: PeiCanMessage[] = [];
+  private weekDays: string[] = ['一', '二', '三', '四', '五', '六', '日'];
 
   aboutToAppear() {
     const params = router.getParams() as PageParams; // 使用接口进行类型断言
@@ -48,7 +69,7 @@ struct CalendarPage {
       this.DataList.unshift(JSON.parse(params.record));
     }
   }
-
+  // 接收数据
   async onPageShow() {
     const params = router.getParams() as RouteParams;
     if (!AppStorage.get('token') && params?.token) {
@@ -66,9 +87,7 @@ struct CalendarPage {
       this.TempDataList = this.DataList.filter((item) => item.mealDate === this.formatDate(this.selectedDate));
     }
   }
-
-  private weekDays: string[] = ['一', '二', '三', '四', '五', '六', '日'];
-
+  //  查询页面接口
   private async peicanQuest(): Promise<ResponseData> {
     try {
       const httpRequest = http.createHttp();
@@ -83,7 +102,7 @@ struct CalendarPage {
           },
         }
       );
-
+      console.log('Data:', response.result)
       if (response.responseCode !== 200) {
         console.error('Login Error8:' + response.responseCode);
         return {
@@ -92,6 +111,7 @@ struct CalendarPage {
           code: response.responseCode,
           result: null,
         };
+
       }
 
       const jsonData = JSON.parse(response.result as string) as ResponseData;
@@ -106,6 +126,48 @@ struct CalendarPage {
       };
     }
   }
+  // 查询id
+  private async fetchDetailById(id: string): Promise<ApiResponse<XxMealRecord>> {
+    const httpRequest = http.createHttp();
+    try {
+      const response = await httpRequest.request(
+        'https://api.suoeryun.com/ifood/jeecg-school/school/xxMealRecord/queryById',
+        {
+          method: http.RequestMethod.GET,
+          header: {
+            'Tenant-Id': this.tenantId.toString(),
+            'X-Access-Token': this.receivedToken,
+            'Content-Type': 'application/x-www-form-urlencoded'
+          },
+          extraData: {
+            id: id
+          }
+        }
+      );
+      if (response.responseCode === 200) {
+        return JSON.parse(response.result as string) ;
+
+      } else {
+        console.error('请求失败:', response.responseCode);
+        return {
+          success: false,
+          message: `HTTP Error: ${response.responseCode}`,
+          code: response.responseCode,
+          result: null
+        };
+      }
+    } catch (error) {
+      console.error('请求异常:', error);
+      return {
+        success: false,
+        message: '网络请求失败',
+        code: 500,
+        result: null
+      };
+    }
+
+  }
+
 
   private getDatesForWeek(): number[] {
     const firstDayOfMonth = new Date(this.currentDate.getFullYear(), this.currentDate.getMonth(), 1);
@@ -190,8 +252,13 @@ struct CalendarPage {
     Column() {
       Row() {
         Text(`${record.mealDate} ${record.mealCategory_dictText}陪餐记录`)
-          .fontSize(30)
+          .textAlign(TextAlign.Start)
+          .layoutWeight(9)
+          .fontSize(22)
           .fontColor('#333');
+        Image($r('app.media.right_icon'))
+          .layoutWeight(1)
+          .width(10)
       }
       .justifyContent(FlexAlign.Start);
     }
@@ -203,16 +270,21 @@ struct CalendarPage {
     .height(80)
     .shadow({ radius: 6, color: '#30000000', offsetX: 2, offsetY: 4 })
     .border({ width: 1, color: '#00C853' })
-    .onClick(() => {
-      router.pushUrl({
-        url: 'pages/detailPage',
-        params: {
-          schoolName: record.schoolName,
-          mealDate: record.mealDate,
-          mealCategory: record.mealCategory_dictText,
-          dutposition: record.dutposition,
-        },
-      });
+    .onClick(async () => {
+      const detaliData = await this.fetchDetailById(record.id);
+      if (detaliData.success && detaliData.result) {
+        console.log('22222222222',record.schoolName);
+        const detailRecord = detaliData.result;
+        router.pushUrl({
+          url: 'pages/detailPage',
+          params: {
+            schoolName: record.schoolName,
+            mealDate: detailRecord.mealDate,
+            mealCategory: record.mealCategory_dictText,
+            dutposition: detailRecord.xxMealRecordInfoList[0]?.position, // 使用详细数据中的 position
+          },
+        });
+      }
     });
   }
 
